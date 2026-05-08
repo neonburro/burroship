@@ -1,5 +1,5 @@
 // src/pages/Map/MapWorld.jsx
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Map, { Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
 
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -9,14 +9,14 @@ import {
   mapboxStyle,
   defaultCamera,
   viewPresets,
+  tourRoute,
 } from "../../lib/mapbox";
 import locations from "../../data/locations.json";
 
 import LocationPin from "./LocationPin";
 import MapControls from "./MapControls";
+import MapSchedule from "./MapSchedule";
 
-// Layer IDs in the dark-v11 style that we want suppressed for
-// a quieter cabin-window feel. Keep cities and major roads.
 const labelLayersToHide = [
   "settlement-minor-label",
   "settlement-subdivision-label",
@@ -32,34 +32,149 @@ const labelLayersToHide = [
 function MapWorld() {
   const [selected, setSelected] = useState(null);
   const [activePreset, setActivePreset] = useState("BURROSHIP");
+  const [tourActive, setTourActive] = useState(false);
+  const [currentStopIndex, setCurrentStopIndex] = useState(null);
+  const [currentPhase, setCurrentPhase] = useState(null);
+  const [phaseEndsAt, setPhaseEndsAt] = useState(0);
+
   const mapRef = useRef(null);
+  const tourTimeoutRef = useRef(null);
+  const tourRunningRef = useRef(false);
 
-  const handlePresetSelect = useCallback((presetKey) => {
-    const preset = viewPresets[presetKey];
-    if (!preset || !mapRef.current) return;
+  // ----- Tour engine -----------------------------------------
 
-    setActivePreset(presetKey);
-    setSelected(null);
-
-    mapRef.current.flyTo({
-      center: [preset.longitude, preset.latitude],
-      zoom: preset.zoom,
-      pitch: preset.pitch,
-      bearing: preset.bearing,
-      duration: 1800,
-      essential: true,
-    });
+  const stopTour = useCallback(() => {
+    tourRunningRef.current = false;
+    setTourActive(false);
+    setCurrentStopIndex(null);
+    setCurrentPhase(null);
+    if (tourTimeoutRef.current) {
+      clearTimeout(tourTimeoutRef.current);
+      tourTimeoutRef.current = null;
+    }
   }, []);
 
-  // Suppress noisy labels once the style finishes loading.
-  const handleLoad = useCallback((event) => {
-    const map = event.target;
-    labelLayersToHide.forEach((layerId) => {
-      if (map.getLayer(layerId)) {
-        map.setLayoutProperty(layerId, "visibility", "none");
+  const runPhase = useCallback((stopIndex, phase) => {
+    if (!tourRunningRef.current || !mapRef.current) return;
+
+    const stop = tourRoute[stopIndex];
+    const config = stop[phase];
+
+    setCurrentStopIndex(stopIndex);
+    setCurrentPhase(phase);
+    setPhaseEndsAt(Date.now() + config.durationMs);
+
+    if (phase === "hold") {
+      // Hold = low orbit. flyTo for the descent into hold position,
+      // then easeTo for the bearing rotation while staying put.
+      mapRef.current.flyTo({
+        center: [config.longitude, config.latitude],
+        zoom: config.zoom,
+        pitch: config.pitch,
+        bearing: config.bearingStart,
+        duration: 2000,
+        essential: true,
+      });
+
+      // After arrival settles, ease the bearing rotation
+      setTimeout(() => {
+        if (!tourRunningRef.current || !mapRef.current) return;
+        mapRef.current.easeTo({
+          center: [config.longitude, config.latitude],
+          zoom: config.zoom,
+          pitch: config.pitch,
+          bearing: config.bearingEnd,
+          duration: config.durationMs - 2000,
+          essential: true,
+        });
+      }, 2000);
+    } else {
+      // Approach or depart = single flyTo with smooth curve
+      mapRef.current.flyTo({
+        center: [config.longitude, config.latitude],
+        zoom: config.zoom,
+        pitch: config.pitch,
+        bearing: config.bearing,
+        duration: config.durationMs,
+        essential: true,
+        curve: 1.4,
+      });
+    }
+
+    // Schedule next phase
+    tourTimeoutRef.current = setTimeout(() => {
+      if (!tourRunningRef.current) return;
+      if (phase === "approach") {
+        runPhase(stopIndex, "hold");
+      } else if (phase === "hold") {
+        runPhase(stopIndex, "depart");
+      } else {
+        // depart → next stop's approach
+        const nextIndex = (stopIndex + 1) % tourRoute.length;
+        runPhase(nextIndex, "approach");
       }
-    });
+    }, config.durationMs);
   }, []);
+
+  const startTour = useCallback(() => {
+    if (tourRunningRef.current) return;
+    tourRunningRef.current = true;
+    setTourActive(true);
+    runPhase(0, "approach");
+  }, [runPhase]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      tourRunningRef.current = false;
+      if (tourTimeoutRef.current) clearTimeout(tourTimeoutRef.current);
+    };
+  }, []);
+
+  // ----- Preset handler --------------------------------------
+
+  const handlePresetSelect = useCallback(
+    (presetKey) => {
+      const preset = viewPresets[presetKey];
+      if (!preset || !mapRef.current) return;
+
+      setActivePreset(presetKey);
+      setSelected(null);
+
+      if (preset.isTour) {
+        if (!tourRunningRef.current) startTour();
+        return;
+      }
+
+      // Static preset: stop the tour and fly there
+      stopTour();
+      mapRef.current.flyTo({
+        center: [preset.longitude, preset.latitude],
+        zoom: preset.zoom,
+        pitch: preset.pitch,
+        bearing: preset.bearing,
+        duration: 1800,
+        essential: true,
+      });
+    },
+    [startTour, stopTour]
+  );
+
+  // ----- Map lifecycle ---------------------------------------
+
+  const handleLoad = useCallback(
+    (event) => {
+      const map = event.target;
+      labelLayersToHide.forEach((layerId) => {
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, "visibility", "none");
+        }
+      });
+      // Auto-start the tour after the map is ready
+      setTimeout(() => startTour(), 800);
+    },
+    [startTour]
+  );
 
   if (!mapboxToken) {
     return (
@@ -70,6 +185,9 @@ function MapWorld() {
       </div>
     );
   }
+
+  const currentStopName =
+    currentStopIndex != null ? tourRoute[currentStopIndex].name : null;
 
   return (
     <>
@@ -154,7 +272,15 @@ function MapWorld() {
 
       <MapControls
         activePreset={activePreset}
+        currentTourStop={currentStopName}
         onSelect={handlePresetSelect}
+      />
+
+      <MapSchedule
+        tourActive={tourActive}
+        currentStopIndex={currentStopIndex}
+        currentPhase={currentPhase}
+        phaseEndsAt={phaseEndsAt}
       />
     </>
   );
