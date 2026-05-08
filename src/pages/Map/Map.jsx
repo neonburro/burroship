@@ -3,15 +3,15 @@ import MapWorld from "./MapWorld";
 
 function Map() {
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center">
+    <section className="relative w-full h-[calc(100vh-5rem)] bg-background-deep">
       <MapWorld />
-      <div className="relative z-10 text-center px-6">
-        <p className="font-mono-label mb-4">SECTION 003 / MAP</p>
-        <h1 className="text-3xl md:text-5xl font-medium text-text-primary mb-4" style={{ lineHeight: 1.1 }}>
-          The world below.
-        </h1>
-        <p className="text-text-secondary max-w-md mx-auto">
-          Mapbox integration arrives in the next batch.
+
+      <div className="absolute top-6 right-6 z-10 pointer-events-none text-right">
+        <p className="font-mono-label text-[10px] mb-1 text-text-secondary">
+          SECTION 003 / MAP
+        </p>
+        <p className="font-mono-label text-text-primary">
+          RIDGWAY · SAN JUAN MOUNTAINS
         </p>
       </div>
     </section>

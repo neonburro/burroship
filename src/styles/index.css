@@ -2,20 +2,26 @@
 @import "tailwindcss";
 
 @theme {
-  /* palette — mirrored from DESIGN.md frontmatter */
-  --color-primary: #A8D055;
-  --color-accent: #A8D055;
-  --color-background: #050F05;
-  --color-surface: #18181B;
-  --color-border: #27272A;
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #A1A1AA;
+  /* palette — deep layering for the Burroship void */
+  --color-background-deep: #020503;
+  --color-background:      #050F05;
+  --color-surface:         #18181B;
+  --color-surface-edge:    #27272A;
+  --color-border:          #27272A;
+
+  --color-primary:         #A8D055;
+  --color-accent:          #A8D055;
+  --color-primary-glow:    rgba(168, 208, 85, 0.5);
+
+  --color-text-primary:    #FFFFFF;
+  --color-text-secondary:  #A1A1AA;
+  --color-text-muted:      #5A6172;
 
   /* typography */
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  /* spacing scale extends Tailwind defaults */
+  /* spacing */
   --spacing-card: 24px;
   --spacing-section: 80px;
 
@@ -35,7 +41,7 @@ body,
 #root {
   height: 100%;
   margin: 0;
-  background: var(--color-background);
+  background: var(--color-background-deep);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -45,7 +51,7 @@ body,
 /* selection */
 ::selection {
   background: var(--color-primary);
-  color: var(--color-background);
+  color: var(--color-background-deep);
 }
 
 /* mono utility class for labels */
@@ -57,4 +63,58 @@ body,
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-text-secondary);
+}
+
+/* signal glow utility — for the accents that need to sing */
+.signal-glow {
+  box-shadow: 0 0 24px var(--color-primary-glow), 0 0 8px var(--color-primary-glow);
+}
+
+/* Mapbox popup overrides */
+.burroship-popup .mapboxgl-popup-content {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border-radius: var(--radius-card);
+}
+
+.burroship-popup .mapboxgl-popup-tip {
+  border-top-color: var(--color-surface);
+  border-bottom-color: var(--color-surface);
+}
+
+.burroship-popup .mapboxgl-popup-close-button {
+  display: none;
+}
+
+/* Mapbox navigation controls — themed dark */
+.mapboxgl-ctrl-group {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-surface-edge) !important;
+  box-shadow: none !important;
+}
+
+.mapboxgl-ctrl-group button {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Mapbox attribution — muted */
+.mapboxgl-ctrl-attrib {
+  background: rgba(2, 5, 3, 0.7) !important;
+  color: var(--color-text-muted) !important;
+  font-size: 10px !important;
+}
+
+.mapboxgl-ctrl-attrib a {
+  color: var(--color-text-secondary) !important;
+}
+
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-logo {
+  opacity: 0.4;
+  filter: invert(1);
+}
+
+/* Mapbox canvas anchor — fills page bg before tiles load */
+.mapboxgl-map {
+  background: var(--color-background-deep) !important;
 }

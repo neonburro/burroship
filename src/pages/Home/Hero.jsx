@@ -1,9 +1,9 @@
-// src/components/hero/Hero.jsx
+// src/pages/Home/Hero.jsx
 import { motion } from "framer-motion";
 
 function Hero() {
   return (
-    <section className="relative w-full h-screen overflow-hidden">
+    <section className="relative w-full h-screen overflow-hidden bg-background-deep">
       <div className="absolute inset-0">
         <video
           className="w-full h-full object-cover opacity-60"
@@ -19,12 +19,12 @@ function Hero() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse at center, rgba(168,208,85,0.08) 0%, rgba(5,15,5,1) 70%)",
+              "radial-gradient(ellipse at center, rgba(168,208,85,0.10) 0%, rgba(2,5,3,1) 70%)",
           }}
         />
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background-deep to-transparent" />
 
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
         <motion.p
