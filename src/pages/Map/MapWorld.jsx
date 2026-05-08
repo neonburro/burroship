@@ -17,6 +17,8 @@ import LocationPin from "./LocationPin";
 import MapControls from "./MapControls";
 import MapSchedule from "./MapSchedule";
 
+// Mapbox style layers we suppress for a quieter cabin-window feel.
+// Keep major roads and city labels.
 const labelLayersToHide = [
   "settlement-minor-label",
   "settlement-subdivision-label",
@@ -28,6 +30,73 @@ const labelLayersToHide = [
   "airport-label",
   "transit-label",
 ];
+
+// ----- Atmospheric configuration ----------------------------
+// The Burroship's lantern faintly illuminates the upper atmosphere.
+// Near-ground fog matches the deep page background so the map
+// blends into the cabin around it.
+
+const burroshipFog = {
+  range: [0.5, 12],
+  color: "rgb(2, 5, 3)",
+  "high-color": "rgb(40, 60, 25)",
+  "horizon-blend": 0.25,
+  "space-color": "rgb(2, 5, 3)",
+  "star-intensity": 0.4,
+};
+
+const burroshipSky = {
+  "sky-type": "gradient",
+  "sky-gradient": [
+    "interpolate",
+    ["linear"],
+    ["sky-radial-progress"],
+    0.8,
+    "rgb(2, 5, 3)",
+    1.0,
+    "rgb(50, 80, 30)",
+  ],
+  "sky-gradient-center": [0, 0],
+  "sky-gradient-radius": 90,
+  "sky-opacity": 1.0,
+};
+
+// 3D building extrusion layer config. The buildings rise from the
+// ground at their real heights. Especially dramatic at the tour's
+// drone altitudes (zoom 14+).
+
+const buildingLayer = {
+  id: "burroship-3d-buildings",
+  source: "composite",
+  "source-layer": "building",
+  filter: ["==", "extrude", "true"],
+  type: "fill-extrusion",
+  minzoom: 13,
+  paint: {
+    "fill-extrusion-color": [
+      "interpolate",
+      ["linear"],
+      ["get", "height"],
+      0,
+      "#1a1f1a",
+      30,
+      "#22272a",
+      80,
+      "#2a2f33",
+    ],
+    "fill-extrusion-height": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      13,
+      0,
+      14,
+      ["get", "height"],
+    ],
+    "fill-extrusion-base": ["get", "min_height"],
+    "fill-extrusion-opacity": 0.85,
+  },
+};
 
 function MapWorld() {
   const [selected, setSelected] = useState(null);
@@ -65,8 +134,6 @@ function MapWorld() {
     setPhaseEndsAt(Date.now() + config.durationMs);
 
     if (phase === "hold") {
-      // Hold = low orbit. flyTo for the descent into hold position,
-      // then easeTo for the bearing rotation while staying put.
       mapRef.current.flyTo({
         center: [config.longitude, config.latitude],
         zoom: config.zoom,
@@ -76,7 +143,6 @@ function MapWorld() {
         essential: true,
       });
 
-      // After arrival settles, ease the bearing rotation
       setTimeout(() => {
         if (!tourRunningRef.current || !mapRef.current) return;
         mapRef.current.easeTo({
@@ -89,7 +155,6 @@ function MapWorld() {
         });
       }, 2000);
     } else {
-      // Approach or depart = single flyTo with smooth curve
       mapRef.current.flyTo({
         center: [config.longitude, config.latitude],
         zoom: config.zoom,
@@ -101,7 +166,6 @@ function MapWorld() {
       });
     }
 
-    // Schedule next phase
     tourTimeoutRef.current = setTimeout(() => {
       if (!tourRunningRef.current) return;
       if (phase === "approach") {
@@ -109,7 +173,6 @@ function MapWorld() {
       } else if (phase === "hold") {
         runPhase(stopIndex, "depart");
       } else {
-        // depart → next stop's approach
         const nextIndex = (stopIndex + 1) % tourRoute.length;
         runPhase(nextIndex, "approach");
       }
@@ -123,7 +186,6 @@ function MapWorld() {
     runPhase(0, "approach");
   }, [runPhase]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       tourRunningRef.current = false;
@@ -146,7 +208,6 @@ function MapWorld() {
         return;
       }
 
-      // Static preset: stop the tour and fly there
       stopTour();
       mapRef.current.flyTo({
         center: [preset.longitude, preset.latitude],
@@ -161,17 +222,62 @@ function MapWorld() {
   );
 
   // ----- Map lifecycle ---------------------------------------
+  // Suppress noisy labels, set atmospheric fog, set sky gradient,
+  // add 3D building extrusion, then start the tour.
 
   const handleLoad = useCallback(
     (event) => {
       const map = event.target;
+
+      // Suppress label clutter
       labelLayersToHide.forEach((layerId) => {
         if (map.getLayer(layerId)) {
           map.setLayoutProperty(layerId, "visibility", "none");
         }
       });
-      // Auto-start the tour after the map is ready
-      setTimeout(() => startTour(), 800);
+
+      // Atmosphere — fog + space color
+      try {
+        map.setFog(burroshipFog);
+      } catch (e) {
+        console.warn("setFog failed", e);
+      }
+
+      // Sky gradient — the lantern lighting the upper atmosphere
+      try {
+        // Some style versions name the layer "sky", others use a
+        // dedicated sky source. Try the layer-property approach first.
+        if (map.getLayer("sky")) {
+          Object.entries(burroshipSky).forEach(([key, value]) => {
+            map.setPaintProperty("sky", key, value);
+          });
+        } else {
+          // Add our own sky layer
+          map.addLayer({
+            id: "burroship-sky",
+            type: "sky",
+            paint: burroshipSky,
+          });
+        }
+      } catch (e) {
+        console.warn("sky setup failed", e);
+      }
+
+      // 3D buildings — find a label layer to insert below so labels
+      // still draw on top of buildings
+      try {
+        const layers = map.getStyle().layers;
+        const firstSymbolId = layers.find((l) => l.type === "symbol")?.id;
+        if (map.getLayer("burroship-3d-buildings")) {
+          map.removeLayer("burroship-3d-buildings");
+        }
+        map.addLayer(buildingLayer, firstSymbolId);
+      } catch (e) {
+        console.warn("3d buildings setup failed", e);
+      }
+
+      // Start the tour after the style is ready
+      setTimeout(() => startTour(), 1200);
     },
     [startTour]
   );
@@ -197,9 +303,10 @@ function MapWorld() {
         mapStyle={mapboxStyle}
         initialViewState={defaultCamera}
         style={{ position: "absolute", inset: 0 }}
-        terrain={{ source: "mapbox-dem", exaggeration: 1.4 }}
+        terrain={{ source: "mapbox-dem", exaggeration: 1.6 }}
         onClick={() => setSelected(null)}
         onLoad={handleLoad}
+        antialias={true}
       >
         <NavigationControl
           position="bottom-right"
