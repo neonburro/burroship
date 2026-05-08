@@ -1,6 +1,8 @@
 // src/components/map/AgentMarker.jsx
 // Placeholder. Real marker rendering in the next batch.
 
-export default function AgentMarker() {
+function AgentMarker() {
   return null;
 }
+
+export default AgentMarker;

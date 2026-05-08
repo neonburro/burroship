@@ -1,7 +1,7 @@
 // src/components/header/IdentifyButton.jsx
 import { useState } from "react";
 
-export default function IdentifyButton() {
+function IdentifyButton() {
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,3 +38,5 @@ export default function IdentifyButton() {
     </>
   );
 }
+
+export default IdentifyButton;

@@ -3,13 +3,12 @@ import Header from "../components/header/Header";
 import Hero from "../components/hero/Hero";
 import Footer from "../components/footer/Footer";
 
-export default function Gateway() {
+function Gateway() {
   return (
     <main className="relative bg-background text-text-primary">
       <Header />
       <Hero />
 
-      {/* Map placeholder for now. Real Mapbox integration next batch. */}
       <section
         id="map"
         className="relative w-full h-screen flex items-center justify-center border-y border-border"
@@ -26,3 +25,5 @@ export default function Gateway() {
     </main>
   );
 }
+
+export default Gateway;

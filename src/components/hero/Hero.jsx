@@ -1,10 +1,9 @@
 // src/components/hero/Hero.jsx
 import { motion } from "framer-motion";
 
-export default function Hero() {
+function Hero() {
   return (
     <section className="relative w-full h-screen overflow-hidden">
-      {/* Video placeholder layer. Drop /public/video/hero.mp4 in later. */}
       <div className="absolute inset-0">
         <video
           className="w-full h-full object-cover opacity-60"
@@ -16,7 +15,6 @@ export default function Hero() {
           <source src="/video/hero.mp4" type="video/mp4" />
         </video>
 
-        {/* Fallback gradient when no video is present */}
         <div
           className="absolute inset-0"
           style={{
@@ -26,10 +24,8 @@ export default function Hero() {
         />
       </div>
 
-      {/* Bottom gradient for legibility */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
 
-      {/* Copy */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
@@ -56,10 +52,11 @@ export default function Hero() {
           transition={{ duration: 1.4, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-text-secondary text-lg md:text-xl mt-6 max-w-2xl"
         >
-          Building bright tools and bold experiences for brands,
-          creators, and fellow burros.
+          Building bright tools and bold experiences for brands, creators, and fellow burros.
         </motion.p>
       </div>
     </section>
   );
 }
+
+export default Hero;

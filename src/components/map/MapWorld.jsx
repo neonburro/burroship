@@ -1,6 +1,8 @@
 // src/components/map/MapWorld.jsx
 // Placeholder. Real Mapbox integration in the next batch.
 
-export default function MapWorld() {
+function MapWorld() {
   return null;
 }
+
+export default MapWorld;

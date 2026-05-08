@@ -4,7 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Gateway from "./pages/Gateway";
 import Aboard from "./pages/Aboard";
 
-export default function App() {
+function App() {
   return (
     <Routes>
       <Route path="/" element={<Gateway />} />
@@ -12,3 +12,5 @@ export default function App() {
     </Routes>
   );
 }
+
+export default App;

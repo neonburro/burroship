@@ -1,7 +1,7 @@
 // src/pages/Aboard.jsx
 import { motion } from "framer-motion";
 
-export default function Aboard() {
+function Aboard() {
   return (
     <main className="relative w-full h-screen bg-background text-text-primary flex items-center justify-center px-6">
       <div className="text-center max-w-xl">
@@ -36,3 +36,5 @@ export default function Aboard() {
     </main>
   );
 }
+
+export default Aboard;
