@@ -1,0 +1,60 @@
+/* src/styles/index.css */
+@import "tailwindcss";
+
+@theme {
+  /* palette — mirrored from DESIGN.md frontmatter */
+  --color-primary: #A8D055;
+  --color-accent: #A8D055;
+  --color-background: #050F05;
+  --color-surface: #18181B;
+  --color-border: #27272A;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A1A1AA;
+
+  /* typography */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* spacing scale extends Tailwind defaults */
+  --spacing-card: 24px;
+  --spacing-section: 80px;
+
+  /* radius */
+  --radius-card: 8px;
+  --radius-control: 8px;
+  --radius-pill: 9999px;
+
+  /* motion */
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* base */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* selection */
+::selection {
+  background: var(--color-primary);
+  color: var(--color-background);
+}
+
+/* mono utility class for labels */
+.font-mono-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+}
