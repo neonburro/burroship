@@ -1,109 +1,53 @@
-// src/pages/Map/MapControls.jsx
-import { useState, useEffect, useRef } from "react";
+// src/lib/mapbox.js
+//
+// Mapbox configuration. Token loads from env. Camera presets and
+// style settings are documented in docs/MAP_SYSTEM.md.
 
-import { viewPresets } from "../../lib/mapbox";
+export const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-function MapControls({ activePreset, onSelect }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const panelRef = useRef(null);
+export const mapboxStyle = "mapbox://styles/mapbox/dark-v11";
 
-  // Close mobile panel on outside tap
-  useEffect(() => {
-    if (!mobileOpen) return;
-    function handleOutside(e) {
-      if (panelRef.current && !panelRef.current.contains(e.target)) {
-        setMobileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleOutside);
-    document.addEventListener("touchstart", handleOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      document.removeEventListener("touchstart", handleOutside);
-    };
-  }, [mobileOpen]);
+export const viewPresets = {
+  BURROSHIP: {
+    label: "Burroship",
+    longitude: -107.7551,
+    latitude: 38.0900,
+    zoom: 10.2,
+    pitch: 50,
+    bearing: -15,
+  },
+  RIDGWAY: {
+    label: "Ridgway",
+    longitude: -107.7551,
+    latitude: 38.1547,
+    zoom: 14,
+    pitch: 60,
+    bearing: -10,
+  },
+  OURAY: {
+    label: "Ouray",
+    longitude: -107.6708,
+    latitude: 38.0228,
+    zoom: 14,
+    pitch: 60,
+    bearing: 0,
+  },
+  TELLURIDE: {
+    label: "Telluride",
+    longitude: -107.8123,
+    latitude: 37.9375,
+    zoom: 14,
+    pitch: 60,
+    bearing: 0,
+  },
+};
 
-  function handleSelect(key) {
-    onSelect(key);
-    setMobileOpen(false);
-  }
+export const defaultCamera = viewPresets.BURROSHIP;
 
-  const presetKeys = Object.keys(viewPresets);
-
-  return (
-    <>
-      {/* Desktop: always visible vertical list */}
-      <div
-        className="hidden md:flex absolute top-24 left-6 z-10 flex-col gap-1"
-      >
-        {presetKeys.map((key) => {
-          const preset = viewPresets[key];
-          const isActive = key === activePreset;
-          return (
-            <button
-              key={key}
-              onClick={() => handleSelect(key)}
-              className={
-                "text-left px-3 py-1.5 rounded-control transition-all " +
-                (isActive
-                  ? "text-primary"
-                  : "text-text-secondary hover:text-text-primary")
-              }
-            >
-              <span className="font-mono-label text-[11px]">
-                {preset.label}
-              </span>
-              {isActive && (
-                <span className="font-mono-label text-[9px] text-primary/60 ml-2">
-                  ●
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Mobile: collapsed icon button */}
-      <div className="md:hidden absolute top-24 left-4 z-10" ref={panelRef}>
-        {!mobileOpen && (
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="w-11 h-11 rounded-control border border-surface-edge bg-surface/80 backdrop-blur-md flex items-center justify-center hover:border-primary/60 transition-all"
-            aria-label="View options"
-          >
-            <span className="font-mono-label text-[10px] text-text-primary">
-              {viewPresets[activePreset]?.label?.slice(0, 2).toUpperCase() || "V"}
-            </span>
-          </button>
-        )}
-
-        {mobileOpen && (
-          <div className="rounded-control border border-surface-edge bg-surface/95 backdrop-blur-md p-2 min-w-[140px]">
-            {presetKeys.map((key) => {
-              const preset = viewPresets[key];
-              const isActive = key === activePreset;
-              return (
-                <button
-                  key={key}
-                  onClick={() => handleSelect(key)}
-                  className={
-                    "block w-full text-left px-3 py-2 rounded transition-colors " +
-                    (isActive
-                      ? "text-primary bg-background-deep"
-                      : "text-text-secondary hover:text-text-primary")
-                  }
-                >
-                  <span className="font-mono-label text-[11px]">
-                    {preset.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </>
-  );
-}
-
-export default MapControls;
+export const featuredLabels = [
+  "Ridgway",
+  "Ouray",
+  "Telluride",
+  "Montrose",
+  "Chimney Rock",
+];
