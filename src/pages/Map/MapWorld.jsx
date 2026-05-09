@@ -7,6 +7,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import {
   mapboxToken,
   mapboxStyle,
+  standardStyleConfig,
+  atmospherePresets,
   defaultCamera,
   viewPresets,
   tourRoute,
@@ -16,87 +18,6 @@ import locations from "../../data/locations.json";
 import LocationPin from "./LocationPin";
 import MapControls from "./MapControls";
 import MapSchedule from "./MapSchedule";
-
-// Mapbox style layers we suppress for a quieter cabin-window feel.
-// Keep major roads and city labels.
-const labelLayersToHide = [
-  "settlement-minor-label",
-  "settlement-subdivision-label",
-  "natural-point-label",
-  "natural-line-label",
-  "water-point-label",
-  "water-line-label",
-  "poi-label",
-  "airport-label",
-  "transit-label",
-];
-
-// ----- Atmospheric configuration ----------------------------
-// The Burroship's lantern faintly illuminates the upper atmosphere.
-// Near-ground fog matches the deep page background so the map
-// blends into the cabin around it.
-
-const burroshipFog = {
-  range: [0.5, 12],
-  color: "rgb(2, 5, 3)",
-  "high-color": "rgb(40, 60, 25)",
-  "horizon-blend": 0.25,
-  "space-color": "rgb(2, 5, 3)",
-  "star-intensity": 0.4,
-};
-
-const burroshipSky = {
-  "sky-type": "gradient",
-  "sky-gradient": [
-    "interpolate",
-    ["linear"],
-    ["sky-radial-progress"],
-    0.8,
-    "rgb(2, 5, 3)",
-    1.0,
-    "rgb(50, 80, 30)",
-  ],
-  "sky-gradient-center": [0, 0],
-  "sky-gradient-radius": 90,
-  "sky-opacity": 1.0,
-};
-
-// 3D building extrusion layer config. The buildings rise from the
-// ground at their real heights. Especially dramatic at the tour's
-// drone altitudes (zoom 14+).
-
-const buildingLayer = {
-  id: "burroship-3d-buildings",
-  source: "composite",
-  "source-layer": "building",
-  filter: ["==", "extrude", "true"],
-  type: "fill-extrusion",
-  minzoom: 13,
-  paint: {
-    "fill-extrusion-color": [
-      "interpolate",
-      ["linear"],
-      ["get", "height"],
-      0,
-      "#1a1f1a",
-      30,
-      "#22272a",
-      80,
-      "#2a2f33",
-    ],
-    "fill-extrusion-height": [
-      "interpolate",
-      ["linear"],
-      ["zoom"],
-      13,
-      0,
-      14,
-      ["get", "height"],
-    ],
-    "fill-extrusion-base": ["get", "min_height"],
-    "fill-extrusion-opacity": 0.85,
-  },
-};
 
 function MapWorld() {
   const [selected, setSelected] = useState(null);
@@ -109,6 +30,77 @@ function MapWorld() {
   const mapRef = useRef(null);
   const tourTimeoutRef = useRef(null);
   const tourRunningRef = useRef(false);
+  const styleReadyRef = useRef(false);
+
+  // ----- Atmosphere application ------------------------------
+  // Applies a named atmosphere preset to the live map. Standard
+  // style v3 takes lightPreset via setConfigProperty, fog via
+  // setFog (which works on v3), terrain via setTerrain, and
+  // weather via setSnow/setRain.
+
+  const applyAtmosphere = useCallback((presetKey) => {
+    const map = mapRef.current?.getMap?.() || mapRef.current;
+    if (!map || !styleReadyRef.current) return;
+
+    const preset = atmospherePresets[presetKey];
+    if (!preset) return;
+
+    // Light preset — Standard style v3 config slot
+    try {
+      map.setConfigProperty("basemap", "lightPreset", preset.lightPreset);
+    } catch (e) {
+      console.warn("setConfigProperty lightPreset failed", e);
+    }
+
+    // Terrain exaggeration — Standard style includes mapbox-dem
+    // automatically when terrain is set
+    try {
+      map.setTerrain({ source: "mapbox-dem", exaggeration: preset.exaggeration });
+    } catch (e) {
+      console.warn("setTerrain failed", e);
+    }
+
+    // Fog — works in v3, drives the horizon haze
+    try {
+      map.setFog({
+        range: preset.fogRange,
+        "horizon-blend": preset.fogHorizonBlend,
+        color: "rgb(2, 5, 3)",
+        "high-color": "rgb(40, 60, 25)",
+        "space-color": "rgb(2, 5, 3)",
+        "star-intensity": preset.lightPreset === "night" ? 0.6 : 0.2,
+      });
+    } catch (e) {
+      console.warn("setFog failed", e);
+    }
+
+    // Weather — snow or rain or clear. Standard style has these
+    // built in via setSnow/setRain.
+    try {
+      if (preset.weather?.type === "snow") {
+        map.setSnow({
+          density: preset.weather.intensity,
+          opacity: 0.9,
+          intensity: preset.weather.intensity,
+          color: "#FFFFFF",
+        });
+        map.setRain(null);
+      } else if (preset.weather?.type === "rain") {
+        map.setRain({
+          density: preset.weather.intensity,
+          opacity: 0.7,
+          intensity: preset.weather.intensity,
+        });
+        map.setSnow(null);
+      } else {
+        map.setSnow(null);
+        map.setRain(null);
+      }
+    } catch (e) {
+      // Older mapbox-gl versions may not have setSnow/setRain.
+      // Fail quiet — the atmosphere still works without weather.
+    }
+  }, []);
 
   // ----- Tour engine -----------------------------------------
 
@@ -123,61 +115,71 @@ function MapWorld() {
     }
   }, []);
 
-  const runPhase = useCallback((stopIndex, phase) => {
-    if (!tourRunningRef.current || !mapRef.current) return;
+  const runPhase = useCallback(
+    (stopIndex, phase) => {
+      if (!tourRunningRef.current || !mapRef.current) return;
 
-    const stop = tourRoute[stopIndex];
-    const config = stop[phase];
+      const stop = tourRoute[stopIndex];
+      const config = stop[phase];
 
-    setCurrentStopIndex(stopIndex);
-    setCurrentPhase(phase);
-    setPhaseEndsAt(Date.now() + config.durationMs);
+      setCurrentStopIndex(stopIndex);
+      setCurrentPhase(phase);
+      setPhaseEndsAt(Date.now() + config.durationMs);
 
-    if (phase === "hold") {
-      mapRef.current.flyTo({
-        center: [config.longitude, config.latitude],
-        zoom: config.zoom,
-        pitch: config.pitch,
-        bearing: config.bearingStart,
-        duration: 2000,
-        essential: true,
-      });
+      // Apply this stop's atmosphere on approach, and let it ride
+      // through hold + depart. The next stop's approach will swap
+      // atmosphere when we arrive there.
+      if (phase === "approach") {
+        applyAtmosphere(stop.atmosphere);
+      }
 
-      setTimeout(() => {
-        if (!tourRunningRef.current || !mapRef.current) return;
-        mapRef.current.easeTo({
+      if (phase === "hold") {
+        mapRef.current.flyTo({
           center: [config.longitude, config.latitude],
           zoom: config.zoom,
           pitch: config.pitch,
-          bearing: config.bearingEnd,
-          duration: config.durationMs - 2000,
+          bearing: config.bearingStart,
+          duration: 2000,
           essential: true,
         });
-      }, 2000);
-    } else {
-      mapRef.current.flyTo({
-        center: [config.longitude, config.latitude],
-        zoom: config.zoom,
-        pitch: config.pitch,
-        bearing: config.bearing,
-        duration: config.durationMs,
-        essential: true,
-        curve: 1.4,
-      });
-    }
 
-    tourTimeoutRef.current = setTimeout(() => {
-      if (!tourRunningRef.current) return;
-      if (phase === "approach") {
-        runPhase(stopIndex, "hold");
-      } else if (phase === "hold") {
-        runPhase(stopIndex, "depart");
+        setTimeout(() => {
+          if (!tourRunningRef.current || !mapRef.current) return;
+          mapRef.current.easeTo({
+            center: [config.longitude, config.latitude],
+            zoom: config.zoom,
+            pitch: config.pitch,
+            bearing: config.bearingEnd,
+            duration: config.durationMs - 2000,
+            essential: true,
+          });
+        }, 2000);
       } else {
-        const nextIndex = (stopIndex + 1) % tourRoute.length;
-        runPhase(nextIndex, "approach");
+        mapRef.current.flyTo({
+          center: [config.longitude, config.latitude],
+          zoom: config.zoom,
+          pitch: config.pitch,
+          bearing: config.bearing,
+          duration: config.durationMs,
+          essential: true,
+          curve: 1.4,
+        });
       }
-    }, config.durationMs);
-  }, []);
+
+      tourTimeoutRef.current = setTimeout(() => {
+        if (!tourRunningRef.current) return;
+        if (phase === "approach") {
+          runPhase(stopIndex, "hold");
+        } else if (phase === "hold") {
+          runPhase(stopIndex, "depart");
+        } else {
+          const nextIndex = (stopIndex + 1) % tourRoute.length;
+          runPhase(nextIndex, "approach");
+        }
+      }, config.durationMs);
+    },
+    [applyAtmosphere]
+  );
 
   const startTour = useCallback(() => {
     if (tourRunningRef.current) return;
@@ -217,83 +219,70 @@ function MapWorld() {
         duration: 1800,
         essential: true,
       });
+
+      // Find the matching tour stop (if any) and apply its
+      // atmosphere so a manual jump still feels weathered.
+      const matchingStop = tourRoute.find(
+        (s) =>
+          Math.abs(s.longitude - preset.longitude) < 0.01 &&
+          Math.abs(s.latitude - preset.latitude) < 0.01
+      );
+      if (matchingStop) {
+        applyAtmosphere(matchingStop.atmosphere);
+      }
     },
-    [startTour, stopTour]
+    [startTour, stopTour, applyAtmosphere]
   );
 
   // ----- Map lifecycle ---------------------------------------
-  // Suppress noisy labels, set atmospheric fog, set sky gradient,
-  // add 3D building extrusion, then start the tour.
+  // On Standard style v3, configuration runs through
+  // setConfigProperty('basemap', ...). No manual addLayer for
+  // buildings — they're built into the style.
 
   const handleLoad = useCallback(
     (event) => {
       const map = event.target;
 
-      // Suppress label clutter
-      labelLayersToHide.forEach((layerId) => {
-        if (map.getLayer(layerId)) {
-          map.setLayoutProperty(layerId, "visibility", "none");
-        }
-      });
-
-      // Atmosphere — fog + space color
+      // Apply Standard style config — labels, theme, 3d objects
       try {
-        map.setFog(burroshipFog);
+        Object.entries(standardStyleConfig).forEach(([key, value]) => {
+          map.setConfigProperty("basemap", key, value);
+        });
       } catch (e) {
-        console.warn("setFog failed", e);
+        console.warn("Standard style config failed (style may be v2)", e);
       }
 
-      // Sky gradient — the lantern lighting the upper atmosphere
-      try {
-        // Some style versions name the layer "sky", others use a
-        // dedicated sky source. Try the layer-property approach first.
-        if (map.getLayer("sky")) {
-          Object.entries(burroshipSky).forEach(([key, value]) => {
-            map.setPaintProperty("sky", key, value);
-          });
-        } else {
-          // Add our own sky layer
-          map.addLayer({
-            id: "burroship-sky",
-            type: "sky",
-            paint: burroshipSky,
-          });
-        }
-      } catch (e) {
-        console.warn("sky setup failed", e);
-      }
+      styleReadyRef.current = true;
 
-      // 3D buildings — find a label layer to insert below so labels
-      // still draw on top of buildings
-      try {
-        const layers = map.getStyle().layers;
-        const firstSymbolId = layers.find((l) => l.type === "symbol")?.id;
-        if (map.getLayer("burroship-3d-buildings")) {
-          map.removeLayer("burroship-3d-buildings");
-        }
-        map.addLayer(buildingLayer, firstSymbolId);
-      } catch (e) {
-        console.warn("3d buildings setup failed", e);
-      }
+      // First-frame atmosphere — apply the first tour stop's preset
+      // so the page lands already weathered, not in a flat default
+      applyAtmosphere(tourRoute[0].atmosphere);
 
-      // Start the tour after the style is ready
-      setTimeout(() => startTour(), 1200);
+      // Start the tour after the style + atmosphere settle
+      setTimeout(() => startTour(), 1500);
     },
-    [startTour]
+    [applyAtmosphere, startTour]
   );
 
   if (!mapboxToken) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
-        <p className="font-mono-label text-text-secondary">
-          MAP TOKEN MISSING
-        </p>
+        <p className="font-mono-label text-text-secondary">MAP TOKEN MISSING</p>
       </div>
     );
   }
 
   const currentStopName =
     currentStopIndex != null ? tourRoute[currentStopIndex].name : null;
+
+  // Popup category label — beacons show their role, others show category
+  const popupLabel = (() => {
+    if (!selected) return "";
+    if (selected.subcategory === "compound-beacon") {
+      return "COMPOUND";
+    }
+    return selected.category.toUpperCase();
+  })();
 
   return (
     <>
@@ -303,7 +292,6 @@ function MapWorld() {
         mapStyle={mapboxStyle}
         initialViewState={defaultCamera}
         style={{ position: "absolute", inset: 0 }}
-        terrain={{ source: "mapbox-dem", exaggeration: 1.6 }}
         onClick={() => setSelected(null)}
         onLoad={handleLoad}
         antialias={true}
@@ -330,6 +318,9 @@ function MapWorld() {
               <LocationPin
                 category={loc.category}
                 featured={loc.featured}
+                subcategory={loc.subcategory}
+                beaconColor={loc.beaconColor}
+                status={loc.status}
               />
             </Marker>
           ))}
@@ -346,9 +337,16 @@ function MapWorld() {
             className="burroship-popup"
           >
             <div className="bg-surface border border-surface-edge rounded-card p-4 min-w-[240px] max-w-[280px]">
-              <p className="font-mono-label text-[10px] mb-2 text-primary">
-                {selected.category.toUpperCase()}
-              </p>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="font-mono-label text-[10px] text-primary">
+                  {popupLabel}
+                </p>
+                {selected.status === "in-development" && (
+                  <span className="font-mono-label text-[9px] px-2 py-0.5 rounded-pill border border-primary/40 text-primary bg-primary/10">
+                    IN DEV
+                  </span>
+                )}
+              </div>
               <p className="text-text-primary font-medium mb-1">
                 {selected.name}
               </p>
