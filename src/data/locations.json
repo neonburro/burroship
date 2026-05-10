@@ -10,11 +10,7 @@
     "lat": 38.1380,
     "lng": -107.5800,
     "blurb": "Loading bay and staging ground for visiting burros. Cargo in, cargo out, water and shade for the journey.",
-    "tags": [
-      "compound",
-      "staging",
-      "logistics"
-    ],
+    "tags": ["compound", "staging", "logistics"],
     "featured": true,
     "visibility": "public",
     "source": "manual",
@@ -31,11 +27,7 @@
     "lat": 38.1425,
     "lng": -107.5760,
     "blurb": "Where the thinking gets done. Strategy, research, and the long view from the upper ridge.",
-    "tags": [
-      "compound",
-      "strategy",
-      "research"
-    ],
+    "tags": ["compound", "strategy", "research"],
     "featured": true,
     "visibility": "public",
     "source": "manual",
@@ -53,12 +45,7 @@
     "lat": 38.1335,
     "lng": -107.5895,
     "blurb": "Entrance, lodging, and the long-view fun zone. Hot spring lazy river and Geoship bioceramic domes coming online.",
-    "tags": [
-      "compound",
-      "entrance",
-      "lodging",
-      "in-development"
-    ],
+    "tags": ["compound", "entrance", "lodging", "in-development"],
     "featured": true,
     "visibility": "public",
     "source": "manual",
@@ -73,12 +60,7 @@
     "lat": 38.152433,
     "lng": -107.763039,
     "blurb": "Pizza, beer, live music in the old Rio Grande Southern depot.",
-    "tags": [
-      "pizza",
-      "beer",
-      "live-music",
-      "client"
-    ],
+    "tags": ["pizza", "beer", "live-music", "client"],
     "featured": true,
     "visibility": "public",
     "source": "mapbox-geocoded",
@@ -93,11 +75,7 @@
     "lat": 38.152287,
     "lng": -107.757798,
     "blurb": "Original Ouray Colorado Boy pub.",
-    "tags": [
-      "pub",
-      "beer",
-      "partner"
-    ],
+    "tags": ["pub", "beer", "partner"],
     "featured": false,
     "visibility": "public",
     "source": "mapbox-geocoded",
@@ -112,11 +90,7 @@
     "lat": 38.151715,
     "lng": -107.756587,
     "blurb": "Where they filmed True Grit. American comfort with a view.",
-    "tags": [
-      "food",
-      "cinema-history",
-      "partner"
-    ],
+    "tags": ["food", "cinema-history", "partner"],
     "featured": false,
     "visibility": "public",
     "source": "mapbox-geocoded",
@@ -131,11 +105,7 @@
     "lat": 38.151411,
     "lng": -107.756326,
     "blurb": "Structural and civil engineering for the Western Slope.",
-    "tags": [
-      "engineering",
-      "client",
-      "b2b"
-    ],
+    "tags": ["engineering", "client", "b2b"],
     "featured": true,
     "visibility": "public",
     "source": "mapbox-geocoded",
@@ -150,11 +120,7 @@
     "lat": 38.151259,
     "lng": -107.749978,
     "blurb": "Rio Grande Southern history at the southern end of town.",
-    "tags": [
-      "history",
-      "museum",
-      "landmark"
-    ],
+    "tags": ["history", "museum", "landmark"],
     "featured": false,
     "visibility": "public",
     "source": "mapbox-geocoded",
@@ -169,11 +135,7 @@
     "lat": 38.0295,
     "lng": -107.672857,
     "blurb": "Geothermal pools at the foot of the box canyon.",
-    "tags": [
-      "hot-springs",
-      "outdoor",
-      "landmark"
-    ],
+    "tags": ["hot-springs", "outdoor", "landmark"],
     "featured": true,
     "visibility": "public",
     "source": "mapbox-geocoded",
@@ -188,12 +150,7 @@
     "lat": 38.0038,
     "lng": -107.7922,
     "blurb": "14,158-ft peak in the San Juans. The crown of the range.",
-    "tags": [
-      "mountain",
-      "14er",
-      "outdoor",
-      "landmark"
-    ],
+    "tags": ["mountain", "14er", "outdoor", "landmark"],
     "featured": true,
     "visibility": "public",
     "source": "manual",
@@ -208,12 +165,7 @@
     "lat": 37.937537,
     "lng": -107.813222,
     "blurb": "Free gondola from town to Mountain Village.",
-    "tags": [
-      "transit",
-      "outdoor",
-      "landmark",
-      "free"
-    ],
+    "tags": ["transit", "outdoor", "landmark", "free"],
     "featured": false,
     "visibility": "public",
     "source": "mapbox-geocoded",
@@ -228,11 +180,7 @@
     "lat": 37.9356,
     "lng": -107.8561,
     "blurb": "Resort village above Telluride at 9,545 ft. Gondola-connected.",
-    "tags": [
-      "resort",
-      "outdoor",
-      "landmark"
-    ],
+    "tags": ["resort", "outdoor", "landmark"],
     "featured": true,
     "visibility": "public",
     "source": "manual",
@@ -247,12 +195,7 @@
     "lat": 38.1466,
     "lng": -107.5706,
     "blurb": "Sandstone monolith on the Cimarron skyline. True Grit backdrop.",
-    "tags": [
-      "mountain",
-      "outdoor",
-      "landmark",
-      "cinema-history"
-    ],
+    "tags": ["mountain", "outdoor", "landmark", "cinema-history"],
     "featured": true,
     "visibility": "public",
     "source": "manual",

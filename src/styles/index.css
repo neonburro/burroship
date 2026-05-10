@@ -53,13 +53,11 @@ body,
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* selection */
 ::selection {
   background: var(--color-primary);
   color: var(--color-background-deep);
 }
 
-/* mono utility class for labels */
 .font-mono-label {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -70,37 +68,24 @@ body,
   color: var(--color-text-secondary);
 }
 
-/* signal glow utility — for the accents that need to sing */
 .signal-glow {
   box-shadow: 0 0 24px var(--color-primary-glow), 0 0 8px var(--color-primary-glow);
 }
 
 /* Compound beacon pulse — slow, breathing, never urgent */
 @keyframes burroship-beacon-pulse {
-  0%, 100% {
-    opacity: 0.45;
-    transform: scale(2.0);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(2.6);
-  }
+  0%, 100% { opacity: 0.45; transform: scale(2.0); }
+  50%      { opacity: 0.85; transform: scale(2.6); }
 }
 
 .animate-burroship-beacon-pulse {
   animation: burroship-beacon-pulse 4.5s var(--ease-cinematic) infinite;
 }
 
-/* In-development flag pulse — faster, brighter, attention-getting */
+/* In-development flag pulse — faster, brighter */
 @keyframes burroship-flag-pulse {
-  0%, 100% {
-    opacity: 0.55;
-    transform: translateX(-50%) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1.3);
-  }
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;    transform: translateX(-50%) scale(1.3); }
 }
 
 .animate-burroship-flag-pulse {
@@ -120,38 +105,44 @@ body,
   border-bottom-color: var(--color-surface);
 }
 
-.burroship-popup .mapboxgl-popup-close-button {
-  display: none;
-}
+.burroship-popup .mapboxgl-popup-close-button { display: none; }
 
-/* Mapbox navigation controls — themed dark */
 .mapboxgl-ctrl-group {
   background: var(--color-surface) !important;
   border: 1px solid var(--color-surface-edge) !important;
   box-shadow: none !important;
 }
 
-.mapboxgl-ctrl-group button {
-  filter: invert(1) hue-rotate(180deg);
-}
+.mapboxgl-ctrl-group button { filter: invert(1) hue-rotate(180deg); }
 
-/* Mapbox attribution — muted */
 .mapboxgl-ctrl-attrib {
   background: rgba(2, 5, 3, 0.7) !important;
   color: var(--color-text-muted) !important;
   font-size: 10px !important;
 }
 
-.mapboxgl-ctrl-attrib a {
-  color: var(--color-text-secondary) !important;
-}
+.mapboxgl-ctrl-attrib a { color: var(--color-text-secondary) !important; }
 
 .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-logo {
   opacity: 0.4;
   filter: invert(1);
 }
 
-/* Mapbox canvas anchor — fills page bg before tiles load */
-.mapboxgl-map {
+.mapboxgl-map { background: var(--color-background-deep) !important; }
+
+/* ---------- Cesium widget overrides ---------- */
+/* Cesium ships its own UI with a default white-ish look. We hide
+   everything we don't need and recolor the rest to match the void. */
+
+.cesium-viewer,
+.cesium-viewer-cesiumWidgetContainer,
+.cesium-widget,
+.cesium-widget canvas {
   background: var(--color-background-deep) !important;
 }
+
+.cesium-viewer-bottom { display: none !important; }
+.cesium-viewer-toolbar { display: none !important; }
+.cesium-viewer-fullscreenContainer { display: none !important; }
+.cesium-credit-textContainer,
+.cesium-credit-logoContainer { display: none !important; }

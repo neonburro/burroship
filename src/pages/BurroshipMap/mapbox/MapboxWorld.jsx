@@ -1,4 +1,4 @@
-// src/pages/Map/MapWorld.jsx
+// src/pages/BurroshipMap/mapbox/MapboxWorld.jsx
 import { useState, useRef, useCallback, useEffect } from "react";
 import Map, { Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
 
@@ -6,20 +6,19 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import {
   mapboxToken,
-  mapboxStyle,
-  standardStyleConfig,
   atmospherePresets,
   defaultCamera,
   viewPresets,
   tourRoute,
-} from "../../lib/mapbox";
-import locations from "../../data/locations.json";
+} from "../../../lib/burroship";
+import { mapboxStyle, standardStyleConfig } from "./mapboxConfig";
+import locations from "../../../data/locations.json";
 
 import LocationPin from "./LocationPin";
 import MapControls from "./MapControls";
 import MapSchedule from "./MapSchedule";
 
-function MapWorld() {
+function MapboxWorld() {
   const [selected, setSelected] = useState(null);
   const [activePreset, setActivePreset] = useState("BURROSHIP");
   const [tourActive, setTourActive] = useState(false);
@@ -32,12 +31,6 @@ function MapWorld() {
   const tourRunningRef = useRef(false);
   const styleReadyRef = useRef(false);
 
-  // ----- Atmosphere application ------------------------------
-  // Applies a named atmosphere preset to the live map. Standard
-  // style v3 takes lightPreset via setConfigProperty, fog via
-  // setFog (which works on v3), terrain via setTerrain, and
-  // weather via setSnow/setRain.
-
   const applyAtmosphere = useCallback((presetKey) => {
     const map = mapRef.current?.getMap?.() || mapRef.current;
     if (!map || !styleReadyRef.current) return;
@@ -45,22 +38,22 @@ function MapWorld() {
     const preset = atmospherePresets[presetKey];
     if (!preset) return;
 
-    // Light preset — Standard style v3 config slot
     try {
       map.setConfigProperty("basemap", "lightPreset", preset.lightPreset);
     } catch (e) {
       console.warn("setConfigProperty lightPreset failed", e);
     }
 
-    // Terrain exaggeration — Standard style includes mapbox-dem
-    // automatically when terrain is set
+    // Terrain — only set if the dem source exists. The Standard
+    // style usually adds it automatically, but timing can vary.
     try {
-      map.setTerrain({ source: "mapbox-dem", exaggeration: preset.exaggeration });
+      if (map.getSource("mapbox-dem")) {
+        map.setTerrain({ source: "mapbox-dem", exaggeration: preset.exaggeration });
+      }
     } catch (e) {
       console.warn("setTerrain failed", e);
     }
 
-    // Fog — works in v3, drives the horizon haze
     try {
       map.setFog({
         range: preset.fogRange,
@@ -74,8 +67,6 @@ function MapWorld() {
       console.warn("setFog failed", e);
     }
 
-    // Weather — snow or rain or clear. Standard style has these
-    // built in via setSnow/setRain.
     try {
       if (preset.weather?.type === "snow") {
         map.setSnow({
@@ -93,16 +84,13 @@ function MapWorld() {
         });
         map.setSnow(null);
       } else {
-        map.setSnow(null);
-        map.setRain(null);
+        if (map.setSnow) map.setSnow(null);
+        if (map.setRain) map.setRain(null);
       }
     } catch (e) {
-      // Older mapbox-gl versions may not have setSnow/setRain.
-      // Fail quiet — the atmosphere still works without weather.
+      // Older mapbox-gl versions may not have setSnow/setRain
     }
   }, []);
-
-  // ----- Tour engine -----------------------------------------
 
   const stopTour = useCallback(() => {
     tourRunningRef.current = false;
@@ -126,9 +114,6 @@ function MapWorld() {
       setCurrentPhase(phase);
       setPhaseEndsAt(Date.now() + config.durationMs);
 
-      // Apply this stop's atmosphere on approach, and let it ride
-      // through hold + depart. The next stop's approach will swap
-      // atmosphere when we arrive there.
       if (phase === "approach") {
         applyAtmosphere(stop.atmosphere);
       }
@@ -195,8 +180,6 @@ function MapWorld() {
     };
   }, []);
 
-  // ----- Preset handler --------------------------------------
-
   const handlePresetSelect = useCallback(
     (presetKey) => {
       const preset = viewPresets[presetKey];
@@ -220,8 +203,6 @@ function MapWorld() {
         essential: true,
       });
 
-      // Find the matching tour stop (if any) and apply its
-      // atmosphere so a manual jump still feels weathered.
       const matchingStop = tourRoute.find(
         (s) =>
           Math.abs(s.longitude - preset.longitude) < 0.01 &&
@@ -234,32 +215,32 @@ function MapWorld() {
     [startTour, stopTour, applyAtmosphere]
   );
 
-  // ----- Map lifecycle ---------------------------------------
-  // On Standard style v3, configuration runs through
-  // setConfigProperty('basemap', ...). No manual addLayer for
-  // buildings — they're built into the style.
-
+  // Wait for the style to be FULLY loaded (including DEM source)
+  // before applying atmosphere. The Standard style auto-adds
+  // mapbox-dem but with a slight delay.
   const handleLoad = useCallback(
     (event) => {
       const map = event.target;
 
-      // Apply Standard style config — labels, theme, 3d objects
       try {
         Object.entries(standardStyleConfig).forEach(([key, value]) => {
           map.setConfigProperty("basemap", key, value);
         });
       } catch (e) {
-        console.warn("Standard style config failed (style may be v2)", e);
+        console.warn("Standard style config failed", e);
       }
 
-      styleReadyRef.current = true;
-
-      // First-frame atmosphere — apply the first tour stop's preset
-      // so the page lands already weathered, not in a flat default
-      applyAtmosphere(tourRoute[0].atmosphere);
-
-      // Start the tour after the style + atmosphere settle
-      setTimeout(() => startTour(), 1500);
+      const tryReady = () => {
+        if (!map || map._removed) return;
+        if (map.isStyleLoaded()) {
+          styleReadyRef.current = true;
+          applyAtmosphere(tourRoute[0].atmosphere);
+          setTimeout(() => startTour(), 1000);
+        } else {
+          setTimeout(tryReady, 200);
+        }
+      };
+      tryReady();
     },
     [applyAtmosphere, startTour]
   );
@@ -275,7 +256,6 @@ function MapWorld() {
   const currentStopName =
     currentStopIndex != null ? tourRoute[currentStopIndex].name : null;
 
-  // Popup category label — beacons show their role, others show category
   const popupLabel = (() => {
     if (!selected) return "";
     if (selected.subcategory === "compound-beacon") {
@@ -391,4 +371,4 @@ function MapWorld() {
   );
 }
 
-export default MapWorld;
+export default MapboxWorld;

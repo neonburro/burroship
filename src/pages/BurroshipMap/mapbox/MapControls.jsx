@@ -1,7 +1,7 @@
-// src/pages/Map/MapControls.jsx
+// src/pages/BurroshipMap/mapbox/MapControls.jsx
 import { useState, useEffect, useRef } from "react";
 
-import { viewPresets } from "../../lib/mapbox";
+import { viewPresets } from "../../../lib/burroship";
 
 function MapControls({ activePreset, currentTourStop, onSelect }) {
   const [mobileOpen, setMobileOpen] = useState(false);

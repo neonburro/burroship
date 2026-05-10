@@ -1,7 +1,7 @@
-// src/pages/Map/MapSchedule.jsx
+// src/pages/BurroshipMap/cesium/CesiumSchedule.jsx
 import { useState, useEffect } from "react";
 
-import { tourRoute } from "../../lib/mapbox";
+import { tourRoute } from "../../../lib/burroship";
 
 function formatCountdown(ms) {
   if (ms <= 0) return "0:00";
@@ -11,7 +11,7 @@ function formatCountdown(ms) {
   return min + ":" + String(sec).padStart(2, "0");
 }
 
-function MapSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsAt }) {
+function CesiumSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsAt }) {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -25,29 +25,21 @@ function MapSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsAt }
   const currentStop = tourRoute[currentStopIndex];
   const remainingMs = Math.max(0, phaseEndsAt - now);
 
-  // Build the upcoming stops list (next 4)
   const upcoming = [];
   let cursor = (currentStopIndex + 1) % tourRoute.length;
   let cumulativeMs = remainingMs;
 
-  // Add remaining time of current stop's later phases
   if (currentPhase === "approach") {
-    cumulativeMs +=
-      currentStop.hold.durationMs + currentStop.depart.durationMs;
+    cumulativeMs += currentStop.hold.durationMs + currentStop.depart.durationMs;
   } else if (currentPhase === "hold") {
     cumulativeMs += currentStop.depart.durationMs;
   }
 
   for (let i = 0; i < 4; i++) {
     const stop = tourRoute[cursor];
-    upcoming.push({
-      name: stop.name,
-      eta: cumulativeMs,
-    });
+    upcoming.push({ name: stop.name, eta: cumulativeMs });
     cumulativeMs +=
-      stop.approach.durationMs +
-      stop.hold.durationMs +
-      stop.depart.durationMs;
+      stop.approach.durationMs + stop.hold.durationMs + stop.depart.durationMs;
     cursor = (cursor + 1) % tourRoute.length;
   }
 
@@ -61,7 +53,7 @@ function MapSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsAt }
     <div className="absolute bottom-6 left-6 z-10 hidden md:block">
       <div className="rounded-card border border-surface-edge bg-surface/80 backdrop-blur-md p-4 min-w-[260px]">
         <p className="font-mono-label text-[9px] mb-3 text-text-muted">
-          BURROSHIP · SCHEDULE
+          BURROSHIP · CESIUM · SCHEDULE
         </p>
 
         <div className="flex items-baseline justify-between mb-1">
@@ -72,9 +64,7 @@ function MapSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsAt }
             {formatCountdown(remainingMs)}
           </span>
         </div>
-        <p className="text-text-primary font-medium mb-4">
-          {currentStop.name}
-        </p>
+        <p className="text-text-primary font-medium mb-4">{currentStop.name}</p>
 
         <div className="border-t border-surface-edge pt-3 space-y-1.5">
           {upcoming.map((stop, idx) => (
@@ -93,4 +83,4 @@ function MapSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsAt }
   );
 }
 
-export default MapSchedule;
+export default CesiumSchedule;

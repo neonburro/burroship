@@ -1,39 +1,23 @@
-// src/lib/mapbox.js
+// src/lib/burroship.js
 //
-// Mapbox configuration. Token loads from env. Camera presets and the
-// autonomous tour route are documented in docs/MAP_SYSTEM.md.
-//
-// Style: Mapbox Standard v3 — gives us realtime time-of-day lighting,
-// built-in 3D buildings/trees/landmarks, and atmospheric scattering
-// for free. We drive the mood per-stop via lightPreset + terrain
-// exaggeration + optional weather (snow/rain).
+// Engine-agnostic configuration shared by both the Mapbox and Cesium
+// renderers. tourRoute, atmospherePresets, beacon palette — anything
+// that defines THE WORLD lives here. Renderer-specific config (style
+// URLs, tokens) is loaded inside each engine's own module.
+
+// ----- Tokens ----------------------------------------------------
 
 export const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-
-export const mapboxStyle = "mapbox://styles/mapbox/standard";
-
-// Standard style config — applied once at load. Quieter labels for
-// the cabin-window feel; we keep place + road labels but suppress
-// transit, POI, and landmark noise.
-export const standardStyleConfig = {
-  // Base lighting preset. The tour overrides this per stop.
-  lightPreset: "dusk",
-  // The Standard style is naturally bright; theme=monochrome strips
-  // hue down toward our greens-and-greys world.
-  theme: "monochrome",
-  // Show 3D pbr buildings and trees — built into the style.
-  show3dObjects: true,
-  showPlaceLabels: true,
-  showRoadLabels: true,
-  // Suppress everything else — keeps the map quiet.
-  showPointOfInterestLabels: false,
-  showTransitLabels: false,
-  showPedestrianRoads: false,
-};
+export const cesiumIonToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
 // ----- Atmosphere presets ---------------------------------------
 // Each tour stop pulls one of these. Defining them centrally makes
 // it easy to retune the whole world without hunting through stops.
+//
+// Both engines read the same preset names but interpret them through
+// their own primitives:
+//   mapbox  → setConfigProperty('basemap', 'lightPreset', ...) + setFog + setSnow/setRain
+//   cesium  → viewer.scene.globe.dynamicAtmosphereLighting + scene.skyAtmosphere + scene.fog
 
 export const atmospherePresets = {
   alpenglow: {
@@ -149,13 +133,7 @@ export const viewPresets = {
 //   hold     — low-altitude orbit, bearing rotates (~50-65s)
 //   depart   — rising lift-off heading toward next stop (~12-16s)
 //
-// Each stop also names an `atmosphere` preset. The atmosphere
-// applied at any moment is the destination stop's preset — meaning
-// during `approach` you're flying into that stop's weather, during
-// `hold` you're in it, during `depart` you're leaving it as the
-// next approach takes over.
-//
-// Total cycle: ~7.5 minutes. Tightened from the v1 12-minute loop.
+// Total cycle: ~7.5 minutes.
 
 export const tourRoute = [
   {
@@ -384,7 +362,6 @@ export const tourRoute = [
   },
 ];
 
-// Sum total cycle time, in ms — used by the schedule UI.
 export const tourCycleMs = tourRoute.reduce(
   (sum, stop) =>
     sum + stop.approach.durationMs + stop.hold.durationMs + stop.depart.durationMs,
@@ -406,10 +383,9 @@ export const featuredLabels = [
 ];
 
 // ----- Compound beacon palette ----------------------------------
-// Three metallic-glow beacons rendered just southwest of Chimney
-// Rock. Each is its own location entry in locations.json with
-// subcategory "compound-beacon" and a beaconColor field that maps
-// to one of these.
+// Three metallic-glow beacons. Each is its own location entry in
+// locations.json with subcategory "compound-beacon" and beaconColor
+// that maps to one of these.
 
 export const compoundBeaconColors = {
   steel: {
@@ -428,3 +404,13 @@ export const compoundBeaconColors = {
     label: "The StackHouse",
   },
 };
+
+// ----- Engine identifier ----------------------------------------
+// Used by the page wrapper to decide which engine to mount.
+
+export const ENGINES = {
+  MAPBOX: "mapbox",
+  CESIUM: "cesium",
+};
+
+export const DEFAULT_ENGINE = ENGINES.MAPBOX;

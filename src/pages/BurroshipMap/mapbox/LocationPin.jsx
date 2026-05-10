@@ -1,5 +1,5 @@
-// src/pages/Map/LocationPin.jsx
-import { compoundBeaconColors } from "../../lib/mapbox";
+// src/pages/BurroshipMap/mapbox/LocationPin.jsx
+import { compoundBeaconColors } from "../../../lib/burroship";
 
 const styleByCategory = {
   hq: {
@@ -20,16 +20,12 @@ const styleByCategory = {
   },
 };
 
-// Metallic beacon — used by the three Compound pins. Subtle glow,
-// soft pulse, brushed-metal gradient. In-development beacons get
-// an additional flag dot above the metal disk.
 function CompoundBeacon({ beaconColor, status }) {
   const config = compoundBeaconColors[beaconColor] || compoundBeaconColors.lantern;
   const isInDev = status === "in-development";
 
   return (
     <div className="relative cursor-pointer group" style={{ width: 22, height: 22 }}>
-      {/* Outer breathing halo — slow pulse */}
       <div
         className="absolute inset-0 rounded-full animate-burroship-beacon-pulse"
         style={{
@@ -38,13 +34,11 @@ function CompoundBeacon({ beaconColor, status }) {
         }}
       />
 
-      {/* Soft glow underneath the metal disk */}
       <div
         className="absolute inset-0 rounded-full blur-md transition-all group-hover:blur-lg"
         style={{ background: config.glow, transform: "scale(1.4)" }}
       />
 
-      {/* Metal disk — brushed gradient, beveled edge */}
       <div
         className="absolute inset-0 rounded-full transition-transform group-hover:scale-110"
         style={{
@@ -63,7 +57,6 @@ function CompoundBeacon({ beaconColor, status }) {
         }}
       />
 
-      {/* Center pinpoint — the actual signal */}
       <div
         className="absolute rounded-full"
         style={{
@@ -77,7 +70,6 @@ function CompoundBeacon({ beaconColor, status }) {
         }}
       />
 
-      {/* In-development flag — small pulsing dot above the beacon */}
       {isInDev && (
         <div
           className="absolute animate-burroship-flag-pulse"
@@ -104,7 +96,6 @@ function LocationPin({
   beaconColor = null,
   status = null,
 }) {
-  // Compound beacons get their own treatment
   if (subcategory === "compound-beacon") {
     return <CompoundBeacon beaconColor={beaconColor} status={status} />;
   }
