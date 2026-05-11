@@ -1,9 +1,8 @@
 // src/lib/burroship.js
 //
-// Engine-agnostic configuration shared by both the Mapbox and Cesium
-// renderers. tourRoute, atmospherePresets, beacon palette — anything
-// that defines THE WORLD lives here. Renderer-specific config (style
-// URLs, tokens) is loaded inside each engine's own module.
+// Engine-agnostic configuration for the Burroship world. Tokens,
+// tour stops, atmospheric presets, beacon palette — all single
+// source of truth.
 
 // ----- Tokens ----------------------------------------------------
 
@@ -11,129 +10,122 @@ export const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 export const cesiumIonToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
 // ----- Atmosphere presets ---------------------------------------
-// Each tour stop pulls one of these. Defining them centrally makes
-// it easy to retune the whole world without hunting through stops.
-//
-// Both engines read the same preset names but interpret them through
-// their own primitives:
-//   mapbox  → setConfigProperty('basemap', 'lightPreset', ...) + setFog + setSnow/setRain
-//   cesium  → viewer.scene.globe.dynamicAtmosphereLighting + scene.skyAtmosphere + scene.fog
+// Each tour stop pulls one of these. Driving values:
+//   lightPreset: maps to time-of-day for Cesium sun position
+//   exaggeration: terrain vertical scale (1.0 = real, higher = drama)
+//   fogDensity: 0 = no fog, ~0.0005 = noticeable, ~0.002 = heavy
+//   weather: null | { type: 'snow' | 'rain', intensity: 0-1 }
 
 export const atmospherePresets = {
   alpenglow: {
     lightPreset: "dawn",
-    exaggeration: 2.0,
-    fogRange: [0.5, 14],
-    fogHorizonBlend: 0.3,
+    exaggeration: 1.6,
+    fogDensity: 0.0002,
     weather: null,
   },
   highNoonClear: {
     lightPreset: "day",
-    exaggeration: 1.4,
-    fogRange: [1, 20],
-    fogHorizonBlend: 0.1,
+    exaggeration: 1.2,
+    fogDensity: 0.0001,
     weather: null,
   },
   goldenDusk: {
     lightPreset: "dusk",
-    exaggeration: 1.7,
-    fogRange: [0.5, 12],
-    fogHorizonBlend: 0.25,
+    exaggeration: 1.4,
+    fogDensity: 0.00025,
     weather: null,
   },
   boxCanyonShadow: {
     lightPreset: "dusk",
-    exaggeration: 1.9,
-    fogRange: [0.4, 10],
-    fogHorizonBlend: 0.3,
+    exaggeration: 1.6,
+    fogDensity: 0.0004,
     weather: null,
   },
   alpineSnow: {
     lightPreset: "day",
-    exaggeration: 1.8,
-    fogRange: [0.6, 14],
-    fogHorizonBlend: 0.2,
+    exaggeration: 1.5,
+    fogDensity: 0.0003,
     weather: { type: "snow", intensity: 0.4 },
   },
   resortDusk: {
     lightPreset: "dusk",
-    exaggeration: 1.7,
-    fogRange: [0.5, 12],
-    fogHorizonBlend: 0.25,
+    exaggeration: 1.4,
+    fogDensity: 0.00025,
     weather: { type: "snow", intensity: 0.2 },
   },
   compoundDusk: {
     lightPreset: "dusk",
-    exaggeration: 1.9,
-    fogRange: [0.4, 11],
-    fogHorizonBlend: 0.3,
+    exaggeration: 1.5,
+    fogDensity: 0.0003,
     weather: null,
   },
   compoundNight: {
     lightPreset: "night",
-    exaggeration: 1.9,
-    fogRange: [0.3, 10],
-    fogHorizonBlend: 0.4,
+    exaggeration: 1.5,
+    fogDensity: 0.0005,
     weather: null,
   },
 };
 
 // ----- View presets (top-left selector) -------------------------
-// Towns and destinations only. The Compound, Sneffels, and Chimney
-// Rock live in the tour route but not in this selector — they're
-// flyovers, not destinations on the menu.
+// Towns and destinations only. Compound, Sneffels, Chimney Rock
+// live in the tour route but not in this menu — they are flyovers.
 
 export const viewPresets = {
   BURROSHIP: {
     label: "The Burroship",
     longitude: -107.6700,
     latitude: 38.0700,
-    zoom: 9.6,
-    pitch: 50,
-    bearing: -15,
+    altitude: 35000,
+    pitch: -40,
+    heading: -15,
     isTour: true,
   },
   RIDGWAY: {
     label: "Ridgway",
     longitude: -107.7551,
     latitude: 38.1547,
-    zoom: 14,
-    pitch: 60,
-    bearing: -10,
+    altitude: 3000,
+    pitch: -30,
+    heading: -10,
   },
   OURAY: {
     label: "Ouray",
     longitude: -107.6708,
     latitude: 38.0228,
-    zoom: 14,
-    pitch: 60,
-    bearing: 0,
+    altitude: 3500,
+    pitch: -30,
+    heading: 0,
   },
   TELLURIDE: {
     label: "Telluride",
     longitude: -107.8123,
     latitude: 37.9375,
-    zoom: 14,
-    pitch: 60,
-    bearing: 0,
+    altitude: 4000,
+    pitch: -30,
+    heading: 0,
   },
   MOUNTAIN_VILLAGE: {
     label: "Mountain Village",
     longitude: -107.8561,
     latitude: 37.9356,
-    zoom: 14,
-    pitch: 62,
-    bearing: -20,
+    altitude: 3500,
+    pitch: -28,
+    heading: -20,
   },
 };
 
 // ----- The autonomous tour --------------------------------------
-// Seven stops. Each stop has three phases:
-//   approach — descending fly-in from altitude (~25-32s)
-//   hold     — low-altitude orbit, bearing rotates (~50-65s)
-//   depart   — rising lift-off heading toward next stop (~12-16s)
+// Each tour stop has three phases (approach, hold, depart) with
+// camera positions and durations. Positions are real-world
+// {longitude, latitude, altitude (meters), pitch (degrees, negative
+// = looking down), heading (degrees, 0 = north, 90 = east)}.
 //
-// Total cycle: ~7.5 minutes.
+// The `atmosphere` key names one preset from atmospherePresets.
+// The `splats` array is empty for now — when you upload a Gaussian
+// Splat to Cesium ion, paste its asset ID here as:
+//   { assetId: 1234567, longitude: ..., latitude: ..., height: ... }
+// and it streams in automatically when the camera flies near.
 
 export const tourRoute = [
   {
@@ -142,29 +134,20 @@ export const tourRoute = [
     longitude: -107.5800,
     latitude: 38.1380,
     atmosphere: "compoundDusk",
+    splats: [],
     approach: {
-      longitude: -107.5950,
-      latitude: 38.1700,
-      zoom: 11.8,
-      pitch: 50,
-      bearing: -25,
+      longitude: -107.5950, latitude: 38.1700,
+      altitude: 6000, pitch: -45, heading: -25,
       durationMs: 28000,
     },
     hold: {
-      longitude: -107.5800,
-      latitude: 38.1380,
-      zoom: 14.2,
-      pitch: 68,
-      bearingStart: -25,
-      bearingEnd: 90,
+      longitude: -107.5800, latitude: 38.1380,
+      altitude: 1800, pitch: -35, headingStart: -25, headingEnd: 90,
       durationMs: 60000,
     },
     depart: {
-      longitude: -107.6500,
-      latitude: 38.1500,
-      zoom: 12,
-      pitch: 50,
-      bearing: 60,
+      longitude: -107.6500, latitude: 38.1500,
+      altitude: 5000, pitch: -45, heading: 60,
       durationMs: 14000,
     },
   },
@@ -174,29 +157,20 @@ export const tourRoute = [
     longitude: -107.5706,
     latitude: 38.1466,
     atmosphere: "goldenDusk",
+    splats: [],
     approach: {
-      longitude: -107.5900,
-      latitude: 38.1600,
-      zoom: 12.5,
-      pitch: 55,
-      bearing: 60,
+      longitude: -107.5900, latitude: 38.1600,
+      altitude: 4500, pitch: -40, heading: 60,
       durationMs: 24000,
     },
     hold: {
-      longitude: -107.5706,
-      latitude: 38.1466,
-      zoom: 14.2,
-      pitch: 72,
-      bearingStart: 60,
-      bearingEnd: 240,
+      longitude: -107.5706, latitude: 38.1466,
+      altitude: 1500, pitch: -25, headingStart: 60, headingEnd: 240,
       durationMs: 55000,
     },
     depart: {
-      longitude: -107.6400,
-      latitude: 38.1500,
-      zoom: 12,
-      pitch: 50,
-      bearing: 270,
+      longitude: -107.6400, latitude: 38.1500,
+      altitude: 5500, pitch: -45, heading: 270,
       durationMs: 13000,
     },
   },
@@ -206,29 +180,20 @@ export const tourRoute = [
     longitude: -107.7551,
     latitude: 38.1547,
     atmosphere: "highNoonClear",
+    splats: [],
     approach: {
-      longitude: -107.7300,
-      latitude: 38.1900,
-      zoom: 12,
-      pitch: 50,
-      bearing: 270,
+      longitude: -107.7300, latitude: 38.1900,
+      altitude: 5500, pitch: -45, heading: 270,
       durationMs: 26000,
     },
     hold: {
-      longitude: -107.7551,
-      latitude: 38.1547,
-      zoom: 14.8,
-      pitch: 70,
-      bearingStart: 270,
-      bearingEnd: 90,
+      longitude: -107.7551, latitude: 38.1547,
+      altitude: 1200, pitch: -30, headingStart: 270, headingEnd: 90,
       durationMs: 55000,
     },
     depart: {
-      longitude: -107.7400,
-      latitude: 38.1100,
-      zoom: 12.5,
-      pitch: 52,
-      bearing: 170,
+      longitude: -107.7400, latitude: 38.1100,
+      altitude: 4500, pitch: -43, heading: 170,
       durationMs: 13000,
     },
   },
@@ -238,29 +203,20 @@ export const tourRoute = [
     longitude: -107.7922,
     latitude: 38.0038,
     atmosphere: "alpenglow",
+    splats: [],
     approach: {
-      longitude: -107.8100,
-      latitude: 38.0400,
-      zoom: 11.8,
-      pitch: 55,
-      bearing: 170,
+      longitude: -107.8100, latitude: 38.0400,
+      altitude: 6500, pitch: -40, heading: 170,
       durationMs: 30000,
     },
     hold: {
-      longitude: -107.7922,
-      latitude: 38.0038,
-      zoom: 13.4,
-      pitch: 76,
-      bearingStart: 170,
-      bearingEnd: 350,
+      longitude: -107.7922, latitude: 38.0038,
+      altitude: 2200, pitch: -18, headingStart: 170, headingEnd: 350,
       durationMs: 65000,
     },
     depart: {
-      longitude: -107.7400,
-      latitude: 38.0100,
-      zoom: 12,
-      pitch: 50,
-      bearing: 80,
+      longitude: -107.7400, latitude: 38.0100,
+      altitude: 5000, pitch: -45, heading: 80,
       durationMs: 14000,
     },
   },
@@ -270,29 +226,20 @@ export const tourRoute = [
     longitude: -107.6708,
     latitude: 38.0228,
     atmosphere: "boxCanyonShadow",
+    splats: [],
     approach: {
-      longitude: -107.6900,
-      latitude: 38.0500,
-      zoom: 12.4,
-      pitch: 55,
-      bearing: 80,
+      longitude: -107.6900, latitude: 38.0500,
+      altitude: 4500, pitch: -40, heading: 80,
       durationMs: 26000,
     },
     hold: {
-      longitude: -107.6708,
-      latitude: 38.0228,
-      zoom: 15.0,
-      pitch: 72,
-      bearingStart: 80,
-      bearingEnd: 260,
+      longitude: -107.6708, latitude: 38.0228,
+      altitude: 900, pitch: -22, headingStart: 80, headingEnd: 260,
       durationMs: 60000,
     },
     depart: {
-      longitude: -107.7100,
-      latitude: 37.9900,
-      zoom: 12.5,
-      pitch: 50,
-      bearing: 230,
+      longitude: -107.7100, latitude: 37.9900,
+      altitude: 4500, pitch: -45, heading: 230,
       durationMs: 15000,
     },
   },
@@ -302,29 +249,20 @@ export const tourRoute = [
     longitude: -107.8123,
     latitude: 37.9375,
     atmosphere: "alpineSnow",
+    splats: [],
     approach: {
-      longitude: -107.8000,
-      latitude: 37.9650,
-      zoom: 12.5,
-      pitch: 55,
-      bearing: 230,
+      longitude: -107.8000, latitude: 37.9650,
+      altitude: 4000, pitch: -40, heading: 230,
       durationMs: 28000,
     },
     hold: {
-      longitude: -107.8123,
-      latitude: 37.9375,
-      zoom: 14.6,
-      pitch: 70,
-      bearingStart: 230,
-      bearingEnd: 60,
+      longitude: -107.8123, latitude: 37.9375,
+      altitude: 1400, pitch: -28, headingStart: 230, headingEnd: 60,
       durationMs: 58000,
     },
     depart: {
-      longitude: -107.8350,
-      latitude: 37.9400,
-      zoom: 12.5,
-      pitch: 50,
-      bearing: 250,
+      longitude: -107.8350, latitude: 37.9400,
+      altitude: 4500, pitch: -45, heading: 250,
       durationMs: 13000,
     },
   },
@@ -334,29 +272,20 @@ export const tourRoute = [
     longitude: -107.8561,
     latitude: 37.9356,
     atmosphere: "resortDusk",
+    splats: [],
     approach: {
-      longitude: -107.8700,
-      latitude: 37.9550,
-      zoom: 12.5,
-      pitch: 55,
-      bearing: 250,
+      longitude: -107.8700, latitude: 37.9550,
+      altitude: 4200, pitch: -40, heading: 250,
       durationMs: 25000,
     },
     hold: {
-      longitude: -107.8561,
-      latitude: 37.9356,
-      zoom: 14.5,
-      pitch: 68,
-      bearingStart: 250,
-      bearingEnd: 90,
+      longitude: -107.8561, latitude: 37.9356,
+      altitude: 1500, pitch: -30, headingStart: 250, headingEnd: 90,
       durationMs: 55000,
     },
     depart: {
-      longitude: -107.7900,
-      latitude: 37.9800,
-      zoom: 11.8,
-      pitch: 50,
-      bearing: 50,
+      longitude: -107.7900, latitude: 37.9800,
+      altitude: 6000, pitch: -45, heading: 50,
       durationMs: 16000,
     },
   },
@@ -371,21 +300,12 @@ export const tourCycleMs = tourRoute.reduce(
 export const defaultCamera = viewPresets.BURROSHIP;
 
 export const featuredLabels = [
-  "Ridgway",
-  "Ouray",
-  "Telluride",
-  "Mountain Village",
-  "Mt Sneffels",
-  "Chimney Rock",
-  "The Compound",
-  "The Burroships",
-  "The StackHouse",
+  "Ridgway", "Ouray", "Telluride", "Mountain Village",
+  "Mt Sneffels", "Chimney Rock", "The Compound",
+  "The Burroships", "The StackHouse",
 ];
 
 // ----- Compound beacon palette ----------------------------------
-// Three metallic-glow beacons. Each is its own location entry in
-// locations.json with subcategory "compound-beacon" and beaconColor
-// that maps to one of these.
 
 export const compoundBeaconColors = {
   steel: {
@@ -404,13 +324,3 @@ export const compoundBeaconColors = {
     label: "The StackHouse",
   },
 };
-
-// ----- Engine identifier ----------------------------------------
-// Used by the page wrapper to decide which engine to mount.
-
-export const ENGINES = {
-  MAPBOX: "mapbox",
-  CESIUM: "cesium",
-};
-
-export const DEFAULT_ENGINE = ENGINES.MAPBOX;

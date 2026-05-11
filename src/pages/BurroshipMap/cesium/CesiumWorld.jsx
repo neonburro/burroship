@@ -1,11 +1,16 @@
 // src/pages/BurroshipMap/cesium/CesiumWorld.jsx
 //
-// The Cesium engine. Photorealistic 3D Tiles globally + Cesium World
-// Terrain + custom beacons + the tour flying through real Earth.
+// The Cesium engine. CDN-loaded via window.Cesium (script tag in
+// index.html). No npm bundling, no Vite gymnastics.
 //
-// We use CesiumJS directly (not resium) so we have fine control over
-// the camera, lighting, and atmosphere. Resium's JSX bindings are
-// great for static scenes but get in the way for cinematic flight.
+// What it does:
+//   - Initializes a Cesium Viewer at the Burroship overview position
+//   - Streams Google Photorealistic 3D Tiles as the base Earth layer
+//   - Loads any Gaussian Splats declared on tour stops (splats: [...])
+//   - Renders Compound beacons as glowing entities at their coords
+//   - Runs the autonomous tour (approach/hold/depart) through every stop
+//   - Tweens atmosphere per stop (lightPreset, fog density, weather)
+//   - Suppresses Cesium's default UI; we render our own schedule
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
@@ -19,30 +24,46 @@ import locations from "../../../data/locations.json";
 
 import CesiumSchedule from "./CesiumSchedule";
 
-// Cesium ships its own assets via a base URL. With Vite, we point
-// it at the prebuilt static assets bundled by the cesium package.
-// We set this on the window before importing Cesium so its
-// internal asset paths resolve correctly.
-if (typeof window !== "undefined" && !window.CESIUM_BASE_URL) {
-  window.CESIUM_BASE_URL = "/cesium/";
+// Wait until window.Cesium is available — it loads from the CDN
+// script tag in index.html, which may not be ready when this
+// component mounts. Resolves the global Cesium namespace.
+function waitForCesium() {
+  return new Promise((resolve, reject) => {
+    if (typeof window !== "undefined" && window.Cesium) {
+      resolve(window.Cesium);
+      return;
+    }
+    let tries = 0;
+    const id = setInterval(() => {
+      tries += 1;
+      if (window.Cesium) {
+        clearInterval(id);
+        resolve(window.Cesium);
+      } else if (tries > 100) {
+        clearInterval(id);
+        reject(new Error("Cesium CDN failed to load"));
+      }
+    }, 100);
+  });
 }
 
-// Lazy-load Cesium so the Mapbox path doesn't pay for ~5MB of
-// WASM/JS until the user actually toggles into Cesium mode.
-let CesiumPromise = null;
-function loadCesium() {
-  if (!CesiumPromise) {
-    CesiumPromise = import("cesium");
-  }
-  return CesiumPromise;
-}
+// Map our lightPreset names to JulianDate hour offsets that put the
+// sun in the right position over Colorado. Cesium drives time-of-day
+// lighting from viewer.clock.currentTime.
+const HOUR_OFFSET = {
+  dawn: -6,    // ~06:00 UTC over CO
+  day: 0,      // local solar noon
+  dusk: 6,     // ~18:00 UTC over CO
+  night: 12,   // ~midnight over CO
+};
 
 function CesiumWorld() {
   const containerRef = useRef(null);
   const viewerRef = useRef(null);
-  const tourTimeoutRef = useRef(null);
   const tourRunningRef = useRef(false);
+  const tourTimeoutRef = useRef(null);
   const beaconEntitiesRef = useRef([]);
+  const splatTilesetsRef = useRef([]);
 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(null);
@@ -51,86 +72,62 @@ function CesiumWorld() {
   const [currentPhase, setCurrentPhase] = useState(null);
   const [phaseEndsAt, setPhaseEndsAt] = useState(0);
 
-  // ----- Atmosphere -----------------------------------------
-  // Cesium's atmosphere is driven through scene.skyAtmosphere,
-  // scene.fog, scene.globe.atmosphereLightIntensity, and the sun
-  // position. Light presets map to a sun position offset from
-  // local solar noon.
+  // ----- Atmosphere ----------------------------------------------
 
-  const applyAtmosphere = useCallback(async (presetKey) => {
-    const Cesium = await loadCesium();
+  const applyAtmosphere = useCallback((presetKey) => {
+    const Cesium = window.Cesium;
     const viewer = viewerRef.current;
-    if (!viewer || viewer.isDestroyed()) return;
+    if (!viewer || viewer.isDestroyed() || !Cesium) return;
 
     const preset = atmospherePresets[presetKey];
     if (!preset) return;
 
-    const scene = viewer.scene;
-
-    // Map lightPreset to a JulianDate offset that puts the sun in
-    // the right position. We use a fixed reference date with hour
-    // adjusted for time of day.
+    // Sun position via clock time
     const baseDate = Cesium.JulianDate.fromIso8601("2026-06-15T12:00:00Z");
-    const hourOffset = {
-      dawn: -6,    // 06:00 UTC ≈ dawn over CO
-      day: 0,      // local solar noon
-      dusk: 6,     // 18:00 UTC ≈ dusk over CO
-      night: 12,   // 00:00 UTC ≈ night over CO
-    }[preset.lightPreset] || 0;
-
-    const targetTime = Cesium.JulianDate.addHours(
+    const hours = HOUR_OFFSET[preset.lightPreset] ?? 0;
+    viewer.clock.currentTime = Cesium.JulianDate.addHours(
       baseDate,
-      hourOffset,
+      hours,
       new Cesium.JulianDate()
     );
-    viewer.clock.currentTime = targetTime;
 
     // Atmosphere intensity follows time of day
-    scene.globe.atmosphereLightIntensity =
-      preset.lightPreset === "night" ? 3.0 : 10.0;
+    viewer.scene.skyAtmosphere.atmosphereLightIntensity =
+      preset.lightPreset === "night" ? 3.0 : 12.0;
 
-    // Fog density scales with the preset's fog range
-    scene.fog.enabled = true;
-    scene.fog.density = preset.fogHorizonBlend * 0.0006;
+    // Fog density
+    viewer.scene.fog.enabled = true;
+    viewer.scene.fog.density = preset.fogDensity;
 
-    // Terrain exaggeration — applies globally
-    scene.verticalExaggeration = preset.exaggeration;
+    // Terrain exaggeration applies globally
+    viewer.scene.verticalExaggeration = preset.exaggeration;
 
-    // Star visibility at night
-    scene.skyBox.show = preset.lightPreset === "night";
+    // Stars only at night
+    viewer.scene.skyBox.show = preset.lightPreset === "night";
+
+    // Globe brightness ties to lighting
+    viewer.scene.globe.dynamicAtmosphereLighting = true;
+    viewer.scene.globe.atmosphereLightIntensity =
+      preset.lightPreset === "night" ? 2.5 : 10.0;
   }, []);
 
-  // ----- Camera flight --------------------------------------
-  // Cesium uses meters for height, radians for orientation. We map
-  // tour stop {longitude, latitude, zoom, pitch, bearing} to
-  // Cartesian positions and HeadingPitchRoll orientations.
+  // ----- Camera flight -------------------------------------------
 
-  const flyToStop = useCallback(async (config, durationMs) => {
-    const Cesium = await loadCesium();
+  const flyToStop = useCallback((config, durationMs) => {
+    const Cesium = window.Cesium;
     const viewer = viewerRef.current;
-    if (!viewer || viewer.isDestroyed()) return;
-
-    // Convert Mapbox-style zoom to Cesium altitude in meters.
-    // Empirical mapping: zoom 10 → 30km, zoom 14 → 3km, zoom 16 → 800m
-    const altitude = Math.pow(2, 22 - config.zoom) * 0.8;
-
-    // Mapbox pitch is in degrees (0 = top-down, 60 = oblique).
-    // Cesium pitch is also degrees but inverted (0 = horizon, -90 = top-down).
-    const cesiumPitch = -(90 - config.pitch);
-    const heading = config.bearing != null ? config.bearing : 0;
-
-    const destination = Cesium.Cartesian3.fromDegrees(
-      config.longitude,
-      config.latitude,
-      altitude
-    );
+    if (!viewer || viewer.isDestroyed() || !Cesium) return Promise.resolve();
 
     return new Promise((resolve) => {
       viewer.camera.flyTo({
-        destination,
+        destination: Cesium.Cartesian3.fromDegrees(
+          config.longitude,
+          config.latitude,
+          config.altitude
+        ),
         orientation: {
-          heading: Cesium.Math.toRadians(heading),
-          pitch: Cesium.Math.toRadians(cesiumPitch),
+          heading: Cesium.Math.toRadians(config.heading ?? 0),
+          pitch: Cesium.Math.toRadians(config.pitch ?? -45),
           roll: 0,
         },
         duration: durationMs / 1000,
@@ -141,7 +138,7 @@ function CesiumWorld() {
     });
   }, []);
 
-  // ----- Tour engine ----------------------------------------
+  // ----- Tour engine ---------------------------------------------
 
   const stopTour = useCallback(() => {
     tourRunningRef.current = false;
@@ -170,14 +167,15 @@ function CesiumWorld() {
       }
 
       if (phase === "hold") {
-        // Approach to start bearing fast, then slow rotation to end bearing
+        // Initial quick-snap to hold position with starting heading
         await flyToStop(
-          { ...config, bearing: config.bearingStart },
-          2000
+          { ...config, heading: config.headingStart },
+          2500
         );
+        // Slow rotate to ending heading over the remainder
         await flyToStop(
-          { ...config, bearing: config.bearingEnd },
-          config.durationMs - 2000
+          { ...config, heading: config.headingEnd },
+          config.durationMs - 2500
         );
       } else {
         await flyToStop(config, config.durationMs);
@@ -204,17 +202,15 @@ function CesiumWorld() {
     runPhase(0, "approach");
   }, [runPhase]);
 
-  // ----- Beacon entities ------------------------------------
-  // Render the location pins as Cesium entities. Compound beacons
-  // get their metallic glow color; everything else is the lantern
-  // green primary.
+  // ----- Beacons --------------------------------------------------
+  // Render every location as a Cesium entity. Compound beacons get
+  // their metallic-glow color; others get the lantern primary.
 
-  const renderBeacons = useCallback(async () => {
-    const Cesium = await loadCesium();
+  const renderBeacons = useCallback(() => {
+    const Cesium = window.Cesium;
     const viewer = viewerRef.current;
-    if (!viewer || viewer.isDestroyed()) return;
+    if (!viewer || viewer.isDestroyed() || !Cesium) return;
 
-    // Clear any existing
     beaconEntitiesRef.current.forEach((e) => viewer.entities.remove(e));
     beaconEntitiesRef.current = [];
 
@@ -232,14 +228,17 @@ function CesiumWorld() {
 
         const entity = viewer.entities.add({
           name: loc.name,
-          position: Cesium.Cartesian3.fromDegrees(loc.lng, loc.lat, 100),
+          position: Cesium.Cartesian3.fromDegrees(loc.lng, loc.lat, 150),
           point: {
-            pixelSize: isBeacon ? 14 : 8,
-            color: color.withAlpha(0.9),
-            outlineColor: Cesium.Color.WHITE.withAlpha(0.4),
-            outlineWidth: isBeacon ? 2 : 1,
+            pixelSize: isBeacon ? 18 : 10,
+            color: color.withAlpha(0.95),
+            outlineColor: Cesium.Color.WHITE.withAlpha(0.5),
+            outlineWidth: isBeacon ? 3 : 1.5,
             heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            scaleByDistance: new Cesium.NearFarScalar(
+              1000, 1.5, 50000, 0.6
+            ),
           },
           label: isBeacon
             ? {
@@ -249,9 +248,12 @@ function CesiumWorld() {
                 outlineColor: Cesium.Color.BLACK,
                 outlineWidth: 2,
                 style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                pixelOffset: new Cesium.Cartesian2(0, -28),
+                pixelOffset: new Cesium.Cartesian2(0, -32),
                 heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                translucencyByDistance: new Cesium.NearFarScalar(
+                  5000, 1.0, 50000, 0.0
+                ),
               }
             : undefined,
           description: loc.blurb,
@@ -262,95 +264,146 @@ function CesiumWorld() {
       });
   }, []);
 
-  // ----- Init -----------------------------------------------
+  // ----- Gaussian Splat loader -----------------------------------
+  // Walk the tour route, find any stops with splats[] entries, load
+  // each as a Cesium3DTileset from its ion asset ID. The splats
+  // appear at their declared coordinates; Cesium handles streaming,
+  // LOD, and composition with the underlying photoreal tiles.
+
+  const loadSplats = useCallback(async () => {
+    const Cesium = window.Cesium;
+    const viewer = viewerRef.current;
+    if (!viewer || viewer.isDestroyed() || !Cesium) return;
+
+    // Clear any prior splat tilesets
+    splatTilesetsRef.current.forEach((t) => {
+      try { viewer.scene.primitives.remove(t); } catch (e) { /* noop */ }
+    });
+    splatTilesetsRef.current = [];
+
+    for (const stop of tourRoute) {
+      if (!stop.splats || stop.splats.length === 0) continue;
+
+      for (const splat of stop.splats) {
+        try {
+          const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(
+            splat.assetId
+          );
+
+          // Position the splat at its declared coordinates
+          if (splat.longitude != null && splat.latitude != null) {
+            const target = Cesium.Cartesian3.fromDegrees(
+              splat.longitude,
+              splat.latitude,
+              splat.height ?? 0
+            );
+            const m = Cesium.Transforms.eastNorthUpToFixedFrame(target);
+            tileset.modelMatrix = m;
+          }
+
+          viewer.scene.primitives.add(tileset);
+          splatTilesetsRef.current.push(tileset);
+        } catch (err) {
+          console.warn(
+            "Splat load failed for assetId " + splat.assetId,
+            err.message
+          );
+        }
+      }
+    }
+  }, []);
+
+  // ----- Init -----------------------------------------------------
 
   useEffect(() => {
     let cancelled = false;
     let viewer = null;
 
     async function init() {
-      if (!cesiumIonToken) {
-        setError("CESIUM TOKEN MISSING");
-        return;
-      }
-
-      const Cesium = await loadCesium();
-      if (cancelled || !containerRef.current) return;
-
-      Cesium.Ion.defaultAccessToken = cesiumIonToken;
-
-      viewer = new Cesium.Viewer(containerRef.current, {
-        // Suppress the default UI — we render our own
-        animation: false,
-        baseLayerPicker: false,
-        fullscreenButton: false,
-        geocoder: false,
-        homeButton: false,
-        infoBox: false,
-        sceneModePicker: false,
-        selectionIndicator: false,
-        timeline: false,
-        navigationHelpButton: false,
-        creditContainer: document.createElement("div"), // hide credits visually but keep for ToS
-      });
-
-      // The default credit container is empty above; place real
-      // credits in a small container we control
-      const creditDiv = document.createElement("div");
-      creditDiv.style.cssText =
-        "position:absolute;bottom:6px;right:120px;font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(161,161,170,0.6);z-index:5;pointer-events:none;";
-      creditDiv.textContent = "© Cesium ion · Google · Maxar";
-      containerRef.current.appendChild(creditDiv);
-
-      viewerRef.current = viewer;
-
-      // Photorealistic 3D Tiles via Google
       try {
-        const tileset = await Cesium.createGooglePhotorealistic3DTileset();
-        viewer.scene.primitives.add(tileset);
-      } catch (e) {
-        console.warn("Google Photorealistic 3D Tiles failed to load", e);
+        if (!cesiumIonToken) {
+          throw new Error("CESIUM TOKEN MISSING — set VITE_CESIUM_ION_TOKEN");
+        }
+
+        const Cesium = await waitForCesium();
+        if (cancelled || !containerRef.current) return;
+
+        Cesium.Ion.defaultAccessToken = cesiumIonToken;
+
+        viewer = new Cesium.Viewer(containerRef.current, {
+          animation: false,
+          baseLayerPicker: false,
+          fullscreenButton: false,
+          geocoder: false,
+          homeButton: false,
+          infoBox: false,
+          sceneModePicker: false,
+          selectionIndicator: false,
+          timeline: false,
+          navigationHelpButton: false,
+          creditContainer: document.createElement("div"),
+        });
+
+        viewerRef.current = viewer;
+
+        // Suppress the dot-grid imagery layer until photoreal tiles load
+        viewer.scene.globe.show = true;
+        viewer.scene.skyAtmosphere.show = true;
+
+        // Photorealistic 3D Tiles — Google's global photogrammetry
+        try {
+          const tileset = await Cesium.createGooglePhotorealistic3DTileset();
+          viewer.scene.primitives.add(tileset);
+        } catch (e) {
+          console.warn("Google Photorealistic 3D Tiles failed", e);
+        }
+
+        if (cancelled) {
+          viewer.destroy();
+          return;
+        }
+
+        // Atmospheric polish
+        viewer.scene.skyAtmosphere.atmosphereLightIntensity = 12.0;
+        viewer.scene.fog.enabled = true;
+        viewer.scene.globe.dynamicAtmosphereLighting = true;
+        viewer.scene.globe.dynamicAtmosphereLightingFromSun = true;
+        viewer.scene.globe.showGroundAtmosphere = true;
+
+        // Quieter credit display
+        const creditDiv = document.createElement("div");
+        creditDiv.style.cssText =
+          "position:absolute;bottom:6px;right:120px;font-family:'JetBrains Mono',monospace;" +
+          "font-size:9px;color:rgba(161,161,170,0.6);z-index:5;pointer-events:none;" +
+          "letter-spacing:0.05em;";
+        creditDiv.textContent = "© CESIUM · GOOGLE · MAXAR";
+        containerRef.current.appendChild(creditDiv);
+
+        setReady(true);
+
+        renderBeacons();
+        await loadSplats();
+        applyAtmosphere(tourRoute[0].atmosphere);
+
+        setTimeout(() => {
+          if (!cancelled) startTour();
+        }, 1500);
+      } catch (err) {
+        console.error("Cesium init failed", err);
+        if (!cancelled) {
+          setError(err.message || "Cesium failed to initialize");
+        }
       }
-
-      // Better atmospheric scattering on the globe
-      viewer.scene.skyAtmosphere.show = true;
-      viewer.scene.skyAtmosphere.atmosphereLightIntensity = 10.0;
-      viewer.scene.fog.enabled = true;
-      viewer.scene.globe.dynamicAtmosphereLighting = true;
-      viewer.scene.globe.dynamicAtmosphereLightingFromSun = true;
-      viewer.scene.globe.showGroundAtmosphere = true;
-
-      // No bing logo, no double cursor
-      viewer.scene.requestRenderMode = false;
-
-      if (cancelled) {
-        viewer.destroy();
-        return;
-      }
-
-      setReady(true);
-
-      // Render beacons
-      renderBeacons();
-
-      // First frame atmosphere then tour
-      applyAtmosphere(tourRoute[0].atmosphere);
-      setTimeout(() => {
-        if (!cancelled) startTour();
-      }, 1500);
     }
 
-    init().catch((err) => {
-      console.error("Cesium init failed", err);
-      setError(err.message || "Cesium failed to initialize");
-    });
+    init();
 
     return () => {
       cancelled = true;
       tourRunningRef.current = false;
       if (tourTimeoutRef.current) clearTimeout(tourTimeoutRef.current);
       if (viewer && !viewer.isDestroyed()) {
-        viewer.destroy();
+        try { viewer.destroy(); } catch (e) { /* noop */ }
       }
       viewerRef.current = null;
     };

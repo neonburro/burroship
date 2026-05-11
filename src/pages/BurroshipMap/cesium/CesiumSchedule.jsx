@@ -53,7 +53,7 @@ function CesiumSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsA
     <div className="absolute bottom-6 left-6 z-10 hidden md:block">
       <div className="rounded-card border border-surface-edge bg-surface/80 backdrop-blur-md p-4 min-w-[260px]">
         <p className="font-mono-label text-[9px] mb-3 text-text-muted">
-          BURROSHIP · CESIUM · SCHEDULE
+          BURROSHIP · SCHEDULE
         </p>
 
         <div className="flex items-baseline justify-between mb-1">
