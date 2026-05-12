@@ -1,12 +1,10 @@
 // src/lib/burroship.js
 //
-// The world data layer. Pulls locations, airships, and tour routes
-// from Supabase. Falls back to hardcoded defaults if Supabase is
-// unreachable, so the map never breaks just because the DB is down.
+// World data layer. Pulls from Supabase, falls back to local data.
+// Tour route now uses a continuous-corridor format: an array of
+// waypoints, each flown to from the previous over duration_to_next_ms.
 
 import { burroshipSupabase, supabaseReady } from "./burroshipSupabase";
-
-// ----- Tokens ----------------------------------------------------
 
 export const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 export const cesiumIonToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
@@ -96,16 +94,15 @@ export const burroshipBounds = {
 };
 
 // ----- Default landing camera -----------------------------------
-// First frame the user sees. Compound is at 2280m elevation; we land
-// at 3080m altitude (800m AGL = airship cruise), looking south-east
-// at the three beacons. Same altitude the hold uses.
+// Land at the first waypoint of the corridor — Ridgway at 4570m
+// (15,000ft) heading south. Same altitude as the entire loop.
 
 export const defaultCamera = {
-  longitude: -107.5950,
-  latitude: 38.1500,
-  altitude: 3100,
+  longitude: -107.7551,
+  latitude: 38.1547,
+  altitude: 4570,
   pitch: -22,
-  heading: 200,
+  heading: 175,
 };
 
 // ----- Local fallback data --------------------------------------
@@ -123,56 +120,24 @@ const FALLBACK_LOCATIONS = [
 ];
 
 const FALLBACK_AIRSHIPS = [
-  { slug: "the-burroship", name: "The Burroship", description: "The lantern. Slow cruise over the San Juans.", cruising_altitude_m: 3000, cruising_speed_kmh: 25, beacon_color: "#A8D055", active: true },
+  { slug: "the-burroship", name: "The Burroship", description: "The lantern. Slow cruise over the San Juans.", cruising_altitude_m: 4570, cruising_speed_kmh: 25, beacon_color: "#A8D055", active: true },
 ];
 
 const FALLBACK_TOUR_ROUTE = {
   slug: "san-juans-default",
-  name: "San Juans Default",
+  name: "San Juans Corridor",
   is_default: true,
   stops: [
-    {
-      location_slug: "compound", atmosphere: "compoundDusk",
-      approach: { longitude: -107.5950, latitude: 38.1500, altitude: 3100, pitch: -22, heading: 200, durationMs: 16000 },
-      hold:     { longitude: -107.5840, latitude: 38.1340, altitude: 3080, pitch: -25, headingStart: 200, headingEnd: 280, durationMs: 80000 },
-      depart:   { longitude: -107.5780, latitude: 38.1430, altitude: 3200, pitch: -22, heading: 60, durationMs: 8000 },
-    },
-    {
-      location_slug: "chimney-rock", atmosphere: "goldenDusk",
-      approach: { longitude: -107.5800, latitude: 38.1480, altitude: 4390, pitch: -22, heading: 60, durationMs: 15000 },
-      hold:     { longitude: -107.5706, latitude: 38.1466, altitude: 4390, pitch: -20, headingStart: 60, headingEnd: 140, durationMs: 70000 },
-      depart:   { longitude: -107.6400, latitude: 38.1500, altitude: 3800, pitch: -22, heading: 270, durationMs: 8000 },
-    },
-    {
-      location_slug: "ridgway", atmosphere: "highNoonClear",
-      approach: { longitude: -107.7400, latitude: 38.1700, altitude: 2880, pitch: -22, heading: 240, durationMs: 16000 },
-      hold:     { longitude: -107.7551, latitude: 38.1547, altitude: 2880, pitch: -25, headingStart: 240, headingEnd: 320, durationMs: 80000 },
-      depart:   { longitude: -107.7400, latitude: 38.1100, altitude: 3000, pitch: -22, heading: 180, durationMs: 8000 },
-    },
-    {
-      location_slug: "mt-sneffels", atmosphere: "alpenglow",
-      approach: { longitude: -107.7900, latitude: 38.0400, altitude: 5113, pitch: -22, heading: 180, durationMs: 18000 },
-      hold:     { longitude: -107.7922, latitude: 38.0038, altitude: 5113, pitch: -18, headingStart: 180, headingEnd: 250, durationMs: 75000 },
-      depart:   { longitude: -107.7400, latitude: 38.0100, altitude: 4500, pitch: -22, heading: 90, durationMs: 8000 },
-    },
-    {
-      location_slug: "ouray", atmosphere: "boxCanyonShadow",
-      approach: { longitude: -107.6900, latitude: 38.0400, altitude: 3180, pitch: -22, heading: 90, durationMs: 15000 },
-      hold:     { longitude: -107.6708, latitude: 38.0228, altitude: 3180, pitch: -25, headingStart: 90, headingEnd: 170, durationMs: 75000 },
-      depart:   { longitude: -107.7100, latitude: 37.9900, altitude: 3200, pitch: -22, heading: 220, durationMs: 8000 },
-    },
-    {
-      location_slug: "telluride", atmosphere: "alpineSnow",
-      approach: { longitude: -107.8000, latitude: 37.9550, altitude: 3470, pitch: -22, heading: 220, durationMs: 16000 },
-      hold:     { longitude: -107.8123, latitude: 37.9375, altitude: 3470, pitch: -25, headingStart: 220, headingEnd: 300, durationMs: 75000 },
-      depart:   { longitude: -107.8350, latitude: 37.9400, altitude: 3500, pitch: -22, heading: 250, durationMs: 8000 },
-    },
-    {
-      location_slug: "mountain-village", atmosphere: "resortDusk",
-      approach: { longitude: -107.8700, latitude: 37.9450, altitude: 3710, pitch: -22, heading: 250, durationMs: 15000 },
-      hold:     { longitude: -107.8561, latitude: 37.9356, altitude: 3710, pitch: -25, headingStart: 250, headingEnd: 60, durationMs: 75000 },
-      depart:   { longitude: -107.7900, latitude: 37.9800, altitude: 3800, pitch: -22, heading: 60, durationMs: 12000 },
-    },
+    { waypoint: { longitude: -107.7551, latitude: 38.1547, altitude: 4570, pitch: -22, heading: 175 }, duration_to_next_ms: 60000, location_slug: "ridgway", atmosphere: "highNoonClear", label: "Ridgway" },
+    { waypoint: { longitude: -107.7300, latitude: 38.0900, altitude: 4570, pitch: -22, heading: 175 }, duration_to_next_ms: 50000, location_slug: "ridgway", atmosphere: "goldenDusk", label: "Hwy 550 South" },
+    { waypoint: { longitude: -107.6708, latitude: 38.0228, altitude: 4570, pitch: -22, heading: 220 }, duration_to_next_ms: 55000, location_slug: "ouray", atmosphere: "boxCanyonShadow", label: "Ouray" },
+    { waypoint: { longitude: -107.7300, latitude: 38.0100, altitude: 4570, pitch: -18, heading: 240 }, duration_to_next_ms: 50000, location_slug: "ouray", atmosphere: "alpenglow", label: "Sneffels Approach" },
+    { waypoint: { longitude: -107.7922, latitude: 38.0038, altitude: 4570, pitch: -10, heading: 230 }, duration_to_next_ms: 45000, location_slug: "mt-sneffels", atmosphere: "alpenglow", label: "Mt Sneffels" },
+    { waypoint: { longitude: -107.8400, latitude: 37.9700, altitude: 4570, pitch: -22, heading: 210 }, duration_to_next_ms: 45000, location_slug: "telluride", atmosphere: "alpineSnow", label: "Telluride Approach" },
+    { waypoint: { longitude: -107.8123, latitude: 37.9375, altitude: 4570, pitch: -22, heading: 90 }, duration_to_next_ms: 50000, location_slug: "telluride", atmosphere: "alpineSnow", label: "Telluride" },
+    { waypoint: { longitude: -107.8561, latitude: 37.9356, altitude: 4570, pitch: -22, heading: 350 }, duration_to_next_ms: 55000, location_slug: "mountain-village", atmosphere: "resortDusk", label: "Mountain Village" },
+    { waypoint: { longitude: -107.8800, latitude: 38.0400, altitude: 4570, pitch: -22, heading: 30 }, duration_to_next_ms: 55000, location_slug: "ridgway", atmosphere: "goldenDusk", label: "Uncompahgre Plateau" },
+    { waypoint: { longitude: -107.8200, latitude: 38.1300, altitude: 4570, pitch: -22, heading: 60 }, duration_to_next_ms: 50000, location_slug: "ridgway", atmosphere: "highNoonClear", label: "Ridgway Approach" },
   ],
 };
 
@@ -220,11 +185,15 @@ export async function fetchTourRoutes() {
   return data;
 }
 
+// Resolve a tour route's stops to include resolved location data.
+// For the corridor format, each stop has location_slug; we attach the
+// actual location record so the schedule UI can show town names + blurbs.
+
 export function hydrateTourStops(routeStops, locations) {
   const bySlug = new Map(locations.map((l) => [l.slug, l]));
   return routeStops.map((stop) => ({
     ...stop,
     location: bySlug.get(stop.location_slug) || null,
-    name: bySlug.get(stop.location_slug)?.name || stop.location_slug,
+    name: stop.label || bySlug.get(stop.location_slug)?.name || stop.location_slug,
   }));
 }

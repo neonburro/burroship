@@ -1,17 +1,14 @@
 // src/pages/BurroshipMap/cesium/CesiumWorld.jsx
 //
-// The Cesium engine. CDN-loaded via window.Cesium (script tag in
-// index.html). Now driven by props from BurroshipMap:
-//   locations       — array of all locations (from Supabase or fallback)
-//   tourStops       — hydrated tour stops with location data joined in
-//   tourPaused      — boolean, pauses the tour engine
-//   onSelectLocation — callback when a beacon is clicked
+// Continuous-corridor flight engine. The tour is now a single
+// looping path of waypoints. Camera smoothly eases between them.
+// No approach/hold/depart phases — just one fluid airship cruise.
 //
-// The airship vibe:
-//   - Lands directly at the Compound at cruise altitude
-//   - Constant low-pitch (~-25°), no diving or pulling up
-//   - Slow horizontal drift between stops, gentle bearing nudge
-//   - Camera locked inside the San Juans bounding box
+// Props from BurroshipMap:
+//   locations       — all locations (Supabase or fallback)
+//   tourStops       — hydrated waypoint stops with location data joined
+//   tourPaused      — boolean, pauses the loop
+//   onSelectLocation — callback when a beacon is clicked
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
@@ -25,7 +22,6 @@ import {
 
 import CesiumSchedule from "./CesiumSchedule";
 
-// Wait for window.Cesium (loaded from CDN in index.html).
 function waitForCesium() {
   return new Promise((resolve, reject) => {
     if (typeof window !== "undefined" && window.Cesium) {
@@ -66,8 +62,7 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
   const [error, setError] = useState(null);
   const [tourActive, setTourActive] = useState(false);
   const [currentStopIndex, setCurrentStopIndex] = useState(null);
-  const [currentPhase, setCurrentPhase] = useState(null);
-  const [phaseEndsAt, setPhaseEndsAt] = useState(0);
+  const [segmentEndsAt, setSegmentEndsAt] = useState(0);
 
   // ----- Atmosphere ----------------------------------------------
 
@@ -96,16 +91,15 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
       preset.lightPreset === "night" ? 2.5 : 10.0;
   }, []);
 
-  // ----- Camera flight -------------------------------------------
-  // Cubic easing for the cruise feel — like an airship adjusting
-  // course, not a fighter jet zipping.
+  // ----- Smooth camera flight ------------------------------------
+  // Cubic-in-out easing is the airship feel — gentle acceleration
+  // out of one waypoint, gentle deceleration into the next.
 
-  const flyTo = useCallback((config, durationMs) => {
+  const flyTo = useCallback((waypoint, durationMs) => {
     const Cesium = window.Cesium;
     const viewer = viewerRef.current;
     if (!viewer || viewer.isDestroyed() || !Cesium) return Promise.resolve();
 
-    // Cancel any in-flight camera move
     if (currentFlyToCancelRef.current) {
       currentFlyToCancelRef.current();
     }
@@ -123,11 +117,11 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
 
       viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(
-          config.longitude, config.latitude, config.altitude
+          waypoint.longitude, waypoint.latitude, waypoint.altitude
         ),
         orientation: {
-          heading: Cesium.Math.toRadians(config.heading ?? 0),
-          pitch: Cesium.Math.toRadians(config.pitch ?? -25),
+          heading: Cesium.Math.toRadians(waypoint.heading ?? 0),
+          pitch: Cesium.Math.toRadians(waypoint.pitch ?? -22),
           roll: 0,
         },
         duration: durationMs / 1000,
@@ -138,7 +132,7 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
     });
   }, []);
 
-  // ----- Tour engine ---------------------------------------------
+  // ----- Continuous corridor loop --------------------------------
 
   const tourStopsRef = useRef(tourStops);
   const tourPausedRef = useRef(tourPaused);
@@ -150,65 +144,51 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
     tourRunningRef.current = false;
     setTourActive(false);
     setCurrentStopIndex(null);
-    setCurrentPhase(null);
     if (currentFlyToCancelRef.current) currentFlyToCancelRef.current();
   }, []);
 
-  const runPhase = useCallback(
-    async (stopIndex, phase) => {
+  // Run waypoint n → fly to waypoint (n+1) → recurse.
+  // currentStopIndex represents "we're currently flying TOWARD this index"
+  // (the destination waypoint), so the schedule UI reads "approaching X".
+
+  const runWaypoint = useCallback(
+    async (destIndex) => {
       if (!tourRunningRef.current) return;
+
       if (tourPausedRef.current) {
-        // Wait for resume
         const waitId = setInterval(() => {
           if (!tourPausedRef.current && tourRunningRef.current) {
             clearInterval(waitId);
-            runPhase(stopIndex, phase);
+            runWaypoint(destIndex);
           }
         }, 250);
         return;
       }
 
       const stops = tourStopsRef.current;
-      if (!stops || !stops[stopIndex]) return;
+      if (!stops || !stops[destIndex]) return;
 
-      const stop = stops[stopIndex];
-      const config = stop[phase];
-      if (!config) return;
+      const dest = stops[destIndex];
+      const prevIndex = (destIndex - 1 + stops.length) % stops.length;
+      const prev = stops[prevIndex];
 
-      setCurrentStopIndex(stopIndex);
-      setCurrentPhase(phase);
-      setPhaseEndsAt(Date.now() + config.durationMs);
+      // duration_to_next_ms lives on the PREVIOUS stop (it's the
+      // time to travel from prev to dest)
+      const durationMs = prev.duration_to_next_ms || 50000;
 
-      if (phase === "approach") {
-        applyAtmosphere(stop.atmosphere);
-      }
+      setCurrentStopIndex(destIndex);
+      setSegmentEndsAt(Date.now() + durationMs);
 
-      if (phase === "hold") {
-        // Initial pose with start heading
-        await flyTo(
-          { ...config, heading: config.headingStart },
-          Math.min(4000, config.durationMs * 0.25)
-        );
-        if (!tourRunningRef.current) return;
-        // Slow rotate to end heading over the remainder
-        await flyTo(
-          { ...config, heading: config.headingEnd },
-          config.durationMs - Math.min(4000, config.durationMs * 0.25)
-        );
-      } else {
-        await flyTo(config, config.durationMs);
-      }
+      // Atmosphere tweens at start of each segment — smooth handoff
+      applyAtmosphere(dest.atmosphere);
+
+      await flyTo(dest.waypoint, durationMs);
 
       if (!tourRunningRef.current) return;
 
-      if (phase === "approach") {
-        runPhase(stopIndex, "hold");
-      } else if (phase === "hold") {
-        runPhase(stopIndex, "depart");
-      } else {
-        const nextIndex = (stopIndex + 1) % stops.length;
-        runPhase(nextIndex, "approach");
-      }
+      // Loop forever
+      const nextIndex = (destIndex + 1) % stops.length;
+      runWaypoint(nextIndex);
     },
     [applyAtmosphere, flyTo]
   );
@@ -217,8 +197,9 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
     if (tourRunningRef.current) return;
     tourRunningRef.current = true;
     setTourActive(true);
-    runPhase(0, "approach");
-  }, [runPhase]);
+    // Start by flying from waypoint 0 (initial landing) to waypoint 1
+    runWaypoint(1);
+  }, [runWaypoint]);
 
   // ----- Beacons -------------------------------------------------
 
@@ -255,7 +236,7 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
             heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
             scaleByDistance: new Cesium.NearFarScalar(
-              1000, 1.5, 50000, 0.6
+              1000, 1.5, 80000, 0.6
             ),
           },
           label: loc.featured
@@ -270,7 +251,7 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
                 heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
                 translucencyByDistance: new Cesium.NearFarScalar(
-                  5000, 1.0, 60000, 0.0
+                  10000, 1.0, 80000, 0.0
                 ),
               }
             : undefined,
@@ -338,8 +319,6 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
   }, [onSelectLocation]);
 
   // ----- Camera bounds enforcement -------------------------------
-  // Cesium doesn't have a built-in bounding box for free camera; we
-  // listen for camera move events and clamp position back into bounds.
 
   const setupBoundsEnforcement = useCallback(() => {
     const Cesium = window.Cesium;
@@ -349,7 +328,7 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
     const bounds = burroshipBounds;
 
     viewer.camera.moveEnd.addEventListener(() => {
-      if (tourRunningRef.current) return; // Don't fight the tour
+      if (tourRunningRef.current) return;
       const pos = Cesium.Cartographic.fromCartesian(viewer.camera.position);
       const lon = Cesium.Math.toDegrees(pos.longitude);
       const lat = Cesium.Math.toDegrees(pos.latitude);
@@ -407,7 +386,7 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
 
         viewerRef.current = viewer;
 
-        // Land directly at the destination — skip the global Earth view
+        // Land at the corridor's first waypoint — Ridgway at 15,000ft
         viewer.camera.setView({
           destination: Cesium.Cartesian3.fromDegrees(
             defaultCamera.longitude,
@@ -421,7 +400,6 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
           },
         });
 
-        // Atmospheric polish
         viewer.scene.skyAtmosphere.show = true;
         viewer.scene.skyAtmosphere.atmosphereLightIntensity = 12.0;
         viewer.scene.fog.enabled = true;
@@ -430,11 +408,9 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
         viewer.scene.globe.showGroundAtmosphere = true;
         viewer.scene.globe.depthTestAgainstTerrain = true;
 
-        // Cesium's default zoom limits are too generous for airship vibe
         viewer.scene.screenSpaceCameraController.minimumZoomDistance = 800;
         viewer.scene.screenSpaceCameraController.maximumZoomDistance = 25000;
 
-        // Photorealistic 3D Tiles — Google's global photogrammetry
         try {
           const tileset = await Cesium.createGooglePhotorealistic3DTileset();
           viewer.scene.primitives.add(tileset);
@@ -447,7 +423,6 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
           return;
         }
 
-        // Quieter credit display
         const creditDiv = document.createElement("div");
         creditDiv.style.cssText =
           "position:absolute;bottom:6px;right:120px;font-family:'JetBrains Mono',monospace;" +
@@ -465,9 +440,10 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
 
         if (tourStops && tourStops.length > 0) {
           applyAtmosphere(tourStops[0].atmosphere);
+          // Start the loop after a brief beat so the landing settles
           setTimeout(() => {
             if (!cancelled) startTour();
-          }, 1500);
+          }, 2500);
         }
       } catch (err) {
         console.error("Cesium init failed", err);
@@ -494,7 +470,6 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-render beacons if locations change
   useEffect(() => {
     if (ready) {
       renderBeacons();
@@ -502,7 +477,6 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
     }
   }, [ready, locations, renderBeacons, loadSplats]);
 
-  // Re-bind click handler if callback changes
   useEffect(() => {
     if (ready) setupClickHandler();
   }, [ready, setupClickHandler]);
@@ -525,8 +499,7 @@ function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
         <CesiumSchedule
           tourActive={tourActive}
           currentStopIndex={currentStopIndex}
-          currentPhase={currentPhase}
-          phaseEndsAt={phaseEndsAt}
+          segmentEndsAt={segmentEndsAt}
           tourStops={tourStops}
           tourPaused={tourPaused}
         />
