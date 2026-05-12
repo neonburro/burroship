@@ -1,32 +1,31 @@
 // src/pages/BurroshipMap/cesium/CesiumWorld.jsx
 //
 // The Cesium engine. CDN-loaded via window.Cesium (script tag in
-// index.html). No npm bundling, no Vite gymnastics.
+// index.html). Now driven by props from BurroshipMap:
+//   locations       — array of all locations (from Supabase or fallback)
+//   tourStops       — hydrated tour stops with location data joined in
+//   tourPaused      — boolean, pauses the tour engine
+//   onSelectLocation — callback when a beacon is clicked
 //
-// What it does:
-//   - Initializes a Cesium Viewer at the Burroship overview position
-//   - Streams Google Photorealistic 3D Tiles as the base Earth layer
-//   - Loads any Gaussian Splats declared on tour stops (splats: [...])
-//   - Renders Compound beacons as glowing entities at their coords
-//   - Runs the autonomous tour (approach/hold/depart) through every stop
-//   - Tweens atmosphere per stop (lightPreset, fog density, weather)
-//   - Suppresses Cesium's default UI; we render our own schedule
+// The airship vibe:
+//   - Lands directly at the Compound at cruise altitude
+//   - Constant low-pitch (~-25°), no diving or pulling up
+//   - Slow horizontal drift between stops, gentle bearing nudge
+//   - Camera locked inside the San Juans bounding box
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
 import {
   cesiumIonToken,
   atmospherePresets,
-  tourRoute,
   compoundBeaconColors,
+  burroshipBounds,
+  defaultCamera,
 } from "../../../lib/burroship";
-import locations from "../../../data/locations.json";
 
 import CesiumSchedule from "./CesiumSchedule";
 
-// Wait until window.Cesium is available — it loads from the CDN
-// script tag in index.html, which may not be ready when this
-// component mounts. Resolves the global Cesium namespace.
+// Wait for window.Cesium (loaded from CDN in index.html).
 function waitForCesium() {
   return new Promise((resolve, reject) => {
     if (typeof window !== "undefined" && window.Cesium) {
@@ -47,23 +46,21 @@ function waitForCesium() {
   });
 }
 
-// Map our lightPreset names to JulianDate hour offsets that put the
-// sun in the right position over Colorado. Cesium drives time-of-day
-// lighting from viewer.clock.currentTime.
 const HOUR_OFFSET = {
-  dawn: -6,    // ~06:00 UTC over CO
-  day: 0,      // local solar noon
-  dusk: 6,     // ~18:00 UTC over CO
-  night: 12,   // ~midnight over CO
+  dawn: -6,
+  day: 0,
+  dusk: 6,
+  night: 12,
 };
 
-function CesiumWorld() {
+function CesiumWorld({ locations, tourStops, tourPaused, onSelectLocation }) {
   const containerRef = useRef(null);
   const viewerRef = useRef(null);
   const tourRunningRef = useRef(false);
-  const tourTimeoutRef = useRef(null);
   const beaconEntitiesRef = useRef([]);
   const splatTilesetsRef = useRef([]);
+  const handlerRef = useRef(null);
+  const currentFlyToCancelRef = useRef(null);
 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(null);
@@ -82,81 +79,101 @@ function CesiumWorld() {
     const preset = atmospherePresets[presetKey];
     if (!preset) return;
 
-    // Sun position via clock time
     const baseDate = Cesium.JulianDate.fromIso8601("2026-06-15T12:00:00Z");
     const hours = HOUR_OFFSET[preset.lightPreset] ?? 0;
     viewer.clock.currentTime = Cesium.JulianDate.addHours(
-      baseDate,
-      hours,
-      new Cesium.JulianDate()
+      baseDate, hours, new Cesium.JulianDate()
     );
 
-    // Atmosphere intensity follows time of day
     viewer.scene.skyAtmosphere.atmosphereLightIntensity =
       preset.lightPreset === "night" ? 3.0 : 12.0;
-
-    // Fog density
     viewer.scene.fog.enabled = true;
     viewer.scene.fog.density = preset.fogDensity;
-
-    // Terrain exaggeration applies globally
     viewer.scene.verticalExaggeration = preset.exaggeration;
-
-    // Stars only at night
     viewer.scene.skyBox.show = preset.lightPreset === "night";
-
-    // Globe brightness ties to lighting
     viewer.scene.globe.dynamicAtmosphereLighting = true;
     viewer.scene.globe.atmosphereLightIntensity =
       preset.lightPreset === "night" ? 2.5 : 10.0;
   }, []);
 
   // ----- Camera flight -------------------------------------------
+  // Cubic easing for the cruise feel — like an airship adjusting
+  // course, not a fighter jet zipping.
 
-  const flyToStop = useCallback((config, durationMs) => {
+  const flyTo = useCallback((config, durationMs) => {
     const Cesium = window.Cesium;
     const viewer = viewerRef.current;
     if (!viewer || viewer.isDestroyed() || !Cesium) return Promise.resolve();
 
+    // Cancel any in-flight camera move
+    if (currentFlyToCancelRef.current) {
+      currentFlyToCancelRef.current();
+    }
+
     return new Promise((resolve) => {
+      let resolved = false;
+      const safeResolve = () => {
+        if (!resolved) {
+          resolved = true;
+          currentFlyToCancelRef.current = null;
+          resolve();
+        }
+      };
+      currentFlyToCancelRef.current = safeResolve;
+
       viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(
-          config.longitude,
-          config.latitude,
-          config.altitude
+          config.longitude, config.latitude, config.altitude
         ),
         orientation: {
           heading: Cesium.Math.toRadians(config.heading ?? 0),
-          pitch: Cesium.Math.toRadians(config.pitch ?? -45),
+          pitch: Cesium.Math.toRadians(config.pitch ?? -25),
           roll: 0,
         },
         duration: durationMs / 1000,
-        easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
-        complete: resolve,
-        cancel: resolve,
+        easingFunction: Cesium.EasingFunction.CUBIC_IN_OUT,
+        complete: safeResolve,
+        cancel: safeResolve,
       });
     });
   }, []);
 
   // ----- Tour engine ---------------------------------------------
 
+  const tourStopsRef = useRef(tourStops);
+  const tourPausedRef = useRef(tourPaused);
+
+  useEffect(() => { tourStopsRef.current = tourStops; }, [tourStops]);
+  useEffect(() => { tourPausedRef.current = tourPaused; }, [tourPaused]);
+
   const stopTour = useCallback(() => {
     tourRunningRef.current = false;
     setTourActive(false);
     setCurrentStopIndex(null);
     setCurrentPhase(null);
-    if (tourTimeoutRef.current) {
-      clearTimeout(tourTimeoutRef.current);
-      tourTimeoutRef.current = null;
-    }
+    if (currentFlyToCancelRef.current) currentFlyToCancelRef.current();
   }, []);
 
   const runPhase = useCallback(
     async (stopIndex, phase) => {
       if (!tourRunningRef.current) return;
+      if (tourPausedRef.current) {
+        // Wait for resume
+        const waitId = setInterval(() => {
+          if (!tourPausedRef.current && tourRunningRef.current) {
+            clearInterval(waitId);
+            runPhase(stopIndex, phase);
+          }
+        }, 250);
+        return;
+      }
 
-      const stop = tourRoute[stopIndex];
+      const stops = tourStopsRef.current;
+      if (!stops || !stops[stopIndex]) return;
+
+      const stop = stops[stopIndex];
       const config = stop[phase];
+      if (!config) return;
 
       setCurrentStopIndex(stopIndex);
       setCurrentPhase(phase);
@@ -167,18 +184,19 @@ function CesiumWorld() {
       }
 
       if (phase === "hold") {
-        // Initial quick-snap to hold position with starting heading
-        await flyToStop(
+        // Initial pose with start heading
+        await flyTo(
           { ...config, heading: config.headingStart },
-          2500
+          Math.min(4000, config.durationMs * 0.25)
         );
-        // Slow rotate to ending heading over the remainder
-        await flyToStop(
+        if (!tourRunningRef.current) return;
+        // Slow rotate to end heading over the remainder
+        await flyTo(
           { ...config, heading: config.headingEnd },
-          config.durationMs - 2500
+          config.durationMs - Math.min(4000, config.durationMs * 0.25)
         );
       } else {
-        await flyToStop(config, config.durationMs);
+        await flyTo(config, config.durationMs);
       }
 
       if (!tourRunningRef.current) return;
@@ -188,11 +206,11 @@ function CesiumWorld() {
       } else if (phase === "hold") {
         runPhase(stopIndex, "depart");
       } else {
-        const nextIndex = (stopIndex + 1) % tourRoute.length;
+        const nextIndex = (stopIndex + 1) % stops.length;
         runPhase(nextIndex, "approach");
       }
     },
-    [applyAtmosphere, flyToStop]
+    [applyAtmosphere, flyTo]
   );
 
   const startTour = useCallback(() => {
@@ -202,9 +220,7 @@ function CesiumWorld() {
     runPhase(0, "approach");
   }, [runPhase]);
 
-  // ----- Beacons --------------------------------------------------
-  // Render every location as a Cesium entity. Compound beacons get
-  // their metallic-glow color; others get the lantern primary.
+  // ----- Beacons -------------------------------------------------
 
   const renderBeacons = useCallback(() => {
     const Cesium = window.Cesium;
@@ -215,11 +231,11 @@ function CesiumWorld() {
     beaconEntitiesRef.current = [];
 
     locations
-      .filter((loc) => loc.lat != null && loc.lng != null)
+      .filter((loc) => loc.latitude != null && loc.longitude != null)
       .forEach((loc) => {
         const isBeacon = loc.subcategory === "compound-beacon";
         const palette = isBeacon
-          ? compoundBeaconColors[loc.beaconColor]
+          ? compoundBeaconColors[loc.beacon_color]
           : null;
 
         const colorHex = palette ? palette.base : "#A8D055";
@@ -228,7 +244,9 @@ function CesiumWorld() {
 
         const entity = viewer.entities.add({
           name: loc.name,
-          position: Cesium.Cartesian3.fromDegrees(loc.lng, loc.lat, 150),
+          position: Cesium.Cartesian3.fromDegrees(
+            loc.longitude, loc.latitude, 150
+          ),
           point: {
             pixelSize: isBeacon ? 18 : 10,
             color: color.withAlpha(0.95),
@@ -240,7 +258,7 @@ function CesiumWorld() {
               1000, 1.5, 50000, 0.6
             ),
           },
-          label: isBeacon
+          label: loc.featured
             ? {
                 text: loc.name + (isInDev ? "  ◉" : ""),
                 font: "11px 'JetBrains Mono', monospace",
@@ -252,65 +270,108 @@ function CesiumWorld() {
                 heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
                 translucencyByDistance: new Cesium.NearFarScalar(
-                  5000, 1.0, 50000, 0.0
+                  5000, 1.0, 60000, 0.0
                 ),
               }
             : undefined,
-          description: loc.blurb,
-          properties: { slug: loc.slug },
+          properties: { locationData: loc },
         });
 
         beaconEntitiesRef.current.push(entity);
       });
-  }, []);
+  }, [locations]);
 
-  // ----- Gaussian Splat loader -----------------------------------
-  // Walk the tour route, find any stops with splats[] entries, load
-  // each as a Cesium3DTileset from its ion asset ID. The splats
-  // appear at their declared coordinates; Cesium handles streaming,
-  // LOD, and composition with the underlying photoreal tiles.
+  // ----- Splat loader --------------------------------------------
 
   const loadSplats = useCallback(async () => {
     const Cesium = window.Cesium;
     const viewer = viewerRef.current;
     if (!viewer || viewer.isDestroyed() || !Cesium) return;
 
-    // Clear any prior splat tilesets
     splatTilesetsRef.current.forEach((t) => {
       try { viewer.scene.primitives.remove(t); } catch (e) { /* noop */ }
     });
     splatTilesetsRef.current = [];
 
-    for (const stop of tourRoute) {
-      if (!stop.splats || stop.splats.length === 0) continue;
-
-      for (const splat of stop.splats) {
-        try {
-          const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(
-            splat.assetId
-          );
-
-          // Position the splat at its declared coordinates
-          if (splat.longitude != null && splat.latitude != null) {
-            const target = Cesium.Cartesian3.fromDegrees(
-              splat.longitude,
-              splat.latitude,
-              splat.height ?? 0
-            );
-            const m = Cesium.Transforms.eastNorthUpToFixedFrame(target);
-            tileset.modelMatrix = m;
-          }
-
-          viewer.scene.primitives.add(tileset);
-          splatTilesetsRef.current.push(tileset);
-        } catch (err) {
-          console.warn(
-            "Splat load failed for assetId " + splat.assetId,
-            err.message
-          );
-        }
+    for (const loc of locations) {
+      if (!loc.splat_asset_id) continue;
+      try {
+        const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(
+          loc.splat_asset_id
+        );
+        const target = Cesium.Cartesian3.fromDegrees(
+          loc.longitude,
+          loc.latitude,
+          (loc.elevation_m || 0) + (loc.splat_height_offset_m || 0)
+        );
+        tileset.modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(target);
+        viewer.scene.primitives.add(tileset);
+        splatTilesetsRef.current.push(tileset);
+      } catch (err) {
+        console.warn("Splat load failed for", loc.slug, err.message);
       }
     }
+  }, [locations]);
+
+  // ----- Click handler -------------------------------------------
+
+  const setupClickHandler = useCallback(() => {
+    const Cesium = window.Cesium;
+    const viewer = viewerRef.current;
+    if (!viewer || viewer.isDestroyed() || !Cesium) return;
+
+    if (handlerRef.current) {
+      handlerRef.current.destroy();
+      handlerRef.current = null;
+    }
+
+    const handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+    handler.setInputAction((click) => {
+      const picked = viewer.scene.pick(click.position);
+      if (picked?.id?.properties?.locationData) {
+        const locData = picked.id.properties.locationData.getValue();
+        onSelectLocation(locData);
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    handlerRef.current = handler;
+  }, [onSelectLocation]);
+
+  // ----- Camera bounds enforcement -------------------------------
+  // Cesium doesn't have a built-in bounding box for free camera; we
+  // listen for camera move events and clamp position back into bounds.
+
+  const setupBoundsEnforcement = useCallback(() => {
+    const Cesium = window.Cesium;
+    const viewer = viewerRef.current;
+    if (!viewer || !Cesium) return;
+
+    const bounds = burroshipBounds;
+
+    viewer.camera.moveEnd.addEventListener(() => {
+      if (tourRunningRef.current) return; // Don't fight the tour
+      const pos = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+      const lon = Cesium.Math.toDegrees(pos.longitude);
+      const lat = Cesium.Math.toDegrees(pos.latitude);
+      const alt = pos.height;
+      let outOfBounds = false;
+      let clamped = { longitude: lon, latitude: lat, altitude: alt };
+      if (lon < bounds.west) { clamped.longitude = bounds.west; outOfBounds = true; }
+      if (lon > bounds.east) { clamped.longitude = bounds.east; outOfBounds = true; }
+      if (lat < bounds.south) { clamped.latitude = bounds.south; outOfBounds = true; }
+      if (lat > bounds.north) { clamped.latitude = bounds.north; outOfBounds = true; }
+      if (alt < bounds.minAltitude) { clamped.altitude = bounds.minAltitude; outOfBounds = true; }
+      if (alt > bounds.maxAltitude) { clamped.altitude = bounds.maxAltitude; outOfBounds = true; }
+      if (outOfBounds) {
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(
+            clamped.longitude, clamped.latitude, clamped.altitude
+          ),
+          duration: 1.2,
+          easingFunction: Cesium.EasingFunction.QUADRATIC_OUT,
+        });
+      }
+    });
   }, []);
 
   // ----- Init -----------------------------------------------------
@@ -346,9 +407,32 @@ function CesiumWorld() {
 
         viewerRef.current = viewer;
 
-        // Suppress the dot-grid imagery layer until photoreal tiles load
-        viewer.scene.globe.show = true;
+        // Land directly at the destination — skip the global Earth view
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(
+            defaultCamera.longitude,
+            defaultCamera.latitude,
+            defaultCamera.altitude
+          ),
+          orientation: {
+            heading: Cesium.Math.toRadians(defaultCamera.heading),
+            pitch: Cesium.Math.toRadians(defaultCamera.pitch),
+            roll: 0,
+          },
+        });
+
+        // Atmospheric polish
         viewer.scene.skyAtmosphere.show = true;
+        viewer.scene.skyAtmosphere.atmosphereLightIntensity = 12.0;
+        viewer.scene.fog.enabled = true;
+        viewer.scene.globe.dynamicAtmosphereLighting = true;
+        viewer.scene.globe.dynamicAtmosphereLightingFromSun = true;
+        viewer.scene.globe.showGroundAtmosphere = true;
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+
+        // Cesium's default zoom limits are too generous for airship vibe
+        viewer.scene.screenSpaceCameraController.minimumZoomDistance = 800;
+        viewer.scene.screenSpaceCameraController.maximumZoomDistance = 25000;
 
         // Photorealistic 3D Tiles — Google's global photogrammetry
         try {
@@ -363,13 +447,6 @@ function CesiumWorld() {
           return;
         }
 
-        // Atmospheric polish
-        viewer.scene.skyAtmosphere.atmosphereLightIntensity = 12.0;
-        viewer.scene.fog.enabled = true;
-        viewer.scene.globe.dynamicAtmosphereLighting = true;
-        viewer.scene.globe.dynamicAtmosphereLightingFromSun = true;
-        viewer.scene.globe.showGroundAtmosphere = true;
-
         // Quieter credit display
         const creditDiv = document.createElement("div");
         creditDiv.style.cssText =
@@ -382,12 +459,16 @@ function CesiumWorld() {
         setReady(true);
 
         renderBeacons();
-        await loadSplats();
-        applyAtmosphere(tourRoute[0].atmosphere);
+        loadSplats();
+        setupClickHandler();
+        setupBoundsEnforcement();
 
-        setTimeout(() => {
-          if (!cancelled) startTour();
-        }, 1500);
+        if (tourStops && tourStops.length > 0) {
+          applyAtmosphere(tourStops[0].atmosphere);
+          setTimeout(() => {
+            if (!cancelled) startTour();
+          }, 1500);
+        }
       } catch (err) {
         console.error("Cesium init failed", err);
         if (!cancelled) {
@@ -401,14 +482,30 @@ function CesiumWorld() {
     return () => {
       cancelled = true;
       tourRunningRef.current = false;
-      if (tourTimeoutRef.current) clearTimeout(tourTimeoutRef.current);
+      if (handlerRef.current) {
+        try { handlerRef.current.destroy(); } catch (e) {}
+        handlerRef.current = null;
+      }
       if (viewer && !viewer.isDestroyed()) {
-        try { viewer.destroy(); } catch (e) { /* noop */ }
+        try { viewer.destroy(); } catch (e) {}
       }
       viewerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Re-render beacons if locations change
+  useEffect(() => {
+    if (ready) {
+      renderBeacons();
+      loadSplats();
+    }
+  }, [ready, locations, renderBeacons, loadSplats]);
+
+  // Re-bind click handler if callback changes
+  useEffect(() => {
+    if (ready) setupClickHandler();
+  }, [ready, setupClickHandler]);
 
   if (error) {
     return (
@@ -424,21 +521,16 @@ function CesiumWorld() {
         ref={containerRef}
         style={{ position: "absolute", inset: 0, background: "#020503" }}
       />
-
-      {!ready && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="font-mono-label text-text-secondary animate-pulse">
-            BURROSHIP · BOARDING
-          </p>
-        </div>
+      {tourStops && (
+        <CesiumSchedule
+          tourActive={tourActive}
+          currentStopIndex={currentStopIndex}
+          currentPhase={currentPhase}
+          phaseEndsAt={phaseEndsAt}
+          tourStops={tourStops}
+          tourPaused={tourPaused}
+        />
       )}
-
-      <CesiumSchedule
-        tourActive={tourActive}
-        currentStopIndex={currentStopIndex}
-        currentPhase={currentPhase}
-        phaseEndsAt={phaseEndsAt}
-      />
     </>
   );
 }

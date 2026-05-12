@@ -1,8 +1,6 @@
 // src/pages/BurroshipMap/cesium/CesiumSchedule.jsx
 import { useState, useEffect } from "react";
 
-import { tourRoute } from "../../../lib/burroship";
-
 function formatCountdown(ms) {
   if (ms <= 0) return "0:00";
   const totalSec = Math.floor(ms / 1000);
@@ -11,23 +9,30 @@ function formatCountdown(ms) {
   return min + ":" + String(sec).padStart(2, "0");
 }
 
-function CesiumSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsAt }) {
+function CesiumSchedule({
+  tourActive,
+  currentStopIndex,
+  currentPhase,
+  phaseEndsAt,
+  tourStops,
+  tourPaused,
+}) {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    if (!tourActive) return;
+    if (!tourActive || tourPaused) return;
     const interval = setInterval(() => setNow(Date.now()), 500);
     return () => clearInterval(interval);
-  }, [tourActive]);
+  }, [tourActive, tourPaused]);
 
-  if (!tourActive || currentStopIndex == null) return null;
+  if (!tourActive || currentStopIndex == null || !tourStops?.length) return null;
 
-  const currentStop = tourRoute[currentStopIndex];
-  const remainingMs = Math.max(0, phaseEndsAt - now);
+  const currentStop = tourStops[currentStopIndex];
+  const remainingMs = tourPaused ? phaseEndsAt - now : Math.max(0, phaseEndsAt - now);
 
   const upcoming = [];
-  let cursor = (currentStopIndex + 1) % tourRoute.length;
-  let cumulativeMs = remainingMs;
+  let cursor = (currentStopIndex + 1) % tourStops.length;
+  let cumulativeMs = Math.max(0, remainingMs);
 
   if (currentPhase === "approach") {
     cumulativeMs += currentStop.hold.durationMs + currentStop.depart.durationMs;
@@ -36,18 +41,20 @@ function CesiumSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsA
   }
 
   for (let i = 0; i < 4; i++) {
-    const stop = tourRoute[cursor];
+    const stop = tourStops[cursor];
     upcoming.push({ name: stop.name, eta: cumulativeMs });
     cumulativeMs +=
       stop.approach.durationMs + stop.hold.durationMs + stop.depart.durationMs;
-    cursor = (cursor + 1) % tourRoute.length;
+    cursor = (cursor + 1) % tourStops.length;
   }
 
-  const phaseLabel = {
-    approach: "ARRIVING",
-    hold: "OVER",
-    depart: "DEPARTING",
-  }[currentPhase] || "AT";
+  const phaseLabel = tourPaused
+    ? "PAUSED"
+    : {
+        approach: "ARRIVING",
+        hold: "OVER",
+        depart: "DEPARTING",
+      }[currentPhase] || "AT";
 
   return (
     <div className="absolute bottom-6 left-6 z-10 hidden md:block">
@@ -60,9 +67,11 @@ function CesiumSchedule({ tourActive, currentStopIndex, currentPhase, phaseEndsA
           <span className="font-mono-label text-[10px] text-primary">
             {phaseLabel}
           </span>
-          <span className="font-mono-label text-[10px] text-text-secondary">
-            {formatCountdown(remainingMs)}
-          </span>
+          {!tourPaused && (
+            <span className="font-mono-label text-[10px] text-text-secondary">
+              {formatCountdown(Math.max(0, remainingMs))}
+            </span>
+          )}
         </div>
         <p className="text-text-primary font-medium mb-4">{currentStop.name}</p>
 
