@@ -12,8 +12,6 @@ export const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 export const cesiumIonToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
 // ----- Atmosphere presets ---------------------------------------
-// Each tour stop names one of these. Engine reads the preset and
-// drives Cesium's lighting, fog, and weather accordingly.
 
 export const atmospherePresets = {
   alpenglow: {
@@ -87,7 +85,6 @@ export const compoundBeaconColors = {
 };
 
 // ----- San Juans bounding box -----------------------------------
-// Cesium camera constraints — keep the user inside our world.
 
 export const burroshipBounds = {
   west: -108.0,
@@ -99,20 +96,19 @@ export const burroshipBounds = {
 };
 
 // ----- Default landing camera -----------------------------------
-// First frame the user sees. Mid-altitude over the Compound area
-// at airship cruise, looking south at the beacons.
+// First frame the user sees. Compound is at 2280m elevation; we land
+// at 3080m altitude (800m AGL = airship cruise), looking south-east
+// at the three beacons. Same altitude the hold uses.
 
 export const defaultCamera = {
-  longitude: -107.5850,
+  longitude: -107.5950,
   latitude: 38.1500,
-  altitude: 3500,
-  pitch: -25,
+  altitude: 3100,
+  pitch: -22,
   heading: 200,
 };
 
 // ----- Local fallback data --------------------------------------
-// Used if Supabase is unreachable. Mirrors the seed data in the
-// migration so the map renders something useful even offline.
 
 const FALLBACK_LOCATIONS = [
   { slug: "burroships", name: "The Burroships", category: "hq", subcategory: "compound-beacon", beacon_color: "bronze", status: "live", longitude: -107.5800, latitude: 38.1380, elevation_m: 2350, blurb: "Loading bay and staging ground for visiting burros. Cargo in, cargo out, water and shade for the journey.", tags: ["compound","staging","logistics"], featured: true },
@@ -137,45 +133,45 @@ const FALLBACK_TOUR_ROUTE = {
   stops: [
     {
       location_slug: "compound", atmosphere: "compoundDusk",
-      approach: { longitude: -107.5850, latitude: 38.1500, altitude: 3200, pitch: -25, heading: 200, durationMs: 40000 },
-      hold: { longitude: -107.5800, latitude: 38.1380, altitude: 2800, pitch: -22, headingStart: 200, headingEnd: 230, durationMs: 35000 },
-      depart: { longitude: -107.5720, latitude: 38.1430, altitude: 3000, pitch: -25, heading: 50, durationMs: 20000 },
+      approach: { longitude: -107.5950, latitude: 38.1500, altitude: 3100, pitch: -22, heading: 200, durationMs: 16000 },
+      hold:     { longitude: -107.5840, latitude: 38.1340, altitude: 3080, pitch: -25, headingStart: 200, headingEnd: 280, durationMs: 80000 },
+      depart:   { longitude: -107.5780, latitude: 38.1430, altitude: 3200, pitch: -22, heading: 60, durationMs: 8000 },
     },
     {
       location_slug: "chimney-rock", atmosphere: "goldenDusk",
-      approach: { longitude: -107.5750, latitude: 38.1480, altitude: 3500, pitch: -25, heading: 50, durationMs: 35000 },
-      hold: { longitude: -107.5706, latitude: 38.1466, altitude: 3700, pitch: -18, headingStart: 50, headingEnd: 70, durationMs: 35000 },
-      depart: { longitude: -107.6400, latitude: 38.1500, altitude: 3400, pitch: -25, heading: 270, durationMs: 25000 },
+      approach: { longitude: -107.5800, latitude: 38.1480, altitude: 4390, pitch: -22, heading: 60, durationMs: 15000 },
+      hold:     { longitude: -107.5706, latitude: 38.1466, altitude: 4390, pitch: -20, headingStart: 60, headingEnd: 140, durationMs: 70000 },
+      depart:   { longitude: -107.6400, latitude: 38.1500, altitude: 3800, pitch: -22, heading: 270, durationMs: 8000 },
     },
     {
       location_slug: "ridgway", atmosphere: "highNoonClear",
-      approach: { longitude: -107.7300, latitude: 38.1700, altitude: 3200, pitch: -25, heading: 240, durationMs: 35000 },
-      hold: { longitude: -107.7551, latitude: 38.1547, altitude: 2900, pitch: -28, headingStart: 240, headingEnd: 260, durationMs: 35000 },
-      depart: { longitude: -107.7400, latitude: 38.1100, altitude: 3100, pitch: -25, heading: 180, durationMs: 25000 },
+      approach: { longitude: -107.7400, latitude: 38.1700, altitude: 2880, pitch: -22, heading: 240, durationMs: 16000 },
+      hold:     { longitude: -107.7551, latitude: 38.1547, altitude: 2880, pitch: -25, headingStart: 240, headingEnd: 320, durationMs: 80000 },
+      depart:   { longitude: -107.7400, latitude: 38.1100, altitude: 3000, pitch: -22, heading: 180, durationMs: 8000 },
     },
     {
       location_slug: "mt-sneffels", atmosphere: "alpenglow",
-      approach: { longitude: -107.7900, latitude: 38.0400, altitude: 4500, pitch: -22, heading: 180, durationMs: 40000 },
-      hold: { longitude: -107.7922, latitude: 38.0038, altitude: 4900, pitch: -10, headingStart: 180, headingEnd: 210, durationMs: 40000 },
-      depart: { longitude: -107.7400, latitude: 38.0100, altitude: 4000, pitch: -25, heading: 90, durationMs: 25000 },
+      approach: { longitude: -107.7900, latitude: 38.0400, altitude: 5113, pitch: -22, heading: 180, durationMs: 18000 },
+      hold:     { longitude: -107.7922, latitude: 38.0038, altitude: 5113, pitch: -18, headingStart: 180, headingEnd: 250, durationMs: 75000 },
+      depart:   { longitude: -107.7400, latitude: 38.0100, altitude: 4500, pitch: -22, heading: 90, durationMs: 8000 },
     },
     {
       location_slug: "ouray", atmosphere: "boxCanyonShadow",
-      approach: { longitude: -107.6900, latitude: 38.0400, altitude: 3500, pitch: -25, heading: 90, durationMs: 30000 },
-      hold: { longitude: -107.6708, latitude: 38.0228, altitude: 3000, pitch: -28, headingStart: 90, headingEnd: 120, durationMs: 35000 },
-      depart: { longitude: -107.7100, latitude: 37.9900, altitude: 3200, pitch: -25, heading: 220, durationMs: 25000 },
+      approach: { longitude: -107.6900, latitude: 38.0400, altitude: 3180, pitch: -22, heading: 90, durationMs: 15000 },
+      hold:     { longitude: -107.6708, latitude: 38.0228, altitude: 3180, pitch: -25, headingStart: 90, headingEnd: 170, durationMs: 75000 },
+      depart:   { longitude: -107.7100, latitude: 37.9900, altitude: 3200, pitch: -22, heading: 220, durationMs: 8000 },
     },
     {
       location_slug: "telluride", atmosphere: "alpineSnow",
-      approach: { longitude: -107.8000, latitude: 37.9550, altitude: 3400, pitch: -25, heading: 220, durationMs: 35000 },
-      hold: { longitude: -107.8123, latitude: 37.9375, altitude: 3100, pitch: -28, headingStart: 220, headingEnd: 250, durationMs: 35000 },
-      depart: { longitude: -107.8350, latitude: 37.9400, altitude: 3300, pitch: -25, heading: 250, durationMs: 25000 },
+      approach: { longitude: -107.8000, latitude: 37.9550, altitude: 3470, pitch: -22, heading: 220, durationMs: 16000 },
+      hold:     { longitude: -107.8123, latitude: 37.9375, altitude: 3470, pitch: -25, headingStart: 220, headingEnd: 300, durationMs: 75000 },
+      depart:   { longitude: -107.8350, latitude: 37.9400, altitude: 3500, pitch: -22, heading: 250, durationMs: 8000 },
     },
     {
       location_slug: "mountain-village", atmosphere: "resortDusk",
-      approach: { longitude: -107.8700, latitude: 37.9450, altitude: 3400, pitch: -25, heading: 250, durationMs: 30000 },
-      hold: { longitude: -107.8561, latitude: 37.9356, altitude: 3200, pitch: -28, headingStart: 250, headingEnd: 80, durationMs: 35000 },
-      depart: { longitude: -107.7900, latitude: 37.9800, altitude: 3500, pitch: -25, heading: 60, durationMs: 30000 },
+      approach: { longitude: -107.8700, latitude: 37.9450, altitude: 3710, pitch: -22, heading: 250, durationMs: 15000 },
+      hold:     { longitude: -107.8561, latitude: 37.9356, altitude: 3710, pitch: -25, headingStart: 250, headingEnd: 60, durationMs: 75000 },
+      depart:   { longitude: -107.7900, latitude: 37.9800, altitude: 3800, pitch: -22, heading: 60, durationMs: 12000 },
     },
   ],
 };
@@ -223,11 +219,6 @@ export async function fetchTourRoutes() {
   }
   return data;
 }
-
-// Resolve a tour route's stops to include resolved location data.
-// The stops jsonb references locations by slug; we hydrate them with
-// the actual location records so the tour engine has everything it
-// needs in one shape.
 
 export function hydrateTourStops(routeStops, locations) {
   const bySlug = new Map(locations.map((l) => [l.slug, l]));
