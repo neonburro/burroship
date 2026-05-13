@@ -1,0 +1,301 @@
+/* src/styles/index.css */
+@import "tailwindcss";
+ 
+@theme {
+  /* ----- Color: light surface ----- */
+  --color-ink: #0A0A0A;
+  --color-ink-muted: #5A6172;
+  --color-ink-faint: #9CA3AF;
+  --color-bg: #FFFFFF;
+  --color-surface: #F7F7F5;
+  --color-surface-deep: #EDEDE8;
+  --color-line: #E8E8E5;
+ 
+  /* ----- Color: accent (Topo Lime) ----- */
+  --color-accent: #7AB300;
+  --color-accent-hover: #8AC926;
+  --color-accent-soft: rgba(122, 179, 0, 0.10);
+  --color-accent-glow: rgba(122, 179, 0, 0.18);
+ 
+  /* ----- Color: dark surface ----- */
+  --color-dark-bg: #020503;
+  --color-dark-surface: #0A1108;
+  --color-dark-surface-edge: rgba(255, 255, 255, 0.06);
+  --color-dark-ink: #FFFFFF;
+  --color-dark-ink-muted: rgba(255, 255, 255, 0.65);
+  --color-dark-ink-faint: rgba(255, 255, 255, 0.40);
+  --color-dark-line: rgba(255, 255, 255, 0.06);
+  --color-dark-accent: #A8D055;
+  --color-dark-accent-glow: rgba(168, 208, 85, 0.5);
+ 
+  /* ----- Fonts ----- */
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-sans: "Inter", -apple-system, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+ 
+  /* ----- Motion ----- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+ 
+  /* ----- Containers ----- */
+  --spacing-reading: 720px;
+  --spacing-content: 1200px;
+  --spacing-wide: 1440px;
+}
+ 
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+ 
+/* ----- Base ----- */
+*, *::before, *::after { box-sizing: border-box; }
+ 
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+ 
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.5;
+}
+ 
+::selection {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+ 
+a { color: inherit; text-decoration: none; }
+ 
+img, svg, video { display: block; max-width: 100%; height: auto; }
+ 
+/* ----- Typography scale (rebalanced for product-page feel) -----
+   Per designer notes, dropped display sizes by ~30%. Hero now lands
+   at 56-64px on desktop, not 96px. Tighter line-height. */
+ 
+.text-display-2xl {
+  font-family: var(--font-sans);
+  font-size: clamp(40px, 5.2vw, 64px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+}
+ 
+.text-display-xl {
+  font-family: var(--font-sans);
+  font-size: clamp(36px, 4.4vw, 52px);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.05;
+}
+ 
+.text-display-lg {
+  font-family: var(--font-sans);
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.1;
+}
+ 
+.text-display-md {
+  font-family: var(--font-sans);
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+}
+ 
+.text-display-sm {
+  font-family: var(--font-sans);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  line-height: 1.2;
+}
+ 
+/* The one serif accent — sparingly used per page */
+.text-serif-accent {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+ 
+.text-lead {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+ 
+.text-body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+ 
+.text-body-sm {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+ 
+.text-mono-lg {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+ 
+.text-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+ 
+.text-mono-sm {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+ 
+.text-mono-xs {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+ 
+/* ----- Topo decoration -----
+   Per designer: lower opacity, vertical drift instead of zoom pulse.
+   Feels more like air currents than radar ping. */
+ 
+.topo-rings {
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at center, transparent 30%, currentColor 30.3%, currentColor 30.6%, transparent 30.9%),
+    radial-gradient(circle at center, transparent 42%, currentColor 42.3%, currentColor 42.6%, transparent 42.9%),
+    radial-gradient(circle at center, transparent 54%, currentColor 54.3%, currentColor 54.6%, transparent 54.9%),
+    radial-gradient(circle at center, transparent 66%, currentColor 66.3%, currentColor 66.6%, transparent 66.9%),
+    radial-gradient(circle at center, transparent 78%, currentColor 78.3%, currentColor 78.6%, transparent 78.9%),
+    radial-gradient(circle at center, transparent 90%, currentColor 90.3%, currentColor 90.6%, transparent 90.9%);
+  color: var(--color-accent);
+  animation: topo-drift 16s ease-in-out infinite;
+}
+ 
+.topo-rings.intensity-subtle { opacity: 0.08; }
+.topo-rings.intensity-medium { opacity: 0.12; }
+.topo-rings.intensity-strong { opacity: 0.20; }
+ 
+.topo-rings.on-dark {
+  color: var(--color-dark-accent);
+}
+ 
+@keyframes topo-drift {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+ 
+/* ----- Section reveal ----- */
+ 
+@keyframes burroship-rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+ 
+.animate-rise-in { animation: burroship-rise-in 480ms var(--ease-emphasis) both; }
+ 
+/* ----- Beacon dot ----- */
+ 
+.beacon-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+  flex-shrink: 0;
+}
+ 
+.beacon-dot.on-dark {
+  background: var(--color-dark-accent);
+  box-shadow:
+    0 0 8px var(--color-dark-accent-glow),
+    0 0 0 4px rgba(168, 208, 85, 0.16);
+}
+ 
+.beacon-dot.sm {
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+ 
+/* ----- Focus ----- */
+ 
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+ 
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  background: var(--color-ink);
+  color: var(--color-bg);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  z-index: 1000;
+  transition: top 0.2s var(--ease-standard);
+}
+ 
+.skip-link:focus { top: 16px; }
+ 
+/* ----- Coordinate bar -----
+   Per designer: thin, quiet, instrumentation feel. Pinned to bottom
+   above any page footer. Mono type, low contrast hairline. */
+ 
+.coord-bar-wrap {
+  position: relative;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-bg);
+}
+ 
+.coord-bar-wrap.on-dark {
+  border-top-color: var(--color-dark-line);
+  background: var(--color-dark-bg);
+}
+ 
+/* ----- Cesium widget cleanup ----- */
+ 
+.cesium-viewer, .cesium-widget, .cesium-widget canvas {
+  background: var(--color-dark-bg) !important;
+}
+ 
+.cesium-viewer-bottom,
+.cesium-viewer-toolbar,
+.cesium-viewer-fullscreenContainer,
+.cesium-credit-textContainer,
+.cesium-credit-logoContainer {
+  display: none !important;
+}
