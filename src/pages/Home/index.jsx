@@ -1,24 +1,21 @@
 // src/pages/Home/index.jsx
+//
+// The vessel. Hero + three operational rooms.
+
 import Hero from "../../components/Sections/Hero";
-import WhatWeBuild from "../../components/Sections/WhatWeBuild";
-import CesiumPreview from "../../components/Sections/CesiumPreview";
-import AreasGrid from "../../components/Sections/AreasGrid";
-import AgentCouncilBand from "../../components/Sections/AgentCouncilBand";
-import Manifesto from "../../components/Sections/Manifesto";
-import Closer from "../../components/Sections/Closer";
- 
+import BuildSection from "../../components/Sections/BuildSection";
+import DeploySection from "../../components/Sections/DeploySection";
+import AutomateSection from "../../components/Sections/AutomateSection";
+
 function Home() {
   return (
     <main id="main">
       <Hero />
-      <WhatWeBuild />
-      <CesiumPreview />
-      <AreasGrid />
-      <AgentCouncilBand />
-      <Manifesto />
-      <Closer />
+      <BuildSection />
+      <DeploySection />
+      <AutomateSection />
     </main>
   );
 }
- 
+
 export default Home;

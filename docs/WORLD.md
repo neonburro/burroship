@@ -1,8 +1,22 @@
 # World
  
-The Cesium experience. The airship, the towns, the coordinates, the
-splat library. Everything that lives at `/world/` and the future town
-pages.
+The map is the soul of The Burroship. This document covers the
+Cesium experience at `/world/`, the future Mapbox town pages, and
+the splat library that connects them. Read `BRAND.md` first.
+ 
+For the practical capture handbook, see `GAUSSIAN_SPLATS.md`.
+ 
+---
+ 
+## The Vantage
+ 
+The viewer is leaning over the gondola railing of The Burroship,
+looking down at the San Juans. Cold. Quiet. Expansive. The world
+should never feel like Google Maps. It should feel like a window.
+ 
+That is the line that governs every visual decision about the map.
+If a feature would make the experience feel more like Google Maps,
+it does not ship.
  
 ---
  
@@ -25,7 +39,7 @@ browser at `/world/`.
  
 A continuous waypoint corridor, not a stop-and-hold tour. The vessel
 flies between waypoints smoothly using cubic ease-in-out
-interpolation. Visitors see the airship "Over [waypoint]" as it
+interpolation. Visitors see "Over [waypoint]" as the airship
 approaches each marker.
  
 Counter-clockwise loop:
@@ -87,20 +101,28 @@ vessels in the future (a research vessel, a cargo vessel, etc.).
 The default tour is `san-juans-default` — the counter-clockwise
 corridor described above. Future tours can be added per-airship.
  
-## Splat library
+---
  
-Gaussian Splats are photoreal 3D captures of real places. The plan
-is to embed them inside the Cesium world so visitors can fly down to
-ground level and walk through a specific place: a brewery in Ridgway,
-the gondola station in Telluride, the hot springs in Ouray.
+## Pin categories (future, for town pages)
  
-Status: planned, not yet implemented. The `splat_asset_id` column on
-`world_locations` is ready to receive Cesium Ion asset IDs.
+When the Mapbox town pages ship (`/ridgway/`, `/ouray/`, etc.), pins
+on those maps use a small fixed vocabulary. Each category gets the
+same shape with a slightly different ring color and weight.
+Restraint, not codes.
  
-See `docs/GAUSSIAN_SPLATS.md` for the capture handbook (if it exists)
-or the Cesium Ion documentation otherwise.
+| Category | What it is | Examples |
+| --- | --- | --- |
+| `hq` | Burroship-owned spaces | The Compound, The StackHouse |
+| `client` | Businesses we work with | Colorado Boy Depot, Cimarron Engineering |
+| `landmark` | Natural features | Chimney Rock, hot springs, peaks |
+| `partner` | Friendly local spots | Cafes, breweries, shops we love |
  
-## Town pages (coming)
+Future categories may emerge but four is the cap until proven
+necessary.
+ 
+---
+ 
+## Town pages (future)
  
 Each partner town will eventually get its own route:
  
@@ -114,9 +136,52 @@ embedding of business listings, events, and photos. Mapbox is the
 right tool for "here is a town, here are the places in it." Cesium is
 the right tool for "here is the world from above."
  
+### Default camera (when town pages exist)
+ 
+| Property | Value |
+| --- | --- |
+| Center | Town's main coordinates |
+| Zoom | 11.5 (loose enough to show context) |
+| Pitch | 50 degrees (we're looking down at an angle) |
+| Bearing | -15 degrees (slight rotation, the airship is drifting) |
+| Style | Mapbox dark-v11 (Phase 2), custom style later |
+| Terrain | terrain-rgb enabled, exaggeration 1.4 |
+ 
+### Interaction
+ 
+- Drag to pan
+- Pinch or scroll to zoom
+- Two-finger drag (or Ctrl+drag) to rotate and pitch
+- Click a pin: opens a card with name, category, blurb
+- No animations on the map itself initially. The world is still.
+  Movement comes when agents go live.
+ 
+### Performance constraints
+ 
+- One Mapbox instance per page, mounted in route only
+- Pin count stays under 25 per town in v1 to keep the map sparse
+- No heatmaps, clusters, or choropleths in v1
+- Tile load is the only network hit on first paint
+ 
+---
+ 
+## What the maps are NOT
+ 
+- Not Google Maps. No POI noise, no traffic, no review stars.
+- Not satellite view (for town pages). The dark style is canon.
+- Not gamified interactivity (yet — that's the splat phase).
+- Not the council's working surface (yet — that's a later phase).
+ 
+For the world at `/world/`, the goal is one beautiful continuous
+airship cruise over the San Juans. Anything else is scope creep.
+ 
+For the town pages, the goal is a beautiful, quiet, slightly tilted
+map of the town with under 25 carefully chosen pins. Same rule.
+ 
+---
+ 
 ## Real coordinates that matter
  
-These are the elevations and coordinates used throughout the brand.
 Always use real numbers. Never round.
  
 | Place | Latitude | Longitude | Elevation |
@@ -128,6 +193,8 @@ Always use real numbers. Never round.
 | Mt Sneffels | 38.003° N | 107.792° W | 14,158 ft |
 | Mt Wilson | 37.838° N | 107.991° W | 14,252 ft |
 | Uncompahgre Peak | 38.072° N | 107.462° W | 14,309 ft |
+ 
+---
  
 ## How the Cesium engine works
  
@@ -160,10 +227,23 @@ corridor:
 1. Update the waypoint list in the row for `san-juans-default`
 2. Verify the altitude clears all terrain along the path
 3. Test by loading `/world/` and watching a full loop
-4. Adjust ease and timing in the CesiumWorld.jsx component if needed
+4. Adjust ease and timing in `CesiumWorld.jsx` if needed
  
 The waypoints are stored as a JSON array. The Cesium component reads
 them at mount and runs the flight loop automatically.
+ 
+## Splat library
+ 
+Gaussian Splats are photoreal 3D captures of real places. The plan
+is to embed them inside the Cesium world so visitors can fly down to
+ground level and walk through a specific place: a brewery in Ridgway,
+the gondola station in Telluride, the hot springs in Ouray.
+ 
+Status: planned, not yet implemented. The `splat_asset_id` column on
+`world_locations` is ready to receive Cesium Ion asset IDs.
+ 
+For the full capture handbook, equipment recommendations, and
+upload-to-Cesium workflow, see `GAUSSIAN_SPLATS.md`.
  
 ## The relationship to the home page
  
@@ -175,9 +255,17 @@ real because the world experience makes it tangible.
 Without the world, the airship is just a metaphor. With the world,
 it is a thing you can watch.
  
+## Mapbox token
+ 
+The Mapbox public token loads from `VITE_MAPBOX_TOKEN`. URL
+restrictions on the token (set in the Mapbox dashboard) limit it to
+`theburroship.netlify.app` and `localhost:3009`. When the custom
+domain launches, add it to the token's allowed origins.
+ 
 ## See also
  
-- `BRAND.md` for the conceit
+- `BRAND.md` for the conceit and the three rooms
 - `AGENTS.md` for the council (which lives on the bridge of the vessel)
 - `INFRASTRUCTURE.md` for the Supabase project and env vars
-- The repo's `docs/GAUSSIAN_SPLATS.md` if present
+- `GAUSSIAN_SPLATS.md` for the practical capture and processing handbook
+- `ROADMAP.md` for the phased build plan
