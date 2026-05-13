@@ -1,19 +1,19 @@
 // src/components/Layout/Nav.jsx
 import { useState, useEffect } from "react";
 import { Link, useLocation, NavLink } from "react-router-dom";
-
+ 
 import Container from "./Container";
-
+ 
 const PRIMARY_LINKS = [
   { to: "/build/", label: "Build" },
   { to: "/deploy/", label: "Deploy" },
   { to: "/automate/", label: "Automate" },
 ];
-
+ 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-
+ 
   useEffect(() => {
     function onScroll() {
       setScrolled(window.scrollY > 8);
@@ -21,22 +21,22 @@ function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
+ 
   const onWorld = location.pathname.startsWith("/world");
-
+ 
   // On the Cesium /world page, nav floats over the dark map
   const darkMode = onWorld;
-
+ 
   const baseBg = darkMode
     ? "bg-dark-bg/0"
     : scrolled
     ? "bg-bg/85 backdrop-blur-md border-b border-line"
     : "bg-bg/0";
-
+ 
   return (
     <>
       <a href="#main" className="skip-link">Skip to content</a>
-
+ 
       <nav
         className={
           "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-[var(--ease-standard)] " +
@@ -55,7 +55,7 @@ function Nav() {
             >
               The Burroship
             </Link>
-
+ 
             <div className="hidden md:flex items-center gap-9">
               {PRIMARY_LINKS.map((link) => (
                 <NavLink
@@ -76,7 +76,7 @@ function Nav() {
                 </NavLink>
               ))}
             </div>
-
+ 
             <div className="flex items-center gap-3">
               <Link
                 to="/world/"
@@ -99,7 +99,7 @@ function Nav() {
                 />
                 World
               </Link>
-
+ 
               <button
                 aria-label="Sign in"
                 className={
@@ -131,5 +131,5 @@ function Nav() {
     </>
   );
 }
-
+ 
 export default Nav;

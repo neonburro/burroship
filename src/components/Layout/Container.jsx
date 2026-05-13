@@ -1,12 +1,12 @@
 // src/components/Layout/Container.jsx
 import { forwardRef } from "react";
-
+ 
 const SIZES = {
   reading: "max-w-[720px]",
   default: "max-w-[1200px]",
   wide: "max-w-[1440px]",
 };
-
+ 
 const Container = forwardRef(function Container(
   { children, size = "default", className = "", as: As = "div", ...rest },
   ref
@@ -25,5 +25,5 @@ const Container = forwardRef(function Container(
     </As>
   );
 });
-
+ 
 export default Container;

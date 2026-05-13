@@ -1,29 +1,29 @@
 // src/components/Layout/Footer.jsx
 import { Link } from "react-router-dom";
-
+ 
 import Container from "./Container";
 import TopoLines from "../Atoms/TopoLines";
-
+ 
 const AREAS = [
   { to: "/ridgway/", label: "Ridgway" },
   { to: "/ouray/", label: "Ouray" },
   { to: "/telluride/", label: "Telluride" },
   { to: "/mountain-village/", label: "Mountain Village" },
 ];
-
+ 
 const BURROSHIP_LINKS = [
   { to: "/world/", label: "The Burroship", accent: true },
   { to: "/build/", label: "Build" },
   { to: "/deploy/", label: "Deploy" },
   { to: "/automate/", label: "Automate" },
 ];
-
+ 
 const COMPOUND_LINKS = [
   { to: "/about/", label: "About" },
   { to: "/manifesto/", label: "Manifesto" },
   { to: "/field-notes/", label: "Field Notes" },
 ];
-
+ 
 function FooterColumn({ heading, links }) {
   return (
     <div>
@@ -49,14 +49,14 @@ function FooterColumn({ heading, links }) {
     </div>
   );
 }
-
+ 
 function Footer() {
   const year = new Date().getFullYear();
-
+ 
   return (
     <footer className="relative bg-bg border-t border-line pt-24 pb-10 overflow-hidden">
       <TopoLines size={520} position="bottom-right" intensity="subtle" />
-
+ 
       <Container size="wide" className="relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-12 gap-y-12 gap-x-8 mb-20">
           <div className="col-span-2 md:col-span-5">
@@ -73,20 +73,20 @@ function Footer() {
               </span>
             </div>
           </div>
-
+ 
           <div className="col-span-1 md:col-span-2 md:col-start-7">
             <FooterColumn heading="Areas" links={AREAS} />
           </div>
-
+ 
           <div className="col-span-1 md:col-span-2">
             <FooterColumn heading="Burroship" links={BURROSHIP_LINKS} />
           </div>
-
+ 
           <div className="col-span-2 md:col-span-2">
             <FooterColumn heading="Compound" links={COMPOUND_LINKS} />
           </div>
         </div>
-
+ 
         <div className="border-t border-line pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-mono-sm text-ink-faint">
             © {year} The Burroship
@@ -99,5 +99,5 @@ function Footer() {
     </footer>
   );
 }
-
+ 
 export default Footer;

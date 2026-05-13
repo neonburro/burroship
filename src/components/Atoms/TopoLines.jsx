@@ -6,7 +6,7 @@
 //   - As section divider element
 //   - As pin decoration on cards
 //   - Never as foreground
-
+ 
 const POSITIONS = {
   "top-right":     "top-[-15%] right-[-15%]",
   "top-left":      "top-[-15%] left-[-15%]",
@@ -16,13 +16,13 @@ const POSITIONS = {
   "right-center":  "top-1/2 right-[-10%] -translate-y-1/2",
   "left-center":   "top-1/2 left-[-10%] -translate-y-1/2",
 };
-
+ 
 const INTENSITIES = {
   subtle: "intensity-subtle",
   medium: "intensity-medium",
   strong: "intensity-strong",
 };
-
+ 
 function TopoLines({
   size = 420,
   position = "top-right",
@@ -49,5 +49,5 @@ function TopoLines({
     />
   );
 }
-
+ 
 export default TopoLines;

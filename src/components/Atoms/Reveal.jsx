@@ -1,6 +1,6 @@
 // src/components/Atoms/Reveal.jsx
 import { motion } from "framer-motion";
-
+ 
 function Reveal({
   children,
   delay = 0,
@@ -11,7 +11,7 @@ function Reveal({
   as = "div",
 }) {
   const MotionTag = motion[as] || motion.div;
-
+ 
   return (
     <MotionTag
       initial={{ opacity: 0, y: yOffset }}
@@ -28,5 +28,5 @@ function Reveal({
     </MotionTag>
   );
 }
-
+ 
 export default Reveal;
