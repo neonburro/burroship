@@ -1,8 +1,8 @@
-/* src/styles/index.css */
+/* src/styles/globals.css */
 @import "tailwindcss";
  
 @theme {
-  /* ----- Color: light surface ----- */
+  /* ----- Color: light surface (the home) ----- */
   --color-ink: #0A0A0A;
   --color-ink-muted: #5A6172;
   --color-ink-faint: #9CA3AF;
@@ -17,7 +17,7 @@
   --color-accent-soft: rgba(122, 179, 0, 0.10);
   --color-accent-glow: rgba(122, 179, 0, 0.18);
  
-  /* ----- Color: dark surface ----- */
+  /* ----- Color: dark surface (Cesium, manifesto, contrast moments) ----- */
   --color-dark-bg: #020503;
   --color-dark-surface: #0A1108;
   --color-dark-surface-edge: rgba(255, 255, 255, 0.06);
@@ -37,12 +37,13 @@
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
  
-  /* ----- Containers ----- */
+  /* ----- Spacing additions (Tailwind has 0-96 by default, we add semantic names) ----- */
   --spacing-reading: 720px;
   --spacing-content: 1200px;
   --spacing-wide: 1440px;
 }
  
+/* ----- Font loading ----- */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
  
 /* ----- Base ----- */
@@ -74,63 +75,53 @@ a { color: inherit; text-decoration: none; }
  
 img, svg, video { display: block; max-width: 100%; height: auto; }
  
-/* ----- Typography scale (rebalanced for product-page feel) -----
-   Per designer notes, dropped display sizes by ~30%. Hero now lands
-   at 56-64px on desktop, not 96px. Tighter line-height. */
+/* ----- Typography scale (semantic classes) ----- */
  
 .text-display-2xl {
-  font-family: var(--font-sans);
-  font-size: clamp(40px, 5.2vw, 64px);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.02;
+  font-family: var(--font-display);
+  font-size: clamp(64px, 8vw, 96px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
 }
  
 .text-display-xl {
-  font-family: var(--font-sans);
-  font-size: clamp(36px, 4.4vw, 52px);
-  font-weight: 600;
-  letter-spacing: -0.022em;
-  line-height: 1.05;
+  font-family: var(--font-display);
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
 }
  
 .text-display-lg {
-  font-family: var(--font-sans);
-  font-size: clamp(28px, 3.4vw, 40px);
-  font-weight: 600;
-  letter-spacing: -0.018em;
-  line-height: 1.1;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 4.5vw, 56px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
  
 .text-display-md {
-  font-family: var(--font-sans);
-  font-size: clamp(22px, 2.6vw, 30px);
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  line-height: 1.15;
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3.5vw, 40px);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
 }
  
 .text-display-sm {
-  font-family: var(--font-sans);
-  font-size: clamp(18px, 2vw, 24px);
-  font-weight: 600;
-  letter-spacing: -0.008em;
-  line-height: 1.2;
-}
- 
-/* The one serif accent — sparingly used per page */
-.text-serif-accent {
   font-family: var(--font-display);
-  font-style: italic;
+  font-size: clamp(24px, 2.5vw, 32px);
   font-weight: 400;
   letter-spacing: -0.01em;
+  line-height: 1.1;
 }
  
 .text-lead {
   font-family: var(--font-sans);
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--color-ink-muted);
 }
  
@@ -138,14 +129,14 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 400;
-  line-height: 1.55;
+  line-height: 1.6;
 }
  
 .text-body-sm {
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
 }
  
 .text-mono-lg {
@@ -172,17 +163,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   text-transform: uppercase;
 }
  
-.text-mono-xs {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
- 
-/* ----- Topo decoration -----
-   Per designer: lower opacity, vertical drift instead of zoom pulse.
-   Feels more like air currents than radar ping. */
+/* ----- Topo decoration utility ----- */
  
 .topo-rings {
   pointer-events: none;
@@ -194,32 +175,40 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
     radial-gradient(circle at center, transparent 78%, currentColor 78.3%, currentColor 78.6%, transparent 78.9%),
     radial-gradient(circle at center, transparent 90%, currentColor 90.3%, currentColor 90.6%, transparent 90.9%);
   color: var(--color-accent);
-  animation: topo-drift 16s ease-in-out infinite;
+  animation: topo-breathe 12s ease-in-out infinite;
 }
  
-.topo-rings.intensity-subtle { opacity: 0.08; }
-.topo-rings.intensity-medium { opacity: 0.12; }
-.topo-rings.intensity-strong { opacity: 0.20; }
+.topo-rings.intensity-subtle { opacity: 0.12; }
+.topo-rings.intensity-medium { opacity: 0.18; }
+.topo-rings.intensity-strong { opacity: 0.28; }
  
 .topo-rings.on-dark {
   color: var(--color-dark-accent);
 }
  
-@keyframes topo-drift {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+@keyframes topo-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.02); }
 }
  
-/* ----- Section reveal ----- */
+/* ----- Section reveal keyframes (used by Reveal component) ----- */
  
 @keyframes burroship-rise-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
  
-.animate-rise-in { animation: burroship-rise-in 480ms var(--ease-emphasis) both; }
+.animate-rise-in {
+  animation: burroship-rise-in 480ms var(--ease-emphasis) both;
+}
  
-/* ----- Beacon dot ----- */
+/* ----- Beacon dot (used on both light and dark surfaces) ----- */
  
 .beacon-dot {
   display: inline-block;
@@ -228,7 +217,6 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   border-radius: 50%;
   background: var(--color-accent);
   box-shadow: 0 0 0 4px var(--color-accent-soft);
-  flex-shrink: 0;
 }
  
 .beacon-dot.on-dark {
@@ -238,19 +226,15 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
     0 0 0 4px rgba(168, 208, 85, 0.16);
 }
  
-.beacon-dot.sm {
-  width: 6px;
-  height: 6px;
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
-}
- 
-/* ----- Focus ----- */
+/* ----- Focus visible (accessibility) ----- */
  
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
+ 
+/* ----- Skip link ----- */
  
 .skip-link {
   position: absolute;
@@ -271,22 +255,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
  
 .skip-link:focus { top: 16px; }
  
-/* ----- Coordinate bar -----
-   Per designer: thin, quiet, instrumentation feel. Pinned to bottom
-   above any page footer. Mono type, low contrast hairline. */
- 
-.coord-bar-wrap {
-  position: relative;
-  border-top: 1px solid var(--color-line);
-  background: var(--color-bg);
-}
- 
-.coord-bar-wrap.on-dark {
-  border-top-color: var(--color-dark-line);
-  background: var(--color-dark-bg);
-}
- 
-/* ----- Cesium widget cleanup ----- */
+/* ----- Cesium widget cleanup (when Burroship map page loads) ----- */
  
 .cesium-viewer, .cesium-widget, .cesium-widget canvas {
   background: var(--color-dark-bg) !important;

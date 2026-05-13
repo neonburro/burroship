@@ -1,9 +1,11 @@
 // src/components/Atoms/TopoLines.jsx
 //
-// Signature ambient decoration. Concentric rings as SVG strokes.
-// Per designer feedback: lower default opacity, used only on
-// map-adjacent sections (hero, town previews, manifesto).
-// Vertical drift animation handled in index.css.
+// The signature ambient decoration. Concentric rings rendered as 1px
+// SVG strokes in accent color. Used:
+//   - As watermark behind hero headlines
+//   - As section divider element
+//   - As pin decoration on cards
+//   - Never as foreground
  
 const POSITIONS = {
   "top-right":     "top-[-15%] right-[-15%]",

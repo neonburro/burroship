@@ -2,9 +2,10 @@
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
  
+ 
+ 
 import Nav from "./components/Layout/Nav";
 import Footer from "./components/Layout/Footer";
-import CoordinateBar from "./components/Atoms/CoordinateBar";
  
 import Home from "./pages/Home";
 import Build from "./pages/Build";
@@ -38,7 +39,6 @@ function App() {
         <Route path="*" element={<Home />} />
       </Routes>
  
-      {!onWorld && <CoordinateBar mode="home-port" />}
       {!onWorld && <Footer />}
     </>
   );
