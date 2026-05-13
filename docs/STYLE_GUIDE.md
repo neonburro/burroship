@@ -1,51 +1,89 @@
-# Burroship Style Guide
+# Style Guide
  
-Engineering companion to `BURROSHIP_DESIGN.md`. This is the technical contract.
+Engineering conventions. The technical companion to `DESIGN.md`.
+ 
+---
  
 ## Stack
  
-- React 19, JavaScript only (no TypeScript)
+- React 19
+- JavaScript only (never TypeScript)
 - Vite 5
 - Tailwind v4 with `@theme` block
 - Framer Motion for animations
-- React Router 6 with trailing-slash routes
-- Cesium loaded from CDN for the `/world/` route only
-- Mapbox + react-map-gl for town pages (coming later)
+- React Router 6
+- Cesium from CDN for the `/world/` route
+- Supabase (`twvptrfohuthynndeuxx` for Burroship, see `INFRASTRUCTURE.md`)
+- Netlify for hosting and serverless functions
  
 ## File conventions
  
-Every file's first line is a path comment:
+### Path comment first
+ 
+Every JavaScript file begins with a path comment:
  
 ```js
 // src/components/Sections/Hero.jsx
 ```
  
-Page routes:
+This is non-negotiable. It makes diffs and bug reports faster.
  
-- `/` → `src/pages/Home/index.jsx`
-- `/build/` → `src/pages/Build/index.jsx`
-- `/deploy/` → `src/pages/Deploy/index.jsx`
-- `/automate/` → `src/pages/Automate/index.jsx`
-- `/world/` → `src/pages/BurroshipMap/index.jsx` (existing Cesium experience)
+### Naming
  
-Components organized by role:
+- Components: PascalCase, one component per file
+- Files: match the component name (`Hero.jsx`, not `hero.jsx`)
+- Folders: PascalCase for component groups (`Atoms/`, `Sections/`)
+- Atoms: small reusable elements (Button, Eyebrow, TopoLines)
+- Sections: composed page blocks (Hero, BuildSection, DeploySection)
+- Pages: route-level components, always as `index.jsx` inside a folder
+ 
+### Folder structure
  
 ```
-src/components/
-  Layout/        Nav, Footer, Container — page chrome
-  Sections/      Hero, AreasGrid, Manifesto, Closer — composed page blocks
-  Atoms/         Button, Eyebrow, TopoLines, Reveal — small reusable pieces
+src/
+  App.jsx
+  main.jsx
+  components/
+    Atoms/        Button, Eyebrow, TopoLines, Reveal, Stagger
+    Layout/       Container, Nav, Footer
+    Sections/     Hero, BuildSection, DeploySection, AutomateSection
+  pages/
+    Home/index.jsx
+    Build/index.jsx
+    Deploy/index.jsx
+    Automate/index.jsx
+    BurroshipMap/index.jsx, cesium/, shared/
+  styles/
+    index.css   The single Tailwind + tokens file
+  data/         Static JSON
+  lib/          Helpers, Supabase clients
 ```
  
-Trailing slashes on every internal Link `to=` value.
+Pages are folders, not flat files. Even `Home` lives at
+`src/pages/Home/index.jsx` so we can add page-specific subcomponents
+later without restructuring.
  
-## Tailwind v4 theme tokens
+### Routes
  
-All design tokens live in `src/styles/globals.css` inside a single `@theme` block. Use the
-token, never the raw hex. If a token does not exist for what you need, add it to `globals.css`
-first.
+All internal routes use trailing slashes. This is a project-wide rule
+enforced by convention, not by code. Examples:
  
-Color tokens map to design system roles:
+- `/build/`
+- `/world/`
+- `/ridgway/`
+ 
+When linking with `Link to=` or `NavLink to=`, always include the
+trailing slash.
+ 
+External links use `<a href=` and open in a new tab via
+`target="_blank" rel="noopener noreferrer"`.
+ 
+## Tailwind v4 tokens
+ 
+All design tokens live in `src/styles/index.css` inside one `@theme`
+block. Use the token, never the raw hex.
+ 
+### Color tokens
  
 ```css
 @theme {
@@ -54,54 +92,95 @@ Color tokens map to design system roles:
   --color-ink-faint: #9CA3AF;
   --color-bg: #FFFFFF;
   --color-surface: #F7F7F5;
-  --color-surface-deep: #EDEDE8;
+  --color-surface-engine: #F0EFEB;
   --color-line: #E8E8E5;
   --color-accent: #7AB300;
   --color-accent-hover: #8AC926;
   --color-dark-bg: #020503;
   --color-dark-surface: #0A1108;
-  --color-dark-ink: #FFFFFF;
   --color-dark-accent: #A8D055;
 }
 ```
  
 Use as: `bg-bg`, `text-ink`, `border-line`, `text-accent`, `bg-dark-bg`.
  
+If a needed token does not exist, add it to `index.css` first. Never
+hardcode hex in components.
+ 
+### Typography classes
+ 
+Use the semantic classes from `index.css`. Never raw Tailwind
+size+weight combos:
+ 
+```jsx
+<h1 className="text-display-xl">...</h1>
+<p className="text-lead">...</p>
+<p className="text-body">...</p>
+<p className="text-mono">...</p>
+```
+ 
+### Spacing
+ 
+Multiples of 4. Use the standard scale:
+ 
+```
+gap-3   gap-4   gap-6   gap-8   gap-12   gap-16
+```
+ 
+No `gap-5`, no `gap-7`. Stay on the scale.
+ 
+Section padding:
+ 
+```
+py-24 md:py-32   most sections
+py-28 md:py-36   hero
+```
+ 
 ## Component patterns
  
 ### Container
  
-Always wrap section content. Three widths:
+Every section wraps content in a Container:
  
 ```jsx
 <Container>            // 1200px max, default
-<Container size="wide">  // 1440px, hero or maps
-<Container size="reading">  // 720px, manifesto or article
+<Container size="wide">    // 1440px, sections and hero
+<Container size="reading"> // 720px, long-form
 ```
  
 ### Eyebrow
  
-The small mono label above section headlines.
+The small mono label above section headlines:
  
 ```jsx
-<Eyebrow>San Juan Mountains</Eyebrow>
+<Eyebrow>Section 01 · Build</Eyebrow>
 ```
  
-Renders as uppercase mono, 11px, tracked 0.12em, accent color.
+Always uppercase, mono, accent color by default.
  
 ### Button
  
 ```jsx
-<Button to="/world/">Board The Burroship →</Button>             // primary, default
-<Button variant="ghost" to="/manifesto/">Read more</Button>      // ghost outline
-<Button variant="text" to="/build/">Learn more</Button>          // text link with arrow
+<Button to="/world/" variant="primary" arrow>Board the airship</Button>
+<Button variant="ghost">See more</Button>
+<Button variant="operational" arrow>Open the table</Button>
 ```
  
-Routes use `to=`, external links use `href=`.
+Variants:
+- `primary` — dark pill, lime on hover
+- `primaryLime` — lime pill (for dark surfaces)
+- `ghost` — outlined, light surface
+- `ghostDark` — outlined, dark surface
+- `text` — text link with hover color shift
+- `operational` — underlined operator-link style for section CTAs
+ 
+Each variant explicitly sets default AND hover colors. The v0.5 bug
+where text disappeared on hover came from inheriting transparent. Do
+not write a new variant without setting both.
  
 ### Reveal
  
-Wraps children in a scroll-triggered fade-and-rise animation.
+Scroll-triggered fade-and-rise:
  
 ```jsx
 <Reveal delay={0.1}>
@@ -109,80 +188,134 @@ Wraps children in a scroll-triggered fade-and-rise animation.
 </Reveal>
 ```
  
-Default delay 0, default duration 480ms. Stagger by passing different `delay` props.
+Default duration 480ms. Stagger by passing different `delay` props.
+ 
+### Stagger
+ 
+Wraps a group of children with sequential delays:
+ 
+```jsx
+<Stagger step={0.08}>
+  <h1>...</h1>
+  <p>...</p>
+  <button>...</button>
+</Stagger>
+```
  
 ### TopoLines
  
-The signature topographic ring decoration.
- 
 ```jsx
-<TopoLines size={420} position="top-right" intensity="subtle" />
+<TopoLines size={520} position="top-right" intensity="subtle" />
 ```
  
-Positions: `top-right`, `top-left`, `bottom-right`, `bottom-left`, `center`.
-Intensities: `subtle` (12% opacity), `medium` (18%), `strong` (28%).
+Positions: `top-right`, `top-left`, `bottom-right`, `bottom-left`,
+`center`, `right-center`, `left-center`.
+Intensities: `subtle` (0.06), `medium` (0.10), `strong` (0.16).
  
-## Spacing
+## Voice in code
  
-Section padding-y is `py-32` desktop, `py-20` mobile. Always.
- 
-Hero sections get `py-40` desktop, `py-24` mobile — they earn the extra room.
- 
-Between elements within a section, use the scale: `gap-3 4 6 8 12 16`. No `gap-5` or
-`gap-7` — those are not in the scale.
- 
-## Typography classes
- 
-Use semantic class names from globals.css, never raw tailwind size+weight combos:
+The `[draft]` comment marker indicates placeholder copy waiting for
+the content writer:
  
 ```jsx
-<h1 className="text-display-xl">Build. Deploy. Automate.</h1>
-<p className="text-lead">Big paragraph below hero.</p>
-<p className="text-body">Standard body copy.</p>
-<p className="text-mono">SECTION 002</p>
+{/* [draft] Replace with content writer's hero subhead */}
+<p className="text-lead">
+  A vessel of small operational systems...
+</p>
 ```
  
-Italic uses inline span: `<em className="italic text-accent">Automate.</em>`
+Search the repo for `[draft]` to find all unfinished copy slots.
  
-## Voice in copy
+## Repo conventions
  
-Six-word maximum on hero headlines. Three to ten words on section headlines. Sub-headlines may
-breathe to fifteen words.
+### Commits
  
-Numbers are spelled out only when zero through nine and not in a label or stat context. "Six
-agents" reads better than "6 agents" in prose. In a stat panel, "6" is fine.
+- Lowercase subject line
+- Conventional commit prefix when useful: `feat:`, `fix:`, `refactor:`,
+  `docs:`, `style:`
+- Imperative present tense: "add hero spec strip" not "added"
+- No em-dashes in commit messages
+- Body optional, used for context-heavy commits
  
-Em-dashes are banned per existing repo rules. Use a period or a colon. If you find yourself
-wanting an em-dash, you can split the sentence.
+### Branching
  
-Oxford commas are banned per existing repo rules. "Ridgway, Ouray and Telluride."
+Main branch is `main`. Most work happens directly on `main` for this
+solo-developer project. PR branches are used when multiple
+contributors are involved.
  
-## Motion default
+### Archives
  
-Wrap pages or sections in framer-motion variants for the stagger. Atoms like Button get a
-180ms color transition via CSS. Avoid motion library overhead for simple hovers.
+Old files are not deleted. They are moved to `_archive/[timestamp]/`
+preserving their relative path. The deploy scripts do this
+automatically. Archive folders are committed and remain in git
+history.
  
-Section reveals use `viewport={{ once: true, margin: "-100px" }}` so they only fire once when
-the user scrolls past.
+### Author identity
+ 
+All commits use:
+- Name: Tyler Reagan
+- Email: tyler@neonburro.com
+ 
+Never use `treagan9` or `tyler9reagan@gmail.com`.
+ 
+## Shell conventions
+ 
+Tyler's zsh treats `#` as a bad pattern when used inline. Never
+include comments after `#` in shell commands when sending them in
+chat. Comments belong in scripts (one per line) or before the command
+itself.
+ 
+## Package manager
+ 
+`yarn`, not `npm`. Run `yarn add`, `yarn dev`, `yarn build`.
+ 
+## Working with Claude
+ 
+The bulk-file-delivery pattern is documented in `WORKFLOW.md`. Use it
+for any change touching 5+ files.
+ 
+The rule against tar.gz delivery on macOS is real: Safari
+auto-extracts the archive on download, so the script can't find it.
+All deliveries that target Tyler's local repo come as a single
+`.sh` file with files inlined via heredocs.
  
 ## Accessibility
  
-Color contrast: Topo Lime `#7AB300` on white gets a 4.7:1 ratio for normal text. That passes
-WCAG AA. Use it for headlines, links, and CTAs but never for body paragraphs.
+- All interactive elements need a visible focus outline. Tailwind v4
+  default is fine. Do not remove without replacement.
+- Color contrast: Topo Lime `#7AB300` on white is 4.7:1, passes WCAG
+  AA for normal text. Use for headlines, links, CTAs but not body
+  paragraphs.
+- Decorative SVGs get `aria-hidden="true"`.
+- Skip link in `Nav.jsx`, hidden by default, visible on tab.
  
-All interactive elements need a visible focus outline. Tailwind v4 default is fine. Do not
-remove `outline` without replacement.
+## File creation discipline
  
-Skip-to-content link is in Nav.jsx, hidden by default, visible on tab.
+- Always use full file rewrites, never `str_replace` or patches for
+  multi-line changes
+- One file per message when sharing inline (heredoc with `cat <<` is
+  the canonical pattern)
+- `touch` and `mkdir -p` before writing new files
+- Always include the path comment first
  
-## Routes table
+## When the system breaks
  
-| Path           | Component                                  | Status     |
-| -------------- | ------------------------------------------ | ---------- |
-| `/`            | Home (assembles Hero, CesiumPreview, etc.) | Built      |
-| `/world/`      | BurroshipMap (Cesium experience)           | Built      |
-| `/build/`      | Build (scaffolded, placeholder content)    | Scaffolded |
-| `/deploy/`     | Deploy (scaffolded, placeholder content)   | Scaffolded |
-| `/automate/`   | Automate (scaffolded, placeholder content) | Scaffolded |
+The bulk-file-delivery script archives everything to
+`_archive/[timestamp]/` before overwriting. If a deploy goes wrong:
  
-Town pages (`/ridgway/`, `/ouray/`, etc.) come in a later session.
+```bash
+ls _archive/
+cp -r _archive/[timestamp_folder]/* .
+```
+ 
+This restores the previous state. The archive folder remains in git
+history, so even after a successful deploy, you can `git log` to find
+the archived version of any file.
+ 
+## See also
+ 
+- `DESIGN.md` for visual decisions
+- `VOICE.md` for copy decisions
+- `BRAND.md` for the product reasoning
+- `WORKFLOW.md` for how Claude and Tyler ship together
+- `INFRASTRUCTURE.md` for Supabase, Netlify, env var references
