@@ -27,17 +27,9 @@ Read these in any order. They cross-reference each other.
  
 | File | What it is |
 | --- | --- |
-| [WORLD.md](./WORLD.md) | The Mapbox experience, the active dome, beacons, layer structure. |
+| [WORLD.md](./WORLD.md) | The Cesium experience, the gondola vantage, town page plans. |
 | [AGENTS.md](./AGENTS.md) | The six-agent council. Warbleur, Cypher, Lyra, Volt, Ion, Canyon. |
 | [GAUSSIAN_SPLATS.md](./GAUSSIAN_SPLATS.md) | Practical splat capture and processing handbook. |
- 
-### The council
- 
-| File | What it is |
-| --- | --- |
-| [COUNCIL_VISION.md](./COUNCIL_VISION.md) | The canonical architecture doc. Supervisor pattern, memory layers, operating contracts. |
-| [COMMUNICATION_PROTOCOL.md](./COMMUNICATION_PROTOCOL.md) | The `@agent • message` pattern, the bus pattern, the discipline rules. |
-| [agents/](./agents/) | Per-agent operating contracts. Domain, Channel, Tool Scope, Handoff Rules, Non-goals. |
  
 ### Meta
  
@@ -53,7 +45,6 @@ Read these in any order. They cross-reference each other.
 1. BRAND
 2. VOICE
 3. ROADMAP
-4. COUNCIL_VISION
  
 **New designer joining:**
 1. BRAND
@@ -76,14 +67,7 @@ Read these in any order. They cross-reference each other.
 3. INFRASTRUCTURE
 4. WORKFLOW
 5. WORLD if working on `/world/`
-6. COUNCIL_VISION if working on agent runtime
-7. The rest as needed
- 
-**New agent joining the council bus:**
-1. COMMUNICATION_PROTOCOL (so the agent knows how to address others)
-2. COUNCIL_VISION (so the agent knows the architecture)
-3. VOICE (so the agent speaks correctly)
-4. The agent's own contract in `agents/`
+6. The rest as needed
  
 **New Claude / contractor:**
 1. BRAND
@@ -111,10 +95,6 @@ through `VOICE.md`, `DESIGN.md`, and others as needed.
  
 For roadmap progress, mark phases as shipped in `ROADMAP.md` when they
 ship. Add new phases to the end as they emerge.
- 
-For new agents joining the council, write a contract in `agents/`
-following the template in `WARBLEUR_BRIEF.md`. Update the roster in
-`agents/README.md`.
  
 ## Live site for reference
  
