@@ -1,10 +1,10 @@
 # World
  
-The map is the soul of The Burroship. This document covers the
-Cesium experience at `/world/`, the future Mapbox town pages, and
-the splat library that connects them. Read `BRAND.md` first.
+The map is the soul of The Burroship. This document covers what
+lives at `/world/` — the active dome, the airship, the layers — plus
+the future town pages and the splat library.
  
-For the practical capture handbook, see `GAUSSIAN_SPLATS.md`.
+For the practical splat capture handbook, see `GAUSSIAN_SPLATS.md`.
  
 ---
  
@@ -14,169 +14,181 @@ The viewer is leaning over the gondola railing of The Burroship,
 looking down at the San Juans. Cold. Quiet. Expansive. The world
 should never feel like Google Maps. It should feel like a window.
  
-That is the line that governs every visual decision about the map.
-If a feature would make the experience feel more like Google Maps,
-it does not ship.
+That line governs every visual decision about the map.
  
 ---
  
-## The vessel
+## The active dome
  
-The Burroship is a photoreal 3D airship that cruises the San Juan
-Mountains continuously. It exists as a Cesium scene rendered in the
-browser at `/world/`.
+The map operates inside an **active dome** — a subtle atmospheric
+shell over the San Juans. All Burroships are assigned inside the
+active dome location. Outside the dome: no active assignment, no
+live Burro traffic.
+ 
+The dome is described in product copy as a faint mapped field, part
+weather field, part control boundary, part cosmic joke. Never
+explained as a metaphor. Just present.
+ 
+Dome center: Ridgway (`38.1547° N, -107.7551° W`).
+Dome radius: ~0.35° (~38 km), covering Ridgway / Ouray / Telluride /
+Mountain Village and the Ridgway State Park (a.k.a. The Anchorage).
+ 
+---
+ 
+## The engine: Mapbox GL JS v3 + Mapbox Standard
+ 
+As of v0.8, the world runs on Mapbox.
  
 | Property | Value |
 | --- | --- |
-| Vessel | The Burroship |
-| Altitude | 18,000 ft (5,486m) — clears Sneffels summit by 1,173m |
-| Cruise mode | Continuous corridor flight |
-| Loop time | ~8.5 minutes |
-| Path | Counter-clockwise around the San Juans |
-| Engine | Cesium loaded from CDN, Google Photorealistic 3D Tiles |
+| Library | Mapbox GL JS v3 via `react-map-gl` |
+| Style | Mapbox Standard, `night` light preset |
+| Projection | Globe on first paint, mercator at cruise |
+| Initial view | Globe at zoom 2, centered on Ridgway |
+| Final view | Zoom 10, pitch 55°, bearing -15° |
+| Opening duration | ~5.5 seconds, cubic ease-out |
+| Atmosphere | Custom fog config (near-black with green tint) |
  
-## The corridor
- 
-A continuous waypoint corridor, not a stop-and-hold tour. The vessel
-flies between waypoints smoothly using cubic ease-in-out
-interpolation. Visitors see "Over [waypoint]" as the airship
-approaches each marker.
- 
-Counter-clockwise loop:
- 
-1. Ridgway
-2. Highway 550 South
-3. Ouray
-4. Sneffels Approach
-5. Mt Sneffels (summit fly-by)
-6. Telluride Approach
-7. Telluride
-8. Mountain Village
-9. Uncompahgre Plateau
-10. Ridgway Approach (back to start)
- 
-All waypoints sit at 5,486m altitude (18,000 ft). The corridor was
-designed to clear Mt Sneffels (4,313m) and Mt Wilson (4,344m) with
-room to spare.
- 
-## The locations table
- 
-13 locations seeded in Supabase. Each has coordinates, altitude,
-type, and a slug.
- 
-| Name | Type | Latitude | Longitude | Notes |
-| --- | --- | --- | --- | --- |
-| Ridgway | town | 38.155 | -107.755 | The compound is just outside |
-| Ouray | town | 38.023 | -107.671 | Switzerland of America |
-| Telluride | town | 37.938 | -107.812 | Box canyon, free gondola |
-| Mountain Village | town | 37.936 | -107.856 | Resort village above Telluride |
-| Mt Sneffels | peak | 38.003 | -107.792 | 4,313m. The signature peak. |
-| Mt Wilson | peak | 37.838 | -107.991 | 4,344m. Highest of the San Miguels. |
-| Uncompahgre Peak | peak | 38.072 | -107.462 | 4,361m. Highest of the San Juans. |
-| Dallas Divide | pass | 38.067 | -107.879 | The view between Ridgway and Telluride |
-| Last Dollar Road | route | 37.984 | -107.870 | Back way to Telluride |
-| The Compound | compound | 38.158 | -107.760 | Burroship HQ (approximate) |
-| Cimarron | landmark | 38.222 | -107.539 | The Cimarron Range namesake |
-| Sneffels Approach | waypoint | 38.020 | -107.770 | Corridor waypoint |
-| Telluride Approach | waypoint | 37.960 | -107.835 | Corridor waypoint |
- 
-Live source: `world_locations` table in Supabase project
-`twvptrfohuthynndeuxx`.
- 
-## The airships table
- 
-For now, one airship: The Burroship. The schema allows for multiple
-vessels in the future (a research vessel, a cargo vessel, etc.).
- 
-| Field | Value |
-| --- | --- |
-| Slug | the-burroship |
-| Name | The Burroship |
-| Class | Atmospheric research vessel |
-| Cruise altitude | 5,486m / 18,000 ft |
-| Default speed | Cruise (slow) |
- 
-## Tour routes
- 
-The default tour is `san-juans-default` — the counter-clockwise
-corridor described above. Future tours can be added per-airship.
+**Cesium is parked.** The previous Cesium-based `/world/` is archived
+under `_archive/`. The Cesium Ion token (`VITE_CESIUM_ION_TOKEN`)
+remains in env vars in case we revisit Cesium for hero splat
+moments. Mapbox is the active engine.
  
 ---
  
-## Pin categories (future, for town pages)
+## File structure
  
-When the Mapbox town pages ship (`/ridgway/`, `/ouray/`, etc.), pins
-on those maps use a small fixed vocabulary. Each category gets the
-same shape with a slightly different ring color and weight.
-Restraint, not codes.
+```
+src/pages/CommandCenter/
+├── index.jsx                ← route entry, lazy-loaded
+├── CommandCenter.jsx        ← top-level component
+├── map/
+│   ├── MapCanvas.jsx        ← react-map-gl wrapper
+│   ├── config.js            ← token, style, view, dome, fog
+│   └── camera.js            ← opening sequence, flyTo helpers
+├── layers/
+│   ├── BeaconLayer.jsx      ← 13 location beacons (Phase 2.1)
+│   ├── BeaconPopup.jsx      ← click-to-detail popup (Phase 2.1)
+│   └── README.md            ← contract for adding layers
+├── controls/
+│   └── README.md            ← contract for adding controls (Phase 2.4)
+└── data/
+    ├── locations.js         ← 13 places from Supabase, static export
+    └── tour-route.js        ← corridor waypoints, static export
+```
+ 
+Each layer is a single React file. Each control is a single React
+file. Adding a new layer doesn't touch other layers. Adding a
+location doesn't touch layers.
+ 
+---
+ 
+## The beacons (Phase 2.1)
+ 
+Each location is rendered as a Mapbox layer composition:
+ 
+| Layer ID | Type | Purpose |
+| --- | --- | --- |
+| `burroship-beacons-halo` | circle | Soft outer glow ring |
+| `burroship-beacons-dot` | circle | The 5px solid dot |
+| `burroship-beacons-label` | symbol | Name label below the dot |
+ 
+All beacons render in lantern green (`#A8D055`). The schema's
+`beacon_color` field is reserved for Phase 2.2+ when we may
+introduce category-specific tinting.
+ 
+Beacons are interactive:
+- Hover: cursor changes to pointer
+- Click: a `BeaconPopup` opens with the blurb, category, elevation, city
+ 
+The popup uses Mapbox's native Popup primitive (not a React
+component) so it correctly tracks the map pan/zoom.
+ 
+---
+ 
+## The locations table (Supabase)
+ 
+The real schema in production. Project `twvptrfohuthynndeuxx`,
+table `world_locations`. 13 rows live.
+ 
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid | Primary key |
+| `slug` | text | URL-safe identifier |
+| `name` | text | Display name |
+| `category` | text | hq / client / partner / landmark |
+| `subcategory` | text | e.g. `compound-beacon` |
+| `beacon_color` | text | bronze / steel / lantern, etc. |
+| `status` | text | live / in-development / planned |
+| `city` | text | Town the location is in |
+| `address` | text | Street address if applicable |
+| `longitude` | double | |
+| `latitude` | double | |
+| `elevation_m` | double | Meters above sea level |
+| `blurb` | text | Short brand-voice description |
+| `body_markdown` | text | Long-form copy (optional) |
+| `splat_asset_id` | bigint | Cesium Ion asset ID for splats |
+| `splat_height_offset_m` | double | Vertical adjustment for splat anchor |
+| `photo_urls` | text[] | |
+| `links` | jsonb | |
+| `tags` | text[] | |
+| `featured` | bool | Whether to show as a primary beacon |
+| `visibility` | text | public / private |
+| `source` | text | manual / mapbox-geocoded / etc. |
+| `notes` | text | Internal notes |
+ 
+For now, this data is **hardcoded** into
+`src/pages/CommandCenter/data/locations.js` for speed. Re-export
+from the database when locations change. We'll switch to live
+Supabase reads when realtime data is needed (Phase 4+).
+ 
+## The airship table
+ 
+Table `world_airships`. One row: The Burroship.
+ 
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid | |
+| `slug` | text | `the-burroship` |
+| `name` | text | The Burroship |
+| `description` | text | |
+| `cruising_altitude_m` | double | 3000 (will move to 5486) |
+| `cruising_speed_kmh` | double | 25 |
+| `model_glb_url` | text | Future: custom 3D model |
+| `beacon_color` | text | `#A8D055` (lantern green) |
+| `active` | bool | |
+| `current_lat` | double | Phase 4: live position |
+| `current_lng` | double | |
+| `current_altitude_m` | double | |
+| `current_heading` | double | |
+| `last_position_at` | timestamptz | |
+ 
+Phase 2.2 will render the airship glyph on the map.
+ 
+## The tour routes
+ 
+Table `tour_routes`. One row: `san-juans-default`. Stops stored as
+jsonb. There is also a view `tour_route_stops_expanded` that
+flattens stops into rows.
+ 
+For now, the corridor data is hardcoded into
+`src/pages/CommandCenter/data/tour-route.js`.
+ 
+---
+ 
+## Pin categories
+ 
+These categories drive future styling and filtering.
  
 | Category | What it is | Examples |
 | --- | --- | --- |
-| `hq` | Burroship-owned spaces | The Compound, The StackHouse |
-| `client` | Businesses we work with | Colorado Boy Depot, Cimarron Engineering |
-| `landmark` | Natural features | Chimney Rock, hot springs, peaks |
-| `partner` | Friendly local spots | Cafes, breweries, shops we love |
+| `hq` | Burroship-owned spaces | The Compound, The StackHouse, The Burroships |
+| `client` | Businesses we work with | Cimarron Engineering, Colorado Boy Depot |
+| `landmark` | Natural features | Chimney Rock, Hot Springs, Mt Sneffels |
+| `partner` | Friendly local spots | Colorado Boy Pub, True Grit Cafe |
  
-Future categories may emerge but four is the cap until proven
-necessary.
- 
----
- 
-## Town pages (future)
- 
-Each partner town will eventually get its own route:
- 
-- `/ridgway/`
-- `/ouray/`
-- `/telluride/`
-- `/mountain-village/`
- 
-These will be Mapbox-driven (not Cesium) for performance and easier
-embedding of business listings, events, and photos. Mapbox is the
-right tool for "here is a town, here are the places in it." Cesium is
-the right tool for "here is the world from above."
- 
-### Default camera (when town pages exist)
- 
-| Property | Value |
-| --- | --- |
-| Center | Town's main coordinates |
-| Zoom | 11.5 (loose enough to show context) |
-| Pitch | 50 degrees (we're looking down at an angle) |
-| Bearing | -15 degrees (slight rotation, the airship is drifting) |
-| Style | Mapbox dark-v11 (Phase 2), custom style later |
-| Terrain | terrain-rgb enabled, exaggeration 1.4 |
- 
-### Interaction
- 
-- Drag to pan
-- Pinch or scroll to zoom
-- Two-finger drag (or Ctrl+drag) to rotate and pitch
-- Click a pin: opens a card with name, category, blurb
-- No animations on the map itself initially. The world is still.
-  Movement comes when agents go live.
- 
-### Performance constraints
- 
-- One Mapbox instance per page, mounted in route only
-- Pin count stays under 25 per town in v1 to keep the map sparse
-- No heatmaps, clusters, or choropleths in v1
-- Tile load is the only network hit on first paint
- 
----
- 
-## What the maps are NOT
- 
-- Not Google Maps. No POI noise, no traffic, no review stars.
-- Not satellite view (for town pages). The dark style is canon.
-- Not gamified interactivity (yet — that's the splat phase).
-- Not the council's working surface (yet — that's a later phase).
- 
-For the world at `/world/`, the goal is one beautiful continuous
-airship cruise over the San Juans. Anything else is scope creep.
- 
-For the town pages, the goal is a beautiful, quiet, slightly tilted
-map of the town with under 25 carefully chosen pins. Same rule.
+The popup shows the category as the top label: "Compound · HQ",
+"Client", "Landmark", "Partner".
  
 ---
  
@@ -186,86 +198,50 @@ Always use real numbers. Never round.
  
 | Place | Latitude | Longitude | Elevation |
 | --- | --- | --- | --- |
-| Ridgway | 38.155° N | 107.755° W | 6,985 ft |
-| Ouray | 38.023° N | 107.671° W | 7,792 ft |
-| Telluride | 37.938° N | 107.812° W | 8,750 ft |
-| Mountain Village | 37.936° N | 107.856° W | 9,540 ft |
-| Mt Sneffels | 38.003° N | 107.792° W | 14,158 ft |
-| Mt Wilson | 37.838° N | 107.991° W | 14,252 ft |
-| Uncompahgre Peak | 38.072° N | 107.462° W | 14,309 ft |
+| Ridgway | 38.1547° N | 107.7551° W | 6,985 ft |
+| Ouray | 38.0228° N | 107.6708° W | 7,792 ft |
+| Telluride | 37.9375° N | 107.8123° W | 8,750 ft |
+| Mountain Village | 37.9356° N | 107.8561° W | 9,540 ft |
+| Mt Sneffels | 38.0038° N | 107.7922° W | 14,158 ft |
+| Chimney Rock | 38.1466° N | 107.5706° W | 11,781 ft |
+| The Compound | 38.1335° N | 107.5895° W | ~7,480 ft |
+| The StackHouse | 38.1425° N | 107.5760° W | ~8,135 ft |
+| The Burroships | 38.1380° N | 107.5800° W | ~7,710 ft |
  
 ---
  
-## How the Cesium engine works
+## Performance budget
  
-The world is rendered using:
+- First contentful paint < 2 seconds
+- Time to interactive < 3 seconds
+- Bundle size for `/world/` route < 2 MB (Mapbox is most of it)
+- 60 fps pan/zoom on mid-range phones
+- No FOUC, no flash of white before dark surface
  
-- Cesium 1.130 loaded from CDN
-- Google Photorealistic 3D Tiles for the base earth
-- Custom location data from Supabase
-- Custom airship 3D model (or fallback to a stylized SVG glyph)
-- Schedule UI overlaid on the canvas showing current waypoint
+The route is **lazy-loaded** so the home page doesn't pay for
+Mapbox unless the visitor actually navigates here.
  
-The Cesium widget chrome (toolbar, credits, fullscreen button) is
-hidden via CSS. Only the airship and the schedule UI are visible.
+---
  
-## Performance notes
+## What ships in each phase
  
-- Cesium initialization takes 2-4 seconds on a typical connection
-- The 3D tiles stream in progressively, so the world becomes more
-  detailed as the visitor watches
-- Memory usage is significant; the page is intentionally separate
-  from the home page route to avoid loading Cesium on every visit
-- The corridor flight uses `flyTo` with cubic interpolation between
-  waypoints, not the built-in Cesium tour API
+| Phase | Status | What ships |
+| --- | --- | --- |
+| Phase 1 | Shipped | Foundation. Mapbox Standard night, globe-to-cruise opening, status overlay. |
+| Phase 2.1 | Shipped | 13 location beacons in lantern green, click-to-popup with blurb. |
+| Phase 2.2 | Next | Airship glyph at cruise altitude. |
+| Phase 2.3 | After | Dome edge glow with soft resistance. |
+| Phase 2.4 | After | Fly-to controls (desktop sidebar, mobile bottom sheet). |
+| Phase 3 | Future | Town pages, danger paths, more layers. |
+| Phase 4 | Future | Live airship position via Supabase realtime. |
+| Phase 5 | Future | Splat zones, live deploy beacons. |
  
-## Updating waypoints
- 
-The waypoints live in the `tour_routes` Supabase table. To adjust the
-corridor:
- 
-1. Update the waypoint list in the row for `san-juans-default`
-2. Verify the altitude clears all terrain along the path
-3. Test by loading `/world/` and watching a full loop
-4. Adjust ease and timing in `CesiumWorld.jsx` if needed
- 
-The waypoints are stored as a JSON array. The Cesium component reads
-them at mount and runs the flight loop automatically.
- 
-## Splat library
- 
-Gaussian Splats are photoreal 3D captures of real places. The plan
-is to embed them inside the Cesium world so visitors can fly down to
-ground level and walk through a specific place: a brewery in Ridgway,
-the gondola station in Telluride, the hot springs in Ouray.
- 
-Status: planned, not yet implemented. The `splat_asset_id` column on
-`world_locations` is ready to receive Cesium Ion asset IDs.
- 
-For the full capture handbook, equipment recommendations, and
-upload-to-Cesium workflow, see `GAUSSIAN_SPLATS.md`.
- 
-## The relationship to the home page
- 
-The home page references the world subtly. The hero spec strip shows
-"Status: Cruising" and current coordinates. The Vessel link in the
-footer goes to `/world/`. The brand voice talks about the airship as
-real because the world experience makes it tangible.
- 
-Without the world, the airship is just a metaphor. With the world,
-it is a thing you can watch.
- 
-## Mapbox token
- 
-The Mapbox public token loads from `VITE_MAPBOX_TOKEN`. URL
-restrictions on the token (set in the Mapbox dashboard) limit it to
-`theburroship.netlify.app` and `localhost:3009`. When the custom
-domain launches, add it to the token's allowed origins.
+---
  
 ## See also
  
-- `BRAND.md` for the conceit and the three rooms
-- `AGENTS.md` for the council (which lives on the bridge of the vessel)
-- `INFRASTRUCTURE.md` for the Supabase project and env vars
-- `GAUSSIAN_SPLATS.md` for the practical capture and processing handbook
-- `ROADMAP.md` for the phased build plan
+- `BRAND.md` for the conceit
+- `ROADMAP.md` for the phased plan
+- `INFRASTRUCTURE.md` for env vars and the Supabase project
+- `AGENTS.md` for the council
+- `GAUSSIAN_SPLATS.md` for splat capture

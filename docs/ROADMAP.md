@@ -7,7 +7,7 @@ The phased build plan for The Burroship. Updated as phases ship.
 The Burroship is a living Western Slope world map where real
 businesses, real terrain, and onboard agents converge into a
 quietly running operating system. The website is the front porch.
-The Cesium map is the lobby. The agents are the crew.
+The active dome is the working surface. The agents are the crew.
  
 ## The Big Rule
  
@@ -17,7 +17,7 @@ make it 3D. Do not build the dream all at once.
 ## Phase status legend
  
 - **shipped** — live in production
-- **in flight** — under active build
+- **active** — under build right now
 - **next** — queued, not yet started
 - **future** — planned but not scheduled
  
@@ -27,103 +27,78 @@ make it 3D. Do not build the dream all at once.
  
 ### Phase 1 · Cinematic Skeleton · shipped
  
-Header, hero, footer, placeholder map section, three routes. Live
-on Netlify. Foundation for everything else.
+Header, hero, footer, three-room home (Build, Deploy, Automate),
+working `/world/` map experience. Live on Netlify.
  
-What actually shipped: the full v0.6 home page with Hero, Build,
-Deploy, Automate sections plus a working `/world/` Cesium experience.
-Scope grew during the build because the Cesium engine came together
-faster than expected.
+What actually shipped: the v0.6 home page with Hero, Build, Deploy,
+Automate sections plus a working Cesium-based `/world/` experience.
  
-### Phase 2 · Real Map · shipped (Cesium instead of Mapbox)
+### Phase 2 · The Active Dome · active
  
-Originally planned as a Mapbox dark-style map at `/map/`. Pivoted
-during the build to a **Cesium photoreal 3D Tiles map at `/world/`**
-with the airship cruising the San Juans at 18,000 feet. The
-gondola-railing vantage survived. The technical implementation
-changed.
+Pivoted from Cesium to **Mapbox GL JS v3** for performance and
+control. The dome is the new spatial framing: a subtle atmospheric
+shell over the San Juans inside which all Burroship operations
+take place.
  
-Doc: `WORLD.md` (captures both the Cesium reality and the future
-Mapbox town page plans).
+**Phase 2.1 (shipped or shipping):** Foundation. Mapbox Standard
+night style, globe-to-cruise opening sequence, status overlay,
+clean file structure ready for layers. No pins, no airship,
+no visible dome edge yet.
  
-The original Phase 2 Mapbox town pages (`/ridgway/`, `/ouray/`,
-etc.) moved to Phase 3.
+**Phase 2.2 (next):** The airship glyph. Camera can be steered.
+Dome edge becomes visible when user pans near boundary.
  
-### Phase 3 · Town Pages and Agents on the Map · next
+**Phase 2.3 (after that):** 13 location beacons. Fly-to controls.
+Mobile bottom sheet.
  
-Two parallel tracks:
+Doc: `WORLD.md`.
  
-**Town pages.** Mapbox-driven routes for `/ridgway/`, `/ouray/`,
-`/telluride/`, `/mountain-village/`. Each is a dark-styled tilted
-map of the town with under 25 pins. Pin categories defined in
-`WORLD.md`: hq, client, landmark, partner.
+### Phase 3 · The Layers Era · next
  
-**Agents on the map.** Burro portraits or beacon glyphs as markers
-on the Cesium world. Click a marker, an agent card opens with name,
-domain, current task. Currently agents only appear in the Automate
-section of the home page.
+Once the dome is built and steerable, layers stack on top.
  
-Docs: `WORLD.md` (exists), `AGENTS.md` (exists). Both updated as
-each part lands.
+- Million Dollar Highway as a subtle danger path between Ouray
+  and Silverton (when Silverton is added)
+- Town pages: separate routes for Ridgway, Ouray, Telluride
+- Pin categories from `WORLD.md`: hq, client, landmark, partner
  
-Definition of done: at least one town page is live with a working
-Mapbox map and real pin data. At least one agent appears on
-`/world/` tied to a real location.
+### Phase 4 · Live Data · future
  
-### Phase 4 · Movement and Live Data · future
+Supabase realtime kicks in.
  
-A small Supabase project (already exists: `twvptrfohuthynndeuxx`)
-with three tables: `agent_positions`, `agent_routes`, `events`.
- 
-Agents read positions from Supabase, not from hardcoded JSON. Agents
-glide between locations smoothly. "Currently working at" status
-lights up in real time.
- 
-Definition of done: update an agent's position via SQL, and the
-map updates in (near) real time.
+- `world_airships.current_lat/lng/heading` broadcasts live
+- Update a row via SQL, the airship moves on the map
+- Foundation for deploy-driven movement
  
 ### Phase 5 · Deploy Triggers · future
  
-Netlify webhook from each client repo (Pulse, Cimarron, etc.) fires
-on every successful deploy. The webhook updates `agent_positions`
-to move the appropriate burro to the appropriate client location.
+Netlify webhooks from client repos update agent positions.
  
-Definition of done: when `coloradoboydepot.com` deploys, the
-assigned agent visibly moves to Colorado Boy Depot's coordinates
-and stays there for the duration of the deploy.
+- When `coloradoboydepot.com` deploys, the assigned agent moves
+  to Colorado Boy Depot's coordinates
+- Map becomes a real-time mirror of NeonBurro's work
  
 ### Phase 6 · Council Intelligence · future
  
-The agents review deploys, events, and business activity. They
-generate recommendations. Tyler reviews and approves. The map
-becomes a thinking surface, not just a display.
+The six agents (Warbleur, Cypher, Lyra, Volt, Ion, Canyon) review
+deploys, events, and business activity. They generate briefs.
+Tyler reviews. The map becomes a thinking surface.
  
-Doc to write before this phase: a dedicated `COUNCIL_BRIEFS.md`
-or expanded `AGENTS.md` section.
+### Phase 7 · The Burroglyph Layer · future
  
-Definition of done: every morning, open `theburroship.netlify.app`
-and see a council brief from the night before. "We noticed X. We
-recommend Y. Approve to execute."
+Each agent gets an identity layer — a "Burroglyph" — that ties
+the agent to a recognized vessel inside the active dome. Possibly
+collectible, possibly cloneable per client. Identity becomes a
+first-class entity in the schema.
  
-### Phase 7 · 3D Burro World · future
- 
-React Three Fiber. GLB burro models. Buildings as tools. Gaussian
-splats of Ridgway and partner towns. Weather and time-of-day. The
-full dream.
- 
-Definition of done: the map becomes a real-time stylized 3D world
-where burros walk between buildings and the seasons change with
-the calendar.
- 
-The Gaussian Splat capture work begins much earlier than this phase
-(see `GAUSSIAN_SPLATS.md`). The 3D world is the eventual home for
-the splat library, not the start of it.
+This is the long-term play that gives the agents a face without
+turning them into mascots.
  
 ---
  
 ## Master files
  
-These docs exist now in `docs/`:
+These docs exist in `docs/`:
  
 **Brand and product:**
 - `BRAND.md` — what The Burroship is
@@ -137,7 +112,7 @@ These docs exist now in `docs/`:
 - `WORKFLOW.md` — how Claude and Tyler ship
  
 **The world:**
-- `WORLD.md` — Cesium map and town page plans
+- `WORLD.md` — Mapbox engine, dome, layers, schema
 - `AGENTS.md` — the six-agent council
 - `GAUSSIAN_SPLATS.md` — splat capture handbook
  
@@ -146,26 +121,19 @@ These docs exist now in `docs/`:
 - `ROADMAP.md` — this file
 - `CLAUDE_SKILLS.md` — skills index for Claude Code
  
-Phase-specific docs are written before the phase begins, not before
-the project. This keeps documentation informed by reality instead
-of speculation.
- 
 ---
  
 ## What each phase ships
  
-Every phase ends with a deployable, shippable URL. Never wait for
-the next phase to ship the current one.
- 
 | Phase | Ships |
 | --- | --- |
 | 1 | Live cinematic brand site |
-| 2 | Live URL where the map is the experience |
-| 3 | Live URL where the characters appear on the map |
-| 4 | Live URL where the world is alive |
-| 5 | Live URL where reality (deploys) updates the world |
-| 6 | Live URL where the agents tell Tyler what to do |
-| 7 | Live URL that is a stylized world |
+| 2 | Live `/world/` with active dome, steerable airship, beacons |
+| 3 | Town pages, danger paths, more layers |
+| 4 | Realtime airship position |
+| 5 | Deploys move the agents |
+| 6 | Council briefs that recommend actions |
+| 7 | Burroglyph identity layer |
  
 ---
  
@@ -174,11 +142,7 @@ the next phase to ship the current one.
 One phase at a time. Don't rush. Don't skip phases. Don't merge
 phases.
  
-The reward for shipping Phase 3 is starting Phase 4, not
-half-building Phase 5 alongside it.
- 
 ## When stuck
  
 Read `BRAND.md` first, then `VOICE.md`. The brand philosophy is
-the tiebreaker for any decision the build doesn't obviously
-resolve.
+the tiebreaker.
