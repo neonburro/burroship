@@ -1,9 +1,10 @@
 // src/pages/CommandCenter/map/MapCanvas.jsx
 //
 // The Mapbox canvas. Mounts react-map-gl, applies Mapbox Standard
-// style with night light preset, runs the opening choreography
-// (lift from Chimney Rock, drift to Ridgway, orbit), and yields
-// to the user the moment they touch the map.
+// style with night light preset, runs the opening descent, renders
+// the status overlay and beacon layer.
+//
+// Phase 2.1: beacons added.
  
 import { useEffect, useRef, useState } from "react";
 import Map from "react-map-gl/mapbox";
@@ -23,24 +24,23 @@ import BeaconPopup from "../layers/BeaconPopup";
  
 function MapCanvas() {
   const mapRef = useRef(null);
-  const sequenceRef = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [styleLoaded, setStyleLoaded] = useState(false);
   const [selectedBeacon, setSelectedBeacon] = useState(null);
-  const [autoCruiseActive, setAutoCruiseActive] = useState(true);
  
   /* Get the underlying mapbox-gl Map instance for layer components. */
   const mapInstance = mapRef.current?.getMap?.() || null;
  
   /* When the map style finishes loading, apply the night preset
-   * and the fog. Then start the opening choreography. */
+   * and the fog. Then run the opening sequence. */
   useEffect(() => {
     if (!mapLoaded || !styleLoaded) return;
  
     const map = mapRef.current?.getMap();
     if (!map) return;
  
-    /* Apply night light preset. */
+    /* Apply night light preset. Some versions of Mapbox ignore
+     * this gracefully if the style doesn't support it. */
     try {
       map.setConfigProperty("basemap", "lightPreset", STANDARD_LIGHT_PRESET);
     } catch (e) {
@@ -54,50 +54,9 @@ function MapCanvas() {
       /* Non-critical. */
     }
  
-    /* Wire interaction handlers BEFORE starting the sequence so
-     * even very early input cancels auto-cruise. */
-    const cancelAutoCruise = () => {
-      if (sequenceRef.current) {
-        sequenceRef.current.cancel();
-        sequenceRef.current = null;
-      }
-      setAutoCruiseActive(false);
-    };
- 
-    /* Mapbox fires these on user-initiated input. easeTo/jumpTo
-     * inside our own choreography do NOT fire these, so we're safe. */
-    map.on("dragstart", cancelAutoCruise);
-    map.on("wheel", cancelAutoCruise);
-    map.on("touchstart", cancelAutoCruise);
-    map.on("pitchstart", cancelAutoCruise);
-    map.on("rotatestart", cancelAutoCruise);
- 
-    /* Start the opening sequence. */
-    sequenceRef.current = runOpeningSequence(map);
- 
-    return () => {
-      map.off("dragstart", cancelAutoCruise);
-      map.off("wheel", cancelAutoCruise);
-      map.off("touchstart", cancelAutoCruise);
-      map.off("pitchstart", cancelAutoCruise);
-      map.off("rotatestart", cancelAutoCruise);
-      if (sequenceRef.current) {
-        sequenceRef.current.cancel();
-        sequenceRef.current = null;
-      }
-    };
+    /* Run the opening descent. */
+    runOpeningSequence(map);
   }, [mapLoaded, styleLoaded]);
- 
-  /* When the user clicks a beacon, that also counts as interaction.
-   * Cancel auto-cruise. */
-  const handleBeaconClick = (beacon) => {
-    if (sequenceRef.current) {
-      sequenceRef.current.cancel();
-      sequenceRef.current = null;
-    }
-    setAutoCruiseActive(false);
-    setSelectedBeacon(beacon);
-  };
  
   /* Friendly fallback if the Mapbox token is missing. */
   if (!MAPBOX_TOKEN) {
@@ -145,7 +104,7 @@ function MapCanvas() {
         <>
           <BeaconLayer
             map={mapInstance}
-            onBeaconClick={handleBeaconClick}
+            onBeaconClick={setSelectedBeacon}
           />
           {selectedBeacon && (
             <BeaconPopup
@@ -160,21 +119,14 @@ function MapCanvas() {
       <StatusOverlay
         visible={mapLoaded}
         selectedBeacon={selectedBeacon}
-        autoCruiseActive={autoCruiseActive}
       />
     </div>
   );
 }
  
 /* Bottom-left operational readout. Brand voice.
- * Reactive to: opening sequence state, auto-cruise state, selected beacon. */
-function StatusOverlay({ visible, selectedBeacon, autoCruiseActive }) {
-  const modeLabel = selectedBeacon
-    ? "Tagged"
-    : autoCruiseActive
-    ? "Cruising"
-    : "Steady";
- 
+ * Now reactive to the selected beacon. */
+function StatusOverlay({ visible, selectedBeacon }) {
   return (
     <div
       className="absolute bottom-6 left-6 pointer-events-none transition-opacity duration-700 ease-out"
@@ -193,7 +145,9 @@ function StatusOverlay({ visible, selectedBeacon, autoCruiseActive }) {
         className="flex items-center gap-4 flex-wrap"
         style={{ color: "var(--color-dark-ink-muted)" }}
       >
-        <span className="text-mono-xs">{modeLabel}</span>
+        <span className="text-mono-xs">
+          {selectedBeacon ? "Tagged" : "Cruising"}
+        </span>
         <span
           className="text-mono-xs"
           style={{ color: "var(--color-dark-ink-faint)" }}
