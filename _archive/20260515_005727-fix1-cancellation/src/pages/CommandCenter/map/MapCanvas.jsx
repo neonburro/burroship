@@ -1,20 +1,11 @@
 // src/pages/CommandCenter/map/MapCanvas.jsx
 //
-// DIAGNOSTIC BUILD + FIX. Phase 2.2B.1 behavior with the
-// Scenario B fix applied.
+// DIAGNOSTIC BUILD. Phase 2.2B.1 behavior with logging added.
+// Tracks every map lifecycle event, every interaction handler firing,
+// every state transition. Used to diagnose why the opening sequence
+// is not playing on production.
 //
-// THE FIX:
-// - rotatestart and pitchstart were removed from cancel-handler
-//   list. Those events fire whenever the bearing/pitch changes,
-//   regardless of cause, so they were canceling on our own
-//   programmatic camera motion at frame 1.
-// - mousedown added for completeness on desktop.
-// - 100ms grace window: events fired during the first 100ms
-//   after the sequence starts are ignored. Belt and suspenders
-//   in case any other phantom event slips through.
-//
-// Diagnostics still on. After we confirm the fix, a separate
-// deploy will remove the logs.
+// Behavior is unchanged. Remove logs after diagnosis is complete.
  
 import { useEffect, useRef, useState } from "react";
 import Map from "react-map-gl/mapbox";
@@ -40,18 +31,11 @@ function dlog(...args) {
   console.log(`${LOG_PREFIX} +${ts}ms`, ...args);
 }
  
-/* Cancellation grace window. Events fired in the first 100ms
- * after the opening sequence begins are ignored. This is a
- * safety net in case any other camera state event sneaks in.
- * 100ms is well under the time any human could react. */
-const CANCEL_GRACE_MS = 100;
- 
 function MapCanvas() {
   dlog("MapCanvas component RENDER", { INITIAL_VIEW });
  
   const mapRef = useRef(null);
   const sequenceRef = useRef(null);
-  const sequenceStartTimeRef = useRef(0);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [styleLoaded, setStyleLoaded] = useState(false);
   const [selectedBeacon, setSelectedBeacon] = useState(null);
@@ -59,6 +43,7 @@ function MapCanvas() {
  
   const mapInstance = mapRef.current?.getMap?.() || null;
  
+  /* Log when state changes happen. */
   useEffect(() => {
     dlog("state: mapLoaded ->", mapLoaded);
   }, [mapLoaded]);
@@ -104,19 +89,9 @@ function MapCanvas() {
       dlog("fog failed", e.message);
     }
  
-    /* Build a cancel handler that respects the grace window. */
+    /* Wire interaction handlers. Each handler logs which event
+     * fired and when. */
     const makeCancelHandler = (eventName) => () => {
-      const elapsedSinceStart =
-        performance.now() - sequenceStartTimeRef.current;
- 
-      if (elapsedSinceStart < CANCEL_GRACE_MS) {
-        dlog(
-          `IGNORED '${eventName}' event during grace window`,
-          `(${Math.round(elapsedSinceStart)}ms < ${CANCEL_GRACE_MS}ms)`
-        );
-        return;
-      }
- 
       dlog(`INTERACTION DETECTED via '${eventName}' event`);
       if (sequenceRef.current) {
         dlog(`cancelling opening sequence (was active)`);
@@ -129,29 +104,21 @@ function MapCanvas() {
       setAutoCruiseActive(false);
     };
  
-    /* IMPORTANT: only true user-intent events get a cancel handler.
-     *
-     * REMOVED from this list:
-     *   - rotatestart  • fires on any bearing change including ours
-     *   - pitchstart   • fires on any pitch change including ours
-     *
-     * These were canceling the sequence on its own first frame. */
     const dragHandler = makeCancelHandler("dragstart");
     const wheelHandler = makeCancelHandler("wheel");
     const touchHandler = makeCancelHandler("touchstart");
-    const mouseHandler = makeCancelHandler("mousedown");
+    const pitchHandler = makeCancelHandler("pitchstart");
+    const rotateHandler = makeCancelHandler("rotatestart");
  
     map.on("dragstart", dragHandler);
     map.on("wheel", wheelHandler);
     map.on("touchstart", touchHandler);
-    map.on("mousedown", mouseHandler);
+    map.on("pitchstart", pitchHandler);
+    map.on("rotatestart", rotateHandler);
  
-    dlog("interaction handlers bound (cancel list: dragstart, wheel, touchstart, mousedown)");
+    dlog("interaction handlers bound");
  
-    /* Mark sequence start time so the grace window can compute
-     * elapsed against it. */
-    sequenceStartTimeRef.current = performance.now();
- 
+    /* Start the opening sequence. */
     dlog("calling runOpeningSequence");
     sequenceRef.current = runOpeningSequence(map);
     dlog("runOpeningSequence returned", {
@@ -163,7 +130,8 @@ function MapCanvas() {
       map.off("dragstart", dragHandler);
       map.off("wheel", wheelHandler);
       map.off("touchstart", touchHandler);
-      map.off("mousedown", mouseHandler);
+      map.off("pitchstart", pitchHandler);
+      map.off("rotatestart", rotateHandler);
       if (sequenceRef.current) {
         sequenceRef.current.cancel();
         sequenceRef.current = null;
