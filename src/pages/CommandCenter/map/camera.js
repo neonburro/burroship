@@ -1,113 +1,136 @@
 // src/pages/CommandCenter/map/camera.js
 //
-// Camera choreography for the /world/ opening.
+// One continuous airship-pace camera motion.
 //
-// The sequence (Phase 2.2A):
-//   1. Lift from Chimney Rock base up to 18,000 ft equivalent (4 sec)
-//   2. Drift west toward Ridgway, bearing rotates (6 sec)
-//   3. Slow orbit around Ridgway (90 sec per rotation, loops)
-//
-// All stages are interruptible. The instant the user pans, zooms,
-// clicks, or otherwise touches the map, auto-cruise cancels and
-// stays cancelled. The orbit never resumes after user interaction
-// in this phase; that's Phase 2.2B work.
+// Phase 2.2B.1 architecture:
+//   • A single requestAnimationFrame loop runs the entire opening.
+//   • No setTimeout chains, no easeTo queueing.
+//   • The loop computes the camera's desired position at every
+//     frame based on elapsed milliseconds.
+//   • Lift, drift, and orbit blend seamlessly into one another.
+//   • During orbit, subtle pitch breathing and zoom drift add
+//     "airship floating, not camera bolted down" feel.
+//   • Any user interaction immediately cancels the loop.
  
 import {
-  STAGE_LIFT,
-  STAGE_DRIFT,
-  STAGE_ORBIT,
-  RIDGWAY,
+  TIMING,
+  WAYPOINT_START,
+  WAYPOINT_LIFT_END,
+  WAYPOINT_CRUISE,
+  BREATHING,
 } from "./config";
  
-/* Cubic ease-out for the cinematic stages. Snappy start, calm
- * landing. */
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
+/* Cubic ease-in-out. Slow start, slow end, smooth through the
+ * middle. Gives the airship feel during the lift and drift. */
+function easeInOutCubic(t) {
+  return t < 0.5
+    ? 4 * t * t * t
+    : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
  
-/* Linear easing for the orbit. We want a steady rotation, not
- * an accelerating one. */
-function easeLinear(t) {
-  return t;
+/* Linear interpolate between two numbers. */
+function lerp(a, b, t) {
+  return a + (b - a) * t;
 }
  
-/* Run the opening choreography. Returns a controller object the
- * caller can use to cancel the sequence at any time. */
+/* Interpolate every numeric field of a waypoint between A and B. */
+function lerpWaypoint(a, b, t) {
+  return {
+    longitude: lerp(a.longitude, b.longitude, t),
+    latitude: lerp(a.latitude, b.latitude, t),
+    zoom: lerp(a.zoom, b.zoom, t),
+    pitch: lerp(a.pitch, b.pitch, t),
+    bearing: lerp(a.bearing, b.bearing, t),
+  };
+}
+ 
+/* Run the continuous opening animation. Returns a controller
+ * with .cancel() so the caller can stop the loop on user input. */
 export function runOpeningSequence(map) {
   if (!map) return { cancel: () => {} };
  
   let cancelled = false;
-  let orbitRafId = null;
+  let rafId = null;
+  const startTime = performance.now();
  
-  /* Stage 1: lift */
-  function startLift() {
-    if (cancelled) return;
-    map.easeTo({
-      center: [STAGE_LIFT.target.longitude, STAGE_LIFT.target.latitude],
-      zoom: STAGE_LIFT.target.zoom,
-      pitch: STAGE_LIFT.target.pitch,
-      bearing: STAGE_LIFT.target.bearing,
-      duration: STAGE_LIFT.duration,
-      easing: easeOutCubic,
-      essential: true,
-    });
-    setTimeout(startDrift, STAGE_LIFT.duration);
-  }
+  /* The lift phase ends at this elapsed time. */
+  const liftEndAt = TIMING.liftDuration;
  
-  /* Stage 2: drift to Ridgway */
-  function startDrift() {
-    if (cancelled) return;
-    map.easeTo({
-      center: [STAGE_DRIFT.target.longitude, STAGE_DRIFT.target.latitude],
-      zoom: STAGE_DRIFT.target.zoom,
-      pitch: STAGE_DRIFT.target.pitch,
-      bearing: STAGE_DRIFT.target.bearing,
-      duration: STAGE_DRIFT.duration,
-      easing: easeOutCubic,
-      essential: true,
-    });
-    setTimeout(startOrbit, STAGE_DRIFT.duration);
-  }
+  /* The drift phase ends at this elapsed time. */
+  const driftEndAt = TIMING.liftDuration + TIMING.driftDuration;
  
-  /* Stage 3: slow continuous orbit around Ridgway.
-   * Implemented as a requestAnimationFrame loop rather than easeTo
-   * so we can rotate forever without re-queuing animations. */
-  function startOrbit() {
+  function tick(now) {
     if (cancelled) return;
  
-    /* Snap to the orbit's starting bearing without an animation. */
-    const startBearing = map.getBearing();
-    const startTime = performance.now();
-    const degreesPerMs = 360 / STAGE_ORBIT.durationPerRotation;
+    const elapsed = now - startTime;
  
-    function tick(now) {
-      if (cancelled) return;
+    let cameraState;
  
-      const elapsed = now - startTime;
-      const newBearing = (startBearing + degreesPerMs * elapsed) % 360;
+    if (elapsed < liftEndAt) {
+      /* LIFT PHASE: float up from Chimney Rock with monolith in frame. */
+      const t = elapsed / TIMING.liftDuration;
+      const eased = easeInOutCubic(t);
+      cameraState = lerpWaypoint(WAYPOINT_START, WAYPOINT_LIFT_END, eased);
+    } else if (elapsed < driftEndAt) {
+      /* DRIFT PHASE: slide west toward Ridgway, descend pitch
+       * slightly, arrive at cruise altitude. */
+      const driftElapsed = elapsed - liftEndAt;
+      const t = driftElapsed / TIMING.driftDuration;
+      const eased = easeInOutCubic(t);
+      cameraState = lerpWaypoint(WAYPOINT_LIFT_END, WAYPOINT_CRUISE, eased);
+    } else {
+      /* ORBIT PHASE: perpetual circling around Ridgway with
+       * subtle pitch breathing and zoom drift. */
+      const orbitElapsed = elapsed - driftEndAt;
  
-      /* Use jumpTo for the rotation step — easeTo would create
-       * its own animation queue that conflicts with the next tick.
-       * jumpTo + RAF gives us perfectly smooth continuous rotation. */
-      map.setBearing(newBearing);
+      /* Continuous bearing rotation. */
+      const degreesPerMs = 360 / TIMING.rotationDuration;
+      const orbitBearing =
+        (WAYPOINT_CRUISE.bearing + orbitElapsed * degreesPerMs) % 360;
  
-      orbitRafId = requestAnimationFrame(tick);
+      /* Pitch breathing: sine wave around the cruise pitch. */
+      const pitchPhase =
+        (orbitElapsed % BREATHING.pitchCycleMs) / BREATHING.pitchCycleMs;
+      const pitchOffset =
+        Math.sin(pitchPhase * Math.PI * 2) * BREATHING.pitchAmplitude;
+ 
+      /* Zoom drift: sine wave on a different cycle. */
+      const zoomPhase =
+        (orbitElapsed % BREATHING.zoomCycleMs) / BREATHING.zoomCycleMs;
+      const zoomOffset =
+        Math.sin(zoomPhase * Math.PI * 2) * BREATHING.zoomAmplitude;
+ 
+      cameraState = {
+        longitude: WAYPOINT_CRUISE.longitude,
+        latitude: WAYPOINT_CRUISE.latitude,
+        zoom: WAYPOINT_CRUISE.zoom + zoomOffset,
+        pitch: WAYPOINT_CRUISE.pitch + pitchOffset,
+        bearing: orbitBearing,
+      };
     }
  
-    orbitRafId = requestAnimationFrame(tick);
+    /* Apply the computed state. jumpTo is the right call here
+     * because we are driving the camera every frame ourselves;
+     * easeTo would queue conflicting animations. */
+    map.jumpTo({
+      center: [cameraState.longitude, cameraState.latitude],
+      zoom: cameraState.zoom,
+      pitch: cameraState.pitch,
+      bearing: cameraState.bearing,
+    });
+ 
+    rafId = requestAnimationFrame(tick);
   }
  
-  /* Start the chain. */
-  startLift();
+  rafId = requestAnimationFrame(tick);
  
-  /* The controller. Caller uses this to cancel mid-sequence. */
   return {
     cancel: () => {
       if (cancelled) return;
       cancelled = true;
-      if (orbitRafId !== null) {
-        cancelAnimationFrame(orbitRafId);
-        orbitRafId = null;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
       }
       try {
         map.stop();
@@ -118,8 +141,8 @@ export function runOpeningSequence(map) {
   };
 }
  
-/* Fly to a specific location. Used when the user taps a place in
- * a controls list. The camera keeps cruise pitch. */
+/* Fly to a specific location. Used when the user taps a place
+ * in a controls list. The camera keeps cruise pitch. */
 export function flyToLocation(map, location) {
   if (!map || !location) return;
  
@@ -130,7 +153,6 @@ export function flyToLocation(map, location) {
     bearing: -15,
     duration: 2400,
     essential: true,
-    easing: easeOutCubic,
   });
 }
  
@@ -139,12 +161,11 @@ export function returnToCruise(map) {
   if (!map) return;
  
   map.flyTo({
-    center: [RIDGWAY.longitude, RIDGWAY.latitude],
-    zoom: STAGE_DRIFT.target.zoom,
-    pitch: STAGE_DRIFT.target.pitch,
-    bearing: STAGE_DRIFT.target.bearing,
+    center: [WAYPOINT_CRUISE.longitude, WAYPOINT_CRUISE.latitude],
+    zoom: WAYPOINT_CRUISE.zoom,
+    pitch: WAYPOINT_CRUISE.pitch,
+    bearing: WAYPOINT_CRUISE.bearing,
     duration: 2000,
     essential: true,
-    easing: easeOutCubic,
   });
 }

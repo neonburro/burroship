@@ -10,8 +10,7 @@ export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
  * light preset, set after the style loads. */
 export const STANDARD_STYLE = "mapbox://styles/mapbox/standard";
  
-/* Light preset to apply via setConfigProperty after style.load.
- * Options: dawn / day / dusk / night. We pick night for the brand. */
+/* Light preset to apply via setConfigProperty after style.load. */
 export const STANDARD_LIGHT_PRESET = "night";
  
 /* Real coordinates for the choreography. Anchor points. */
@@ -31,63 +30,91 @@ export const DOME_CENTER = RIDGWAY;
 /* Approximate radius of the active dome in degrees. */
 export const DOME_RADIUS_DEG = 0.35;
  
-/* Cruise altitude in meters. */
+/* Cruise altitude in meters. Used in the StatusOverlay readout. */
 export const CRUISE_ALTITUDE_M = 5486;
  
-/* Initial map view. Chimney Rock close-up, low altitude, pitched up
- * like the camera is sitting at the base of the monolith looking up. */
+/* OPENING START POSITION
+ *
+ * Slightly east of Chimney Rock so the monolith sits IN the camera
+ * frame as the airship lifts away from it. Without this offset the
+ * camera would be AT Chimney Rock with the rock behind us, which
+ * wastes the story beat.
+ *
+ * 0.012 degrees longitude east = ~1.05 km east of the rock,
+ * giving a clean profile shot of the monolith on lift. */
 export const INITIAL_VIEW = {
-  longitude: CHIMNEY_ROCK.longitude,
-  latitude: CHIMNEY_ROCK.latitude,
-  zoom: 13,        // close in, monolith dominates the frame
-  pitch: 75,       // looking up toward the sky
-  bearing: 270,    // facing west toward Ridgway
+  longitude: CHIMNEY_ROCK.longitude + 0.012,
+  latitude: CHIMNEY_ROCK.latitude - 0.002,
+  zoom: 14.2,
+  pitch: 78,
+  bearing: 285,
 };
  
-/* The three stages of the opening choreography. */
+/* OPENING CHOREOGRAPHY TIMING
+ *
+ * Single continuous animation, no staged pauses. Time-based RAF
+ * loop interpolates the camera through all three phases without
+ * settling between them.
+ *
+ * Total opening: 2 minutes before first orbit starts, then orbits
+ * continuously at 3 minutes per rotation. */
  
-/* Stage 1: lift. From the base of Chimney Rock up to cruise altitude.
- * Camera tilts down from looking up to looking out. */
-export const STAGE_LIFT = {
-  duration: 4000,
-  target: {
-    longitude: CHIMNEY_ROCK.longitude,
-    latitude: CHIMNEY_ROCK.latitude,
-    zoom: 10.5,
-    pitch: 55,
-    bearing: 270,
-  },
+export const TIMING = {
+  liftDuration: 60_000,        // 60s • Chimney Rock float-up
+  driftDuration: 60_000,       // 60s • drift west toward Ridgway
+  rotationDuration: 180_000,   // 3 min per full 360 orbit
 };
  
-/* Stage 2: drift west toward Ridgway. Bearing rotates gently to
- * frame the town as we arrive. */
-export const STAGE_DRIFT = {
-  duration: 6000,
-  target: {
-    longitude: RIDGWAY.longitude,
-    latitude: RIDGWAY.latitude,
-    zoom: 11,
-    pitch: 55,
-    bearing: -15,
-  },
+/* Camera waypoints for the continuous animation.
+ * Each waypoint defines a snapshot. The RAF loop interpolates
+ * between them based on elapsed time. */
+ 
+export const WAYPOINT_START = {
+  longitude: INITIAL_VIEW.longitude,
+  latitude: INITIAL_VIEW.latitude,
+  zoom: INITIAL_VIEW.zoom,
+  pitch: INITIAL_VIEW.pitch,
+  bearing: INITIAL_VIEW.bearing,
 };
  
-/* Stage 3: Ridgway orbit. Slow circular pan around the town center.
- * 90 second full rotation. Loops indefinitely until user interacts. */
-export const STAGE_ORBIT = {
-  durationPerRotation: 90000,  // 90 seconds per full 360
-  zoom: 11,
+/* End of lift • risen above Chimney Rock, looking out across
+ * the Cimarron range toward Ridgway. */
+export const WAYPOINT_LIFT_END = {
+  longitude: CHIMNEY_ROCK.longitude + 0.008,
+  latitude: CHIMNEY_ROCK.latitude + 0.002,
+  zoom: 12.8,
+  pitch: 62,
+  bearing: 282,
+};
+ 
+/* End of drift • arrived over Ridgway at cruise altitude.
+ * This is where the orbit begins. */
+export const WAYPOINT_CRUISE = {
+  longitude: RIDGWAY.longitude,
+  latitude: RIDGWAY.latitude,
+  zoom: 12.5,
   pitch: 55,
-  /* Center stays on Ridgway; bearing increments continuously. */
+  bearing: 260,
 };
  
-/* Final view used for the StatusOverlay readout. After the lift
- * completes, we're at "cruise altitude over Ridgway." */
-export const CRUISE_VIEW = STAGE_DRIFT.target;
+/* CRUISE_VIEW alias for code that reads "the resting state." */
+export const CRUISE_VIEW = WAYPOINT_CRUISE;
  
-/* Total time before the orbit phase begins. Used by code that
- * wants to know when the map has settled. */
-export const OPENING_DURATION_MS = STAGE_LIFT.duration + STAGE_DRIFT.duration;
+/* PITCH BREATHING and ALTITUDE DRIFT
+ *
+ * Subtle oscillations during the orbit that sell "we're in an
+ * airship," not "we're a fixed camera on a tripod." Amplitudes
+ * are deliberately small so it reads as natural drift, not
+ * motion sickness.
+ *
+ * Both oscillate on independent cycles so they never sync up
+ * predictably. */
+export const BREATHING = {
+  pitchAmplitude: 2.0,          // pitch oscillates +/- 2 degrees
+  pitchCycleMs: 24_000,         // 24s full pitch cycle
+  zoomAmplitude: 0.08,          // zoom oscillates +/- 0.08
+  zoomCycleMs: 31_000,          // 31s full zoom cycle (offset from pitch)
+};
  
 /* Default fog config. Adds depth and the "simulation layer" feel. */
 export const FOG_CONFIG = {
