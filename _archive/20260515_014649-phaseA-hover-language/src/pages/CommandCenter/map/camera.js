@@ -1,21 +1,18 @@
 // src/pages/CommandCenter/map/camera.js
 //
-// Phase A • hover-language camera. Two phases only:
-//   GLIDE  • slow lateral motion from Chimney Rock to Ridgway
-//   ORBIT  • perpetual slow circle around Ridgway
+// DIAGNOSTIC BUILD. Phase 2.2B.1 logic with logging added.
+// All decisions logged to console with [burroship] prefix so we can
+// trace exactly what happened during the opening sequence.
 //
-// Altitude is constant. No vertical motion. The airship is
-// already at cruise when the page loads.
-//
-// Diagnostic logs remain on for one more verification pass.
+// The math and behavior are unchanged from the previous deploy.
+// Logs only. Remove logs after diagnosis is complete.
  
 import {
   TIMING,
-  WAYPOINT_GLIDE_START,
-  WAYPOINT_GLIDE_END,
+  WAYPOINT_START,
+  WAYPOINT_LIFT_END,
+  WAYPOINT_CRUISE,
   BREATHING,
-  CRUISE_ZOOM,
-  CRUISE_PITCH,
 } from "./config";
  
 const LOG_PREFIX = "[burroship]";
@@ -26,7 +23,6 @@ function dlog(...args) {
   console.log(`${LOG_PREFIX} +${ts}ms`, ...args);
 }
  
-/* Cubic ease-in-out for slow start and slow end on the glide. */
 function easeInOutCubic(t) {
   return t < 0.5
     ? 4 * t * t * t
@@ -37,20 +33,13 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
  
-/* Shortest-path interpolation for bearing. Avoids 359 -> 1
- * spinning all the way around. */
-function lerpBearing(a, b, t) {
-  let diff = ((b - a + 540) % 360) - 180;
-  return (a + diff * t + 360) % 360;
-}
- 
 function lerpWaypoint(a, b, t) {
   return {
     longitude: lerp(a.longitude, b.longitude, t),
     latitude: lerp(a.latitude, b.latitude, t),
     zoom: lerp(a.zoom, b.zoom, t),
     pitch: lerp(a.pitch, b.pitch, t),
-    bearing: lerpBearing(a.bearing, b.bearing, t),
+    bearing: lerp(a.bearing, b.bearing, t),
   };
 }
  
@@ -65,6 +54,7 @@ export function runOpeningSequence(map) {
     return { cancel: () => {} };
   }
  
+  /* Log the camera's actual state at the moment we start. */
   dlog("initial camera state at sequence start", {
     center: map.getCenter(),
     zoom: map.getZoom(),
@@ -77,11 +67,13 @@ export function runOpeningSequence(map) {
   let lastLoggedPhase = null;
   const startTime = performance.now();
  
-  dlog("opening sequence STARTING (hover-language)", {
-    glideDurationMs: TIMING.glideDuration,
+  const liftEndAt = TIMING.liftDuration;
+  const driftEndAt = TIMING.liftDuration + TIMING.driftDuration;
+ 
+  dlog("opening sequence STARTING", {
+    liftDurationMs: TIMING.liftDuration,
+    driftDurationMs: TIMING.driftDuration,
     rotationDurationMs: TIMING.rotationDuration,
-    cruiseZoom: CRUISE_ZOOM,
-    cruisePitch: CRUISE_PITCH,
   });
  
   function tick(now) {
@@ -95,24 +87,23 @@ export function runOpeningSequence(map) {
     let cameraState;
     let phase;
  
-    if (elapsed < TIMING.glideDuration) {
-      /* GLIDE • slow lateral motion from Chimney Rock to Ridgway. */
-      phase = "GLIDE";
-      const t = elapsed / TIMING.glideDuration;
+    if (elapsed < liftEndAt) {
+      phase = "LIFT";
+      const t = elapsed / TIMING.liftDuration;
       const eased = easeInOutCubic(t);
-      cameraState = lerpWaypoint(
-        WAYPOINT_GLIDE_START,
-        WAYPOINT_GLIDE_END,
-        eased
-      );
+      cameraState = lerpWaypoint(WAYPOINT_START, WAYPOINT_LIFT_END, eased);
+    } else if (elapsed < driftEndAt) {
+      phase = "DRIFT";
+      const driftElapsed = elapsed - liftEndAt;
+      const t = driftElapsed / TIMING.driftDuration;
+      const eased = easeInOutCubic(t);
+      cameraState = lerpWaypoint(WAYPOINT_LIFT_END, WAYPOINT_CRUISE, eased);
     } else {
-      /* ORBIT • perpetual circle around Ridgway with breathing. */
       phase = "ORBIT";
-      const orbitElapsed = elapsed - TIMING.glideDuration;
- 
+      const orbitElapsed = elapsed - driftEndAt;
       const degreesPerMs = 360 / TIMING.rotationDuration;
       const orbitBearing =
-        (WAYPOINT_GLIDE_END.bearing + orbitElapsed * degreesPerMs) % 360;
+        (WAYPOINT_CRUISE.bearing + orbitElapsed * degreesPerMs) % 360;
  
       const pitchPhase =
         (orbitElapsed % BREATHING.pitchCycleMs) / BREATHING.pitchCycleMs;
@@ -125,14 +116,16 @@ export function runOpeningSequence(map) {
         Math.sin(zoomPhase * Math.PI * 2) * BREATHING.zoomAmplitude;
  
       cameraState = {
-        longitude: WAYPOINT_GLIDE_END.longitude,
-        latitude: WAYPOINT_GLIDE_END.latitude,
-        zoom: WAYPOINT_GLIDE_END.zoom + zoomOffset,
-        pitch: WAYPOINT_GLIDE_END.pitch + pitchOffset,
+        longitude: WAYPOINT_CRUISE.longitude,
+        latitude: WAYPOINT_CRUISE.latitude,
+        zoom: WAYPOINT_CRUISE.zoom + zoomOffset,
+        pitch: WAYPOINT_CRUISE.pitch + pitchOffset,
         bearing: orbitBearing,
       };
     }
  
+    /* Log phase transitions. Only fires when phase changes, not
+     * every frame, so the console stays readable. */
     if (phase !== lastLoggedPhase) {
       dlog(`phase transition -> ${phase}`, {
         elapsedMs: Math.round(elapsed),
@@ -178,31 +171,27 @@ export function runOpeningSequence(map) {
   };
 }
  
-/* Fly to a specific location. Used when a marker is clicked.
- * Will be tuned in Phase C with off-axis centering for the
- * detail panel. */
 export function flyToLocation(map, location) {
   if (!map || !location) return;
   dlog("flyToLocation", location.name);
   map.flyTo({
     center: [location.longitude, location.latitude],
-    zoom: CRUISE_ZOOM,
-    pitch: CRUISE_PITCH,
+    zoom: 13,
+    pitch: 55,
     bearing: -15,
     duration: 2400,
     essential: true,
   });
 }
  
-/* Return to the home cruise view over Ridgway. */
 export function returnToCruise(map) {
   if (!map) return;
   dlog("returnToCruise");
   map.flyTo({
-    center: [WAYPOINT_GLIDE_END.longitude, WAYPOINT_GLIDE_END.latitude],
-    zoom: WAYPOINT_GLIDE_END.zoom,
-    pitch: WAYPOINT_GLIDE_END.pitch,
-    bearing: WAYPOINT_GLIDE_END.bearing,
+    center: [WAYPOINT_CRUISE.longitude, WAYPOINT_CRUISE.latitude],
+    zoom: WAYPOINT_CRUISE.zoom,
+    pitch: WAYPOINT_CRUISE.pitch,
+    bearing: WAYPOINT_CRUISE.bearing,
     duration: 2000,
     essential: true,
   });

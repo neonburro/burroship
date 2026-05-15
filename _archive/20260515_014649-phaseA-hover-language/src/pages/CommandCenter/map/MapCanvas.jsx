@@ -1,18 +1,20 @@
 // src/pages/CommandCenter/map/MapCanvas.jsx
 //
-// Phase A • hover-language. Two cancellation refinements:
+// DIAGNOSTIC BUILD + FIX. Phase 2.2B.1 behavior with the
+// Scenario B fix applied.
 //
-//   1. Grace window extended from 100ms to 800ms. Long enough
-//      to absorb any startup-related artifact wheel events,
-//      short enough that a real user scroll right after page
-//      load still works as expected.
+// THE FIX:
+// - rotatestart and pitchstart were removed from cancel-handler
+//   list. Those events fire whenever the bearing/pitch changes,
+//   regardless of cause, so they were canceling on our own
+//   programmatic camera motion at frame 1.
+// - mousedown added for completeness on desktop.
+// - 100ms grace window: events fired during the first 100ms
+//   after the sequence starts are ignored. Belt and suspenders
+//   in case any other phantom event slips through.
 //
-//   2. Wheel events are now debounced. A single intentional
-//      scroll cancels cruise. Trackpad inertia decay sending
-//      50 wheel events over the next half-second does NOT
-//      produce 50 cancel logs.
-//
-// Diagnostics preserved for this verification pass.
+// Diagnostics still on. After we confirm the fix, a separate
+// deploy will remove the logs.
  
 import { useEffect, useRef, useState } from "react";
 import Map from "react-map-gl/mapbox";
@@ -25,8 +27,6 @@ import {
   INITIAL_VIEW,
   FOG_CONFIG,
   CRUISE_ALTITUDE_M,
-  CANCEL_GRACE_MS,
-  WHEEL_DEBOUNCE_MS,
 } from "./config";
 import { runOpeningSequence } from "./camera";
 import BeaconLayer from "../layers/BeaconLayer";
@@ -40,13 +40,18 @@ function dlog(...args) {
   console.log(`${LOG_PREFIX} +${ts}ms`, ...args);
 }
  
+/* Cancellation grace window. Events fired in the first 100ms
+ * after the opening sequence begins are ignored. This is a
+ * safety net in case any other camera state event sneaks in.
+ * 100ms is well under the time any human could react. */
+const CANCEL_GRACE_MS = 100;
+ 
 function MapCanvas() {
   dlog("MapCanvas component RENDER", { INITIAL_VIEW });
  
   const mapRef = useRef(null);
   const sequenceRef = useRef(null);
   const sequenceStartTimeRef = useRef(0);
-  const lastWheelTimeRef = useRef(0);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [styleLoaded, setStyleLoaded] = useState(false);
   const [selectedBeacon, setSelectedBeacon] = useState(null);
@@ -83,6 +88,7 @@ function MapCanvas() {
  
     dlog("opening-sequence useEffect: entering setup");
  
+    /* Apply night light preset. */
     try {
       map.setConfigProperty("basemap", "lightPreset", STANDARD_LIGHT_PRESET);
       dlog("lightPreset applied successfully");
@@ -90,6 +96,7 @@ function MapCanvas() {
       dlog("lightPreset failed", e.message);
     }
  
+    /* Apply atmospheric fog. */
     try {
       map.setFog(FOG_CONFIG);
       dlog("fog applied successfully");
@@ -97,31 +104,17 @@ function MapCanvas() {
       dlog("fog failed", e.message);
     }
  
-    /* Cancel handler with grace window and wheel debounce. */
+    /* Build a cancel handler that respects the grace window. */
     const makeCancelHandler = (eventName) => () => {
-      const now = performance.now();
-      const elapsedSinceStart = now - sequenceStartTimeRef.current;
+      const elapsedSinceStart =
+        performance.now() - sequenceStartTimeRef.current;
  
-      /* Grace window: ignore everything for the first 800ms. */
       if (elapsedSinceStart < CANCEL_GRACE_MS) {
         dlog(
-          `IGNORED '${eventName}' during grace window`,
+          `IGNORED '${eventName}' event during grace window`,
           `(${Math.round(elapsedSinceStart)}ms < ${CANCEL_GRACE_MS}ms)`
         );
         return;
-      }
- 
-      /* Wheel debounce: if a wheel just fired within
-       * WHEEL_DEBOUNCE_MS, treat this as inertia tail-off and
-       * ignore it silently (no log spam). */
-      if (eventName === "wheel") {
-        const sinceLastWheel = now - lastWheelTimeRef.current;
-        lastWheelTimeRef.current = now;
-        if (sinceLastWheel < WHEEL_DEBOUNCE_MS) {
-          /* Silent skip. Sequence is already cancelled by the
-           * first wheel; this is the inertia decay tail. */
-          return;
-        }
       }
  
       dlog(`INTERACTION DETECTED via '${eventName}' event`);
@@ -136,6 +129,13 @@ function MapCanvas() {
       setAutoCruiseActive(false);
     };
  
+    /* IMPORTANT: only true user-intent events get a cancel handler.
+     *
+     * REMOVED from this list:
+     *   - rotatestart  • fires on any bearing change including ours
+     *   - pitchstart   • fires on any pitch change including ours
+     *
+     * These were canceling the sequence on its own first frame. */
     const dragHandler = makeCancelHandler("dragstart");
     const wheelHandler = makeCancelHandler("wheel");
     const touchHandler = makeCancelHandler("touchstart");
@@ -146,10 +146,10 @@ function MapCanvas() {
     map.on("touchstart", touchHandler);
     map.on("mousedown", mouseHandler);
  
-    dlog(
-      "interaction handlers bound (cancel list: dragstart, wheel, touchstart, mousedown)"
-    );
+    dlog("interaction handlers bound (cancel list: dragstart, wheel, touchstart, mousedown)");
  
+    /* Mark sequence start time so the grace window can compute
+     * elapsed against it. */
     sequenceStartTimeRef.current = performance.now();
  
     dlog("calling runOpeningSequence");
