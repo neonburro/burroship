@@ -1,18 +1,18 @@
 // src/pages/CommandCenter/map/MapCanvas.jsx
 //
-// Phase C • visual polish.
+// Phase A • hover-language. Two cancellation refinements:
 //
-// Verified API calls per Volt's sourced research:
-//   • setConfigProperty('basemap', flagName, value)
-//     for lightPreset, showPlaceLabels, showPointOfInterestLabels,
-//     showRoadLabels, showTransitLabels, show3dObjects
-//   • addSource('mapbox-dem', {type: 'raster-dem', ...}) before
-//     setTerrain (Standard does NOT provide DEM implicitly)
-//   • setTerrain({source: 'mapbox-dem', exaggeration: 1.8})
-//   • setFog with horizon-blend, star-intensity, color values
+//   1. Grace window extended from 100ms to 800ms. Long enough
+//      to absorb any startup-related artifact wheel events,
+//      short enough that a real user scroll right after page
+//      load still works as expected.
 //
-// show3dObjects requires mapbox-gl >= 3.5.2. Wrapped in try/catch
-// so older versions degrade gracefully.
+//   2. Wheel events are now debounced. A single intentional
+//      scroll cancels cruise. Trackpad inertia decay sending
+//      50 wheel events over the next half-second does NOT
+//      produce 50 cancel logs.
+//
+// Diagnostics preserved for this verification pass.
  
 import { useEffect, useRef, useState } from "react";
 import Map from "react-map-gl/mapbox";
@@ -24,9 +24,6 @@ import {
   STANDARD_LIGHT_PRESET,
   INITIAL_VIEW,
   FOG_CONFIG,
-  TERRAIN_EXAGGERATION,
-  DEM_SOURCE_ID,
-  DEM_SOURCE_CONFIG,
   CRUISE_ALTITUDE_M,
   CANCEL_GRACE_MS,
   WHEEL_DEBOUNCE_MS,
@@ -41,65 +38,6 @@ const mountWallTime = performance.now();
 function dlog(...args) {
   const ts = Math.round(performance.now() - mountWallTime);
   console.log(`${LOG_PREFIX} +${ts}ms`, ...args);
-}
- 
-/* Apply Mapbox Standard config flags.
- *
- * Place labels are kept ON so Tyler retains town orientation
- * (Ridgway, Ouray, Telluride). Road/POI/transit labels are
- * hidden to reduce basemap noise and let beacons dominate.
- *
- * Each call wrapped in try/catch because show3dObjects requires
- * mapbox-gl >= 3.5.2 and we don't want one failed flag to block
- * the others from applying. */
-function applyStandardConfig(map) {
-  const configCalls = [
-    ["lightPreset", STANDARD_LIGHT_PRESET],
-    ["showPlaceLabels", true],
-    ["showRoadLabels", false],
-    ["showPointOfInterestLabels", false],
-    ["showTransitLabels", false],
-    ["show3dObjects", true],
-  ];
- 
-  for (const [key, value] of configCalls) {
-    try {
-      map.setConfigProperty("basemap", key, value);
-      dlog(`config ${key} = ${value} OK`);
-    } catch (e) {
-      dlog(`config ${key} FAILED:`, e.message);
-    }
-  }
-}
- 
-/* Add DEM source manually, then apply terrain exaggeration.
- *
- * Per Volt's verified research:
- *   "The official terrain example for GL JS v3.20.0 adds a
- *    raster-dem source manually and then calls setTerrain.
- *    For Standard, do not assume Standard gives you a ready
- *    DEM source automatically; add the DEM source explicitly,
- *    then call setTerrain."
- *
- * If the source already exists (e.g. on hot reload), addSource
- * throws. Check first and skip if present. */
-function applyTerrain(map) {
-  try {
-    if (!map.getSource(DEM_SOURCE_ID)) {
-      map.addSource(DEM_SOURCE_ID, DEM_SOURCE_CONFIG);
-      dlog(`DEM source ${DEM_SOURCE_ID} added`);
-    } else {
-      dlog(`DEM source ${DEM_SOURCE_ID} already present, skipping add`);
-    }
- 
-    map.setTerrain({
-      source: DEM_SOURCE_ID,
-      exaggeration: TERRAIN_EXAGGERATION,
-    });
-    dlog(`terrain exaggeration ${TERRAIN_EXAGGERATION} OK`);
-  } catch (e) {
-    dlog("terrain FAILED:", e.message);
-  }
 }
  
 function MapCanvas() {
@@ -145,9 +83,12 @@ function MapCanvas() {
  
     dlog("opening-sequence useEffect: entering setup");
  
-    /* Phase C • basemap config, terrain, fog. */
-    applyStandardConfig(map);
-    applyTerrain(map);
+    try {
+      map.setConfigProperty("basemap", "lightPreset", STANDARD_LIGHT_PRESET);
+      dlog("lightPreset applied successfully");
+    } catch (e) {
+      dlog("lightPreset failed", e.message);
+    }
  
     try {
       map.setFog(FOG_CONFIG);
@@ -161,6 +102,7 @@ function MapCanvas() {
       const now = performance.now();
       const elapsedSinceStart = now - sequenceStartTimeRef.current;
  
+      /* Grace window: ignore everything for the first 800ms. */
       if (elapsedSinceStart < CANCEL_GRACE_MS) {
         dlog(
           `IGNORED '${eventName}' during grace window`,
@@ -169,10 +111,15 @@ function MapCanvas() {
         return;
       }
  
+      /* Wheel debounce: if a wheel just fired within
+       * WHEEL_DEBOUNCE_MS, treat this as inertia tail-off and
+       * ignore it silently (no log spam). */
       if (eventName === "wheel") {
         const sinceLastWheel = now - lastWheelTimeRef.current;
         lastWheelTimeRef.current = now;
         if (sinceLastWheel < WHEEL_DEBOUNCE_MS) {
+          /* Silent skip. Sequence is already cancelled by the
+           * first wheel; this is the inertia decay tail. */
           return;
         }
       }
