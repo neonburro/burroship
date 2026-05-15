@@ -1,11 +1,16 @@
 // src/pages/CommandCenter/map/camera.js
 //
-// DIAGNOSTIC BUILD. Phase 2.2B.1 logic with logging added.
-// All decisions logged to console with [burroship] prefix so we can
-// trace exactly what happened during the opening sequence.
+// One continuous airship-pace camera motion.
 //
-// The math and behavior are unchanged from the previous deploy.
-// Logs only. Remove logs after diagnosis is complete.
+// Phase 2.2B.1 architecture:
+//   • A single requestAnimationFrame loop runs the entire opening.
+//   • No setTimeout chains, no easeTo queueing.
+//   • The loop computes the camera's desired position at every
+//     frame based on elapsed milliseconds.
+//   • Lift, drift, and orbit blend seamlessly into one another.
+//   • During orbit, subtle pitch breathing and zoom drift add
+//     "airship floating, not camera bolted down" feel.
+//   • Any user interaction immediately cancels the loop.
  
 import {
   TIMING,
@@ -15,24 +20,20 @@ import {
   BREATHING,
 } from "./config";
  
-const LOG_PREFIX = "[burroship]";
-const startWallTime = performance.now();
- 
-function dlog(...args) {
-  const ts = Math.round(performance.now() - startWallTime);
-  console.log(`${LOG_PREFIX} +${ts}ms`, ...args);
-}
- 
+/* Cubic ease-in-out. Slow start, slow end, smooth through the
+ * middle. Gives the airship feel during the lift and drift. */
 function easeInOutCubic(t) {
   return t < 0.5
     ? 4 * t * t * t
     : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
  
+/* Linear interpolate between two numbers. */
 function lerp(a, b, t) {
   return a + (b - a) * t;
 }
  
+/* Interpolate every numeric field of a waypoint between A and B. */
 function lerpWaypoint(a, b, t) {
   return {
     longitude: lerp(a.longitude, b.longitude, t),
@@ -43,73 +44,57 @@ function lerpWaypoint(a, b, t) {
   };
 }
  
+/* Run the continuous opening animation. Returns a controller
+ * with .cancel() so the caller can stop the loop on user input. */
 export function runOpeningSequence(map) {
-  dlog("runOpeningSequence CALLED", {
-    mapExists: !!map,
-    styleLoaded: map ? map.isStyleLoaded() : "n/a",
-  });
- 
-  if (!map) {
-    dlog("runOpeningSequence aborted: no map");
-    return { cancel: () => {} };
-  }
- 
-  /* Log the camera's actual state at the moment we start. */
-  dlog("initial camera state at sequence start", {
-    center: map.getCenter(),
-    zoom: map.getZoom(),
-    pitch: map.getPitch(),
-    bearing: map.getBearing(),
-  });
+  if (!map) return { cancel: () => {} };
  
   let cancelled = false;
   let rafId = null;
-  let lastLoggedPhase = null;
   const startTime = performance.now();
  
+  /* The lift phase ends at this elapsed time. */
   const liftEndAt = TIMING.liftDuration;
+ 
+  /* The drift phase ends at this elapsed time. */
   const driftEndAt = TIMING.liftDuration + TIMING.driftDuration;
  
-  dlog("opening sequence STARTING", {
-    liftDurationMs: TIMING.liftDuration,
-    driftDurationMs: TIMING.driftDuration,
-    rotationDurationMs: TIMING.rotationDuration,
-  });
- 
   function tick(now) {
-    if (cancelled) {
-      dlog("tick after cancel, exiting");
-      return;
-    }
+    if (cancelled) return;
  
     const elapsed = now - startTime;
  
     let cameraState;
-    let phase;
  
     if (elapsed < liftEndAt) {
-      phase = "LIFT";
+      /* LIFT PHASE: float up from Chimney Rock with monolith in frame. */
       const t = elapsed / TIMING.liftDuration;
       const eased = easeInOutCubic(t);
       cameraState = lerpWaypoint(WAYPOINT_START, WAYPOINT_LIFT_END, eased);
     } else if (elapsed < driftEndAt) {
-      phase = "DRIFT";
+      /* DRIFT PHASE: slide west toward Ridgway, descend pitch
+       * slightly, arrive at cruise altitude. */
       const driftElapsed = elapsed - liftEndAt;
       const t = driftElapsed / TIMING.driftDuration;
       const eased = easeInOutCubic(t);
       cameraState = lerpWaypoint(WAYPOINT_LIFT_END, WAYPOINT_CRUISE, eased);
     } else {
-      phase = "ORBIT";
+      /* ORBIT PHASE: perpetual circling around Ridgway with
+       * subtle pitch breathing and zoom drift. */
       const orbitElapsed = elapsed - driftEndAt;
+ 
+      /* Continuous bearing rotation. */
       const degreesPerMs = 360 / TIMING.rotationDuration;
       const orbitBearing =
         (WAYPOINT_CRUISE.bearing + orbitElapsed * degreesPerMs) % 360;
  
+      /* Pitch breathing: sine wave around the cruise pitch. */
       const pitchPhase =
         (orbitElapsed % BREATHING.pitchCycleMs) / BREATHING.pitchCycleMs;
       const pitchOffset =
         Math.sin(pitchPhase * Math.PI * 2) * BREATHING.pitchAmplitude;
  
+      /* Zoom drift: sine wave on a different cycle. */
       const zoomPhase =
         (orbitElapsed % BREATHING.zoomCycleMs) / BREATHING.zoomCycleMs;
       const zoomOffset =
@@ -124,16 +109,9 @@ export function runOpeningSequence(map) {
       };
     }
  
-    /* Log phase transitions. Only fires when phase changes, not
-     * every frame, so the console stays readable. */
-    if (phase !== lastLoggedPhase) {
-      dlog(`phase transition -> ${phase}`, {
-        elapsedMs: Math.round(elapsed),
-        targetState: cameraState,
-      });
-      lastLoggedPhase = phase;
-    }
- 
+    /* Apply the computed state. jumpTo is the right call here
+     * because we are driving the camera every frame ourselves;
+     * easeTo would queue conflicting animations. */
     map.jumpTo({
       center: [cameraState.longitude, cameraState.latitude],
       zoom: cameraState.zoom,
@@ -144,20 +122,12 @@ export function runOpeningSequence(map) {
     rafId = requestAnimationFrame(tick);
   }
  
-  dlog("scheduling first RAF tick");
-  rafId = requestAnimationFrame((firstTime) => {
-    dlog("FIRST RAF FRAME firing");
-    tick(firstTime);
-  });
+  rafId = requestAnimationFrame(tick);
  
   return {
     cancel: () => {
-      if (cancelled) {
-        dlog("cancel() called but already cancelled");
-        return;
-      }
+      if (cancelled) return;
       cancelled = true;
-      dlog("OPENING SEQUENCE CANCELLED");
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
         rafId = null;
@@ -171,9 +141,11 @@ export function runOpeningSequence(map) {
   };
 }
  
+/* Fly to a specific location. Used when the user taps a place
+ * in a controls list. The camera keeps cruise pitch. */
 export function flyToLocation(map, location) {
   if (!map || !location) return;
-  dlog("flyToLocation", location.name);
+ 
   map.flyTo({
     center: [location.longitude, location.latitude],
     zoom: 13,
@@ -184,9 +156,10 @@ export function flyToLocation(map, location) {
   });
 }
  
+/* Return to the home cruise view over Ridgway. */
 export function returnToCruise(map) {
   if (!map) return;
-  dlog("returnToCruise");
+ 
   map.flyTo({
     center: [WAYPOINT_CRUISE.longitude, WAYPOINT_CRUISE.latitude],
     zoom: WAYPOINT_CRUISE.zoom,

@@ -1,11 +1,9 @@
 // src/pages/CommandCenter/map/MapCanvas.jsx
 //
-// DIAGNOSTIC BUILD. Phase 2.2B.1 behavior with logging added.
-// Tracks every map lifecycle event, every interaction handler firing,
-// every state transition. Used to diagnose why the opening sequence
-// is not playing on production.
-//
-// Behavior is unchanged. Remove logs after diagnosis is complete.
+// The Mapbox canvas. Mounts react-map-gl, applies Mapbox Standard
+// style with night light preset, runs the opening choreography
+// (lift from Chimney Rock, drift to Ridgway, orbit), and yields
+// to the user the moment they touch the map.
  
 import { useEffect, useRef, useState } from "react";
 import Map from "react-map-gl/mapbox";
@@ -23,17 +21,7 @@ import { runOpeningSequence } from "./camera";
 import BeaconLayer from "../layers/BeaconLayer";
 import BeaconPopup from "../layers/BeaconPopup";
  
-const LOG_PREFIX = "[burroship-mapcanvas]";
-const mountWallTime = performance.now();
- 
-function dlog(...args) {
-  const ts = Math.round(performance.now() - mountWallTime);
-  console.log(`${LOG_PREFIX} +${ts}ms`, ...args);
-}
- 
 function MapCanvas() {
-  dlog("MapCanvas component RENDER", { INITIAL_VIEW });
- 
   const mapRef = useRef(null);
   const sequenceRef = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -41,97 +29,58 @@ function MapCanvas() {
   const [selectedBeacon, setSelectedBeacon] = useState(null);
   const [autoCruiseActive, setAutoCruiseActive] = useState(true);
  
+  /* Get the underlying mapbox-gl Map instance for layer components. */
   const mapInstance = mapRef.current?.getMap?.() || null;
  
-  /* Log when state changes happen. */
+  /* When the map style finishes loading, apply the night preset
+   * and the fog. Then start the opening choreography. */
   useEffect(() => {
-    dlog("state: mapLoaded ->", mapLoaded);
-  }, [mapLoaded]);
- 
-  useEffect(() => {
-    dlog("state: styleLoaded ->", styleLoaded);
-  }, [styleLoaded]);
- 
-  useEffect(() => {
-    dlog("state: autoCruiseActive ->", autoCruiseActive);
-  }, [autoCruiseActive]);
- 
-  useEffect(() => {
-    if (!mapLoaded || !styleLoaded) {
-      dlog("opening-sequence useEffect: skipped", {
-        mapLoaded,
-        styleLoaded,
-      });
-      return;
-    }
+    if (!mapLoaded || !styleLoaded) return;
  
     const map = mapRef.current?.getMap();
-    if (!map) {
-      dlog("opening-sequence useEffect: no map instance");
-      return;
-    }
- 
-    dlog("opening-sequence useEffect: entering setup");
+    if (!map) return;
  
     /* Apply night light preset. */
     try {
       map.setConfigProperty("basemap", "lightPreset", STANDARD_LIGHT_PRESET);
-      dlog("lightPreset applied successfully");
     } catch (e) {
-      dlog("lightPreset failed", e.message);
+      /* Non-critical. */
     }
  
     /* Apply atmospheric fog. */
     try {
       map.setFog(FOG_CONFIG);
-      dlog("fog applied successfully");
     } catch (e) {
-      dlog("fog failed", e.message);
+      /* Non-critical. */
     }
  
-    /* Wire interaction handlers. Each handler logs which event
-     * fired and when. */
-    const makeCancelHandler = (eventName) => () => {
-      dlog(`INTERACTION DETECTED via '${eventName}' event`);
+    /* Wire interaction handlers BEFORE starting the sequence so
+     * even very early input cancels auto-cruise. */
+    const cancelAutoCruise = () => {
       if (sequenceRef.current) {
-        dlog(`cancelling opening sequence (was active)`);
         sequenceRef.current.cancel();
         sequenceRef.current = null;
-      } else {
-        dlog(`interaction fired but no active sequence to cancel`);
       }
-      dlog(`setting autoCruiseActive -> false via interaction '${eventName}'`);
       setAutoCruiseActive(false);
     };
  
-    const dragHandler = makeCancelHandler("dragstart");
-    const wheelHandler = makeCancelHandler("wheel");
-    const touchHandler = makeCancelHandler("touchstart");
-    const pitchHandler = makeCancelHandler("pitchstart");
-    const rotateHandler = makeCancelHandler("rotatestart");
- 
-    map.on("dragstart", dragHandler);
-    map.on("wheel", wheelHandler);
-    map.on("touchstart", touchHandler);
-    map.on("pitchstart", pitchHandler);
-    map.on("rotatestart", rotateHandler);
- 
-    dlog("interaction handlers bound");
+    /* Mapbox fires these on user-initiated input. easeTo/jumpTo
+     * inside our own choreography do NOT fire these, so we're safe. */
+    map.on("dragstart", cancelAutoCruise);
+    map.on("wheel", cancelAutoCruise);
+    map.on("touchstart", cancelAutoCruise);
+    map.on("pitchstart", cancelAutoCruise);
+    map.on("rotatestart", cancelAutoCruise);
  
     /* Start the opening sequence. */
-    dlog("calling runOpeningSequence");
     sequenceRef.current = runOpeningSequence(map);
-    dlog("runOpeningSequence returned", {
-      hasController: !!sequenceRef.current,
-    });
  
     return () => {
-      dlog("opening-sequence useEffect: cleanup running");
-      map.off("dragstart", dragHandler);
-      map.off("wheel", wheelHandler);
-      map.off("touchstart", touchHandler);
-      map.off("pitchstart", pitchHandler);
-      map.off("rotatestart", rotateHandler);
+      map.off("dragstart", cancelAutoCruise);
+      map.off("wheel", cancelAutoCruise);
+      map.off("touchstart", cancelAutoCruise);
+      map.off("pitchstart", cancelAutoCruise);
+      map.off("rotatestart", cancelAutoCruise);
       if (sequenceRef.current) {
         sequenceRef.current.cancel();
         sequenceRef.current = null;
@@ -139,8 +88,9 @@ function MapCanvas() {
     };
   }, [mapLoaded, styleLoaded]);
  
+  /* When the user clicks a beacon, that also counts as interaction.
+   * Cancel auto-cruise. */
   const handleBeaconClick = (beacon) => {
-    dlog("beacon clicked", beacon.name);
     if (sequenceRef.current) {
       sequenceRef.current.cancel();
       sequenceRef.current = null;
@@ -149,8 +99,8 @@ function MapCanvas() {
     setSelectedBeacon(beacon);
   };
  
+  /* Friendly fallback if the Mapbox token is missing. */
   if (!MAPBOX_TOKEN) {
-    dlog("MAPBOX_TOKEN missing, rendering fallback");
     return (
       <div
         className="absolute inset-0 flex items-center justify-center"
@@ -185,17 +135,12 @@ function MapCanvas() {
         projection="globe"
         attributionControl={false}
         logoPosition="bottom-right"
-        onLoad={() => {
-          dlog("Map onLoad fired");
-          setMapLoaded(true);
-        }}
-        onStyleData={() => {
-          dlog("Map onStyleData fired");
-          setStyleLoaded(true);
-        }}
+        onLoad={() => setMapLoaded(true)}
+        onStyleData={() => setStyleLoaded(true)}
         style={{ width: "100%", height: "100%" }}
       />
  
+      {/* Layers render once the map is loaded and the style is ready */}
       {mapLoaded && styleLoaded && mapInstance && (
         <>
           <BeaconLayer
@@ -221,6 +166,8 @@ function MapCanvas() {
   );
 }
  
+/* Bottom-left operational readout. Brand voice.
+ * Reactive to: opening sequence state, auto-cruise state, selected beacon. */
 function StatusOverlay({ visible, selectedBeacon, autoCruiseActive }) {
   const modeLabel = selectedBeacon
     ? "Tagged"
