@@ -18,10 +18,10 @@
   --color-line-hair: rgba(10, 10, 10, 0.06);
  
   /* ----- Color: accent ----- */
-  --color-accent: #7AB300;
-  --color-accent-hover: #8AC926;
-  --color-accent-soft: rgba(122, 179, 0, 0.10);
-  --color-accent-glow: rgba(122, 179, 0, 0.18);
+  --color-accent: #5B3A59;
+  --color-accent-hover: #755A74;
+  --color-accent-soft: rgba(91, 58, 89, 0.10);
+  --color-accent-glow: rgba(91, 58, 89, 0.18);
  
   /* ----- Color: dark surface ----- */
   --color-dark-bg: #020503;
@@ -30,8 +30,8 @@
   --color-dark-ink: #FFFFFF;
   --color-dark-ink-muted: rgba(255, 255, 255, 0.65);
   --color-dark-ink-faint: rgba(255, 255, 255, 0.40);
-  --color-dark-accent: #A8D055;
-  --color-dark-accent-glow: rgba(168, 208, 85, 0.5);
+  --color-dark-accent: #9B6F98;
+  --color-dark-accent-glow: rgba(155, 111, 152, 0.5);
  
   /* ----- Fonts ----- */
   --font-display: "Instrument Serif", Georgia, serif;
@@ -232,7 +232,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   background: var(--color-dark-accent);
   box-shadow:
     0 0 8px var(--color-dark-accent-glow),
-    0 0 0 4px rgba(168, 208, 85, 0.16);
+    0 0 0 4px rgba(155, 111, 152, 0.16);
 }
  
 .beacon-dot.sm {
@@ -244,7 +244,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
 .beacon-dot.sm.on-dark {
   box-shadow:
     0 0 6px var(--color-dark-accent-glow),
-    0 0 0 3px rgba(168, 208, 85, 0.16);
+    0 0 0 3px rgba(155, 111, 152, 0.16);
 }
  
 .beacon-dot.pulse {
@@ -253,7 +253,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
  
 @keyframes beacon-pulse {
   0%, 100% { box-shadow: 0 0 0 4px var(--color-accent-soft); }
-  50%      { box-shadow: 0 0 0 8px rgba(122, 179, 0, 0.04); }
+  50%      { box-shadow: 0 0 0 8px rgba(91, 58, 89, 0.04); }
 }
  
 .beacon-dot.pulse.on-dark {
@@ -264,12 +264,12 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   0%, 100% {
     box-shadow:
       0 0 8px var(--color-dark-accent-glow),
-      0 0 0 4px rgba(168, 208, 85, 0.16);
+      0 0 0 4px rgba(155, 111, 152, 0.16);
   }
   50% {
     box-shadow:
       0 0 14px var(--color-dark-accent-glow),
-      0 0 0 8px rgba(168, 208, 85, 0.06);
+      0 0 0 8px rgba(155, 111, 152, 0.06);
   }
 }
  
