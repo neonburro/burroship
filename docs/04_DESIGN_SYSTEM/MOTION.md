@@ -1,27 +1,45 @@
 # Motion
  
-**Status:** PENDING
-**Owner:** Ion + Volt
-**Inherits from:** STYLE_GUIDE.md
+**Status:** DRAFT · written fresh from ratified material
+**Owner:** Ion and Volt
+**Inherits from:** 04_DESIGN_SYSTEM/STYLE_GUIDE.md
  
 ---
  
-## Scope
+## The principle
  
-Motion doctrine. Slow, infrastructural. Reduced-motion mandatory. Stagger 0.05-0.06.
+Motion is slow, useful, almost infrastructural. It reveals state. It
+does not attract attention. Arrival-based reveals are correct;
+performative choreography is not. The Apple-grade feeling comes from
+pacing, not animation density.
  
----
+## The rules
  
-## This is a placeholder
+- Default reveal is fade plus a small vertical rise. Nothing more
+  ornate by default.
+- Reduced motion is respected, always. This is a hard requirement on
+  the Reveal atom, not a nicety. `useReducedMotion` gates motion
+  before it ships as a pattern.
+- Stagger is light. Interval around 0.05 to 0.06 seconds. It should
+  feel inevitable, not theatrical. A larger interval drifts toward
+  presentation-deck.
+- Large physical objects move heavily and precisely. Never like toys
+  or drones. The Burroship has mass.
+- Functional ornament is allowed sparingly: a restrained live-signal
+  beacon that makes a control read as a real system control. Off by
+  default, reduced-motion aware, never decorative.
  
-This file is part of the scaffolded docs tree. Its structure and
-ownership are locked. Its content is written by the owner named above,
-in the order set by the team directive.
+## What is parked
  
-If the status says PENDING, this concept does not yet have ratified
-content. That is an honest hole, deliberately visible, not hidden
-behind an empty file pretending to be done.
+A deeper motion doctrine (blink rhythm, idle behavior, camera
+behavior, environmental response) was proposed and deliberately
+deferred. It is governed uncertainty, not neglect. It belongs to a
+later canon cycle, not now. The burros should feel watchful, never
+hyperactive — but that section is parked until there is operational
+reason to write it.
  
-If this file inherits from an UNWRITTEN constitution part, it cannot
-be completed until that part exists. That dependency is named in the
-inherits line above so the real bottleneck stays visible.
+## The test
+ 
+Does the motion help the user understand state, or does it perform
+for its own sake? If it performs, it is wrong, regardless of how good
+it looks.

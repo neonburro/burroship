@@ -1,27 +1,47 @@
 # Voice
  
-**Status:** PENDING
+**Status:** DRAFT · written fresh from ratified material
 **Owner:** Ion
-**Inherits from:** STYLE_GUIDE.md
+**Inherits from:** 04_DESIGN_SYSTEM/STYLE_GUIDE.md
  
 ---
  
-## Scope
+This file is deliberately short. Voice docs that inflate into
+manifestos demonstrate the exact failure they should prevent.
  
-Brand voice rules. Check VOICE.md for unique content before archiving it.
+## The voice
  
----
+Calm, exact, slightly mythic, highly competent. Never a startup hype
+page, a crypto project, or a resort brochure.
  
-## This is a placeholder
+## The rules
  
-This file is part of the scaffolded docs tree. Its structure and
-ownership are locked. Its content is written by the owner named above,
-in the order set by the team directive.
+- Short declarative sentences.
+- Fewer adjectives, stronger nouns.
+- No hype verbs: disrupt, dominate, revolutionize, and family.
+- Sentence case, not constant title case.
+- Operational and architectural words: build, dock, signal, align,
+  deploy, threshold, field station, observatory, route, launch,
+  learn, inhabit.
+- Spatial and sensory language only when it serves place. Never as
+  decoration.
+- The burros speak and act like capable agents. Never mascots.
  
-If the status says PENDING, this concept does not yet have ratified
-content. That is an honest hole, deliberately visible, not hidden
-behind an empty file pretending to be done.
+## The test
  
-If this file inherits from an UNWRITTEN constitution part, it cannot
-be completed until that part exists. That dependency is named in the
-inherits line above so the real bottleneck stays visible.
+Would the sentence survive being read aloud in a quiet room by
+someone competent and unimpressed? If it sounds like it is selling,
+it fails. If it sounds like a calm operator stating what is true, it
+passes.
+ 
+## The 80/20 applied to voice
+ 
+Eighty percent substance, twenty percent atmosphere, at most. Voice
+that is mostly mood with little said has inverted the ratio and reads
+as theater. The discipline is the moat, including here.
+ 
+## Why this file resists itself
+ 
+Voice is the easiest place for the system to start performing. The
+shortest honest statement of the voice is more on-voice than a long
+beautiful one. This file holds the line by being plain.
