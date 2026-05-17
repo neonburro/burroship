@@ -1,27 +1,51 @@
 # World Layer
  
-**Status:** PENDING
+**Status:** DRAFT · written fresh from ratified material
 **Owner:** Warbleur
-**Inherits from:** Constitution Part VII
+**Inherits from:** 00_FOUNDATION/CONSTITUTION.md Part VII (Spatial)
  
 ---
  
-## Scope
+## What the world is
  
-The world as atmosphere, mission state, memory, presence. Migrate WORLD.md.
+The world is not navigation. It is atmosphere, mission state, memory,
+and presence rendered spatially. Most software is flat. Burroship is
+topographical. That changes how the system is emotionally
+experienced.
  
----
+## The three spatial doctrines
  
-## This is a placeholder
+From Constitution Part VII, ratified:
  
-This file is part of the scaffolded docs tree. Its structure and
-ownership are locked. Its content is written by the owner named above,
-in the order set by the team directive.
+1. **Information density increases with proximity and relevance.**
+   The root interaction philosophy. Detail rewards attention; it does
+   not compete for it.
+2. **The map is an operational surface, not a decorative interface.**
+   Real systems connect to the world. No fake markers. What is on the
+   map is true.
+3. **The world should feel patient at distance and alive at
+   proximity.** This emotional pacing prevents clutter, overwhelm,
+   dashboard chaos, and theme-park syndrome. The terrain is calm
+   infrastructure.
  
-If the status says PENDING, this concept does not yet have ratified
-content. That is an honest hole, deliberately visible, not hidden
-behind an empty file pretending to be done.
+## Signal hierarchy
  
-If this file inherits from an UNWRITTEN constitution part, it cannot
-be completed until that part exists. That dependency is named in the
-inherits line above so the real bottleneck stays visible.
+Not everything deserves equal visual weight. Real operational
+significance is what affects brightness, movement, scale, proximity
+behavior, and persistence. The terrain rewards attention rather than
+demanding it. A world where everything signals is a world where
+nothing does.
+ 
+## What lives in the world
+ 
+The San Juans terrain, true to Ridgway. The Compound encampment. The
+Burroship vessel. Town and location presence. Tour and route logic.
+These are real places and real state, not decoration. The world
+inherits the 80/20 rule: it is operational truth first, atmosphere
+second.
+ 
+## Relationship to the map
+ 
+The world is the concept; the map is its implementation surface.
+`MAP_SYSTEM.md` covers the technical map. This file owns what the
+world *means*; that file owns how it is *built*.

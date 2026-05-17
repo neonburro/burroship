@@ -1,27 +1,50 @@
 # Map System
  
-**Status:** PENDING
+**Status:** DRAFT · written fresh, factual
 **Owner:** Warbleur
-**Inherits from:** Constitution Part VII
+**Inherits from:** 03_PRODUCT/WORLD_LAYER.md, Constitution Part VII
  
 ---
  
-## Scope
+## What it is
  
-The map. Mapbox. Not just nav: atmosphere and mission state. Phase C unverified.
+The implementation surface for the world layer. Mapbox GL JS v3,
+react-map-gl v8, mounted at `/world/` without the standard nav and
+footer. The map is an operational surface, not decoration — Spatial
+Doctrine 2.
  
----
+## Structure
  
-## This is a placeholder
+- `src/pages/CommandCenter/` owns the map
+- `map/` — MapCanvas, camera, config
+- `layers/` — beacon layer and popup
+- `data/` — locations and tour route
+- Supabase holds world locations, airships, tour routes; the data is
+  mirrored in the CommandCenter data files
  
-This file is part of the scaffolded docs tree. Its structure and
-ownership are locked. Its content is written by the owner named above,
-in the order set by the team directive.
+## Camera language
  
-If the status says PENDING, this concept does not yet have ratified
-content. That is an honest hole, deliberately visible, not hidden
-behind an empty file pretending to be done.
+The ratified direction is hover-reveal, not ascend-to-overview: a
+constant cruise altitude, a single glide phase, cancel grace and
+wheel debounce so it does not fight the user. Speed and timing were
+locked as felt-right and are not to be retuned without cause. Mapbox
+Standard polish (dusk light preset, terrain exaggeration, fog config,
+selective labels) is applied.
  
-If this file inherits from an UNWRITTEN constitution part, it cannot
-be completed until that part exists. That dependency is named in the
-inherits line above so the real bottleneck stays visible.
+## The standing honest record
+ 
+There is a production commit on the map that was shipped but **never
+visually confirmed by a human**. It has been the oldest open
+verification thread for the entire span of recent work. This file
+records it rather than hiding it. An honest map-system document names
+what is unverified, not only what is built. Closing it is a
+five-minute screenshot whenever the Owner/Operator is at the live
+site.
+ 
+## What is parked
+ 
+Vertical-lift restoration, Supabase naming and storytelling work, a
+travel-speed picker, and further map polish are explicitly parked.
+Parked is not forgotten — it is governed uncertainty held until there
+is reason to resume. The map is deliberately not the active front;
+the docs foundation and the constitution are.
