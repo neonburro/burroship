@@ -1,27 +1,53 @@
 # Deployment
  
-**Status:** PENDING
+**Status:** DRAFT · written fresh from practiced discipline
 **Owner:** Warbleur
-**Inherits from:** WORKFLOW.md
+**Inherits from:** 05_OPERATIONS/WORKFLOW.md
  
 ---
  
-## Scope
+This codifies the deploy discipline the council has actually practiced,
+not an aspiration. Every rule here has been used.
  
-Deploy discipline. Archive-before-change, sandbox-before-ship, one change per deploy.
+## The non-negotiables
  
----
+- **Archive before change.** Anything a deploy overwrites or moves is
+  copied to a timestamped archive first. Nothing is destroyed.
+- **Sandbox before ship.** Every script is run in a throwaway
+  environment and its result inspected before it touches a real repo.
+- **One change per deploy** where possible. When behavior is unclear,
+  a truth-finding deploy that changes one thing is preferred over a
+  bundle.
+- **Verify with something a human can see.** A build that passes, a
+  render that matches, a diff that is clean. "It should work" is not
+  verification.
+- **No irreversible operation through automation.** Deletion of
+  unreviewed content is always a deliberate human action, never
+  scripted. The script provides the clean result; the safety net
+  stays up until the human chooses to cut it.
  
-## This is a placeholder
+## Deploy script conventions
  
-This file is part of the scaffolded docs tree. Its structure and
-ownership are locked. Its content is written by the owner named above,
-in the order set by the team directive.
+- Path comment as the first line of every generated file.
+- The script archives originals to a timestamped path, writes the new
+  files, then verifies (build or sandbox) before instructing the push.
+- No inline `#` comments after a shell command — guidance goes in
+  plain text above or below the command block.
+- Author git commits as the Owner/Operator identity of record. Never
+  a personal alias.
+- The script reports what changed, what is still pending, and what to
+  do next. It never hides the holes.
  
-If the status says PENDING, this concept does not yet have ratified
-content. That is an honest hole, deliberately visible, not hidden
-behind an empty file pretending to be done.
+## Rollback vs amendment
  
-If this file inherits from an UNWRITTEN constitution part, it cannot
-be completed until that part exists. That dependency is named in the
-inherits line above so the real bottleneck stays visible.
+A rollback returns to a prior verified state and is always available.
+An amendment is a forward change to doctrine or structure and goes
+through the workflow loop. They are different operations and the
+record states which one happened.
+ 
+## The truth-finding deploy
+ 
+When it is unclear whether a change behaves correctly, the right move
+is a small deploy that changes exactly one thing so the result is
+unambiguous. A bundled deploy that fails tells you less than a single
+one that fails. Clarity is worth a deploy.

@@ -1,27 +1,51 @@
 # Content
  
-**Status:** PENDING
+**Status:** DRAFT · written fresh from ratified material
 **Owner:** Warbleur
-**Inherits from:** STYLE_GUIDE.md
+**Inherits from:** 04_DESIGN_SYSTEM/STYLE_GUIDE.md, 04_DESIGN_SYSTEM/VOICE.md
  
 ---
  
-## Scope
+Content rules for anything written in the system's voice: site copy,
+decks, recruiting material, signage, notifications. This file governs
+*application*; the voice itself is owned by the style guide and
+`VOICE.md`.
  
-Content rules. Migrate from CONTENT.md.
+## The rules
  
----
+- Short declarative sentences. Fewer adjectives, stronger nouns.
+- No hype verbs: disrupt, dominate, revolutionize, and their family.
+- Sentence case, not constant title case.
+- Operational, invitational, architectural language: build, dock,
+  signal, align, deploy, threshold, field station, observatory,
+  route, launch, learn, inhabit.
+- Sensory and spatial language only when it supports place and
+  atmosphere, never as decoration.
+- The burros speak and act like capable agents, never mascots.
  
-## This is a placeholder
+## Calibration
  
-This file is part of the scaffolded docs tree. Its structure and
-ownership are locked. Its content is written by the owner named above,
-in the order set by the team directive.
+The test for any sentence: would it survive being read aloud in a
+quiet room by someone competent and unimpressed? If it sounds like a
+startup landing page, a crypto project, or a resort brochure, it
+fails. If it sounds like a calm operator stating what is true, it
+passes.
  
-If the status says PENDING, this concept does not yet have ratified
-content. That is an honest hole, deliberately visible, not hidden
-behind an empty file pretending to be done.
+## The 80/20 applied to content
  
-If this file inherits from an UNWRITTEN constitution part, it cannot
-be completed until that part exists. That dependency is named in the
-inherits line above so the real bottleneck stays visible.
+Eighty percent of any piece is operational substance: what the thing
+does, how it works, what is true. Twenty percent at most is
+atmosphere. Copy that is mostly mood with little substance has
+inverted the ratio and reads as theater.
+ 
+## Headlines
+ 
+Short and architectural. One rare serif accent moment per screen at
+most, never decorative. The headline states something true and
+specific; it does not perform.
+ 
+## Notifications and microcopy
+ 
+Calm, exact, useful. A notification reveals state. It does not
+attract attention for its own sake. Same discipline as the motion
+doctrine: reveal, do not perform.
