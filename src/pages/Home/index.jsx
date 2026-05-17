@@ -1,12 +1,14 @@
 // src/pages/Home/index.jsx
 //
 // The vessel. Hero + three operational rooms.
-
-import Hero from "../../components/Sections/Hero";
-import BuildSection from "../../components/Sections/BuildSection";
-import DeploySection from "../../components/Sections/DeploySection";
-import AutomateSection from "../../components/Sections/AutomateSection";
-
+// Sections co-located under Home/sections since they are
+// Home-specific and not shared anywhere else.
+ 
+import Hero from "./sections/Hero";
+import BuildSection from "./sections/BuildSection";
+import DeploySection from "./sections/DeploySection";
+import AutomateSection from "./sections/AutomateSection";
+ 
 function Home() {
   return (
     <main id="main">
@@ -17,5 +19,5 @@ function Home() {
     </main>
   );
 }
-
+ 
 export default Home;
