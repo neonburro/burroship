@@ -36,9 +36,9 @@ of truth. Brand-language names are for designer communication only.
 | line | `--color-line` | `#E8E8E5` | LOCKED |
 | dark-bg | `--color-dark-bg` | `#020503` | LOCKED |
 | dark-ink | `--color-dark-ink` | `#FFFFFF` | LOCKED |
-| **accent** | `--color-accent` | **`#5B3A59` (current, LOCKED)** | **LOCKED** |
-| accent-hover | `--color-accent-hover` | `#755A74` (LOCKED) | LOCKED |
-| dark-accent | `--color-dark-accent` | `#9B6F98` (LOCKED) | LOCKED |
+| **accent** | `--color-accent` | **`#7AB300` (current, PENDING)** | **NOT FINAL** |
+| accent-hover | `--color-accent-hover` | `#8AC926` (PENDING) | NOT FINAL |
+| dark-accent | `--color-dark-accent` | `#A8D055` (PENDING) | NOT FINAL |
  
 ## The one open decision
  
@@ -68,20 +68,3 @@ If this file and `src/styles/index.css` ever disagree, the code is
 the source of truth and this file is corrected to match. Tokens are
 semantic in code. Poetic names live only here, in the brand-layer
 mapping, never in `index.css`.
- 
----
- 
-## Accent LOCKED (founder decision, 2026-05-17)
- 
-The one previously-open value is now closed. Petrified Plum.
- 
-| Semantic | Token | Value |
-|---|---|---|
-| accent | --color-accent | #5B3A59 |
-| accent-hover | --color-accent-hover | #755A74 |
-| dark-accent | --color-dark-accent | #9B6F98 |
- 
-Brand naming layer: "Petrified Plum" is the canonical accent name.
-Future optional warm secondary, NOT built: "Sunbruised Persimmon"
-#B85C38 for the Compound hospitality layer only. The system no
-longer has any open color value.

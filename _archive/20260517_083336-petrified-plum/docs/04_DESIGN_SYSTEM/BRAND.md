@@ -358,17 +358,3 @@ This canon is ratified when Tyler approves it. Until then it is the
 working consensus of Warbleur, Volt, and Ion, unanimous as of
 2026-05-15, and may be revised on Tyler's note or any council member's
 sourced objection.
- 
----
- 
-## v1.2 changelog (founder decision, 2026-05-17)
- 
-The mandatory accent fingerprint changes from deep lime #7AB300 to
-**Petrified Plum #5B3A59**. This supersedes the prior deep-lime
-ruling by founder decision. The 90/10 discipline is unchanged: the
-plum is signal leakage, not a flood color. Black and white base
-unchanged. Single primary accent. Sunbruised Persimmon #B85C38 is
-recorded as a future OPTIONAL warm secondary for the Compound
-hospitality layer only, not built now. On-dark variant #9B6F98
-chosen for operational visibility over maximum mute, per the
-operational-not-cosmetic doctrine.

@@ -13,7 +13,7 @@ the live code tokens. It does not redefine them. Where this guide and
 guide is corrected.
  
 **Reconciliation note (what changed from the first draft):**
-- Lime corrected from `#B7FF3C` to the canonical deep lime `#5B3A59`
+- Lime corrected from `#B7FF3C` to the canonical deep lime `#7AB300`
   (founder ruling: deep lime is the ownership fingerprint, the bright
   chartreuse made the brand cosmetic rather than architectural)
 - Token hexes locked to the live `index.css` system
@@ -163,11 +163,11 @@ token map must match these exactly.
  
 | Brand name | Token | Hex | Use |
 |---|---|---:|---|
-| Topo Lime | `--color-accent` | `#5B3A59` | Signature accent, signal leakage, CTAs, focus, map traces |
-| Dock Lime | `--color-accent-hover` | `#755A74` | Hover and active accent |
-| Lantern Lime | `--color-dark-accent` | `#9B6F98` | Accent on dark surfaces |
+| Topo Lime | `--color-accent` | `#7AB300` | Signature accent, signal leakage, CTAs, focus, map traces |
+| Dock Lime | `--color-accent-hover` | `#8AC926` | Hover and active accent |
+| Lantern Lime | `--color-dark-accent` | `#A8D055` | Accent on dark surfaces |
  
-The deep lime `#5B3A59` is the ownership fingerprint. The brighter
+The deep lime `#7AB300` is the ownership fingerprint. The brighter
 chartreuse explored in the first draft is rejected by founder ruling:
 it made the brand cosmetic rather than architectural.
  
@@ -400,7 +400,7 @@ of repairing mismatched decisions later.
 - Luxury as silence and spacing
 - Neon Burro as operational intelligence
 - The Compound as the physical incubator and umbrella world
-- Topo Lime `#5B3A59` as the signal fingerprint
+- Topo Lime `#7AB300` as the signal fingerprint
 - Inter plus selective Instrument Serif as the voice stack
  
 Grounded, usable, ownable. Not trendy.
@@ -414,13 +414,3 @@ Burro Design Canon v1.1, and the live `index.css` tokens. It never
 amends them. If this guide conflicts with a ratified source, the
 ratified source wins and this guide is corrected. Implementation
 inherits from doctrine, it does not redefine it.
- 
----
- 
-## Accent update (founder decision, 2026-05-17)
- 
-The signal accent is now Petrified Plum #5B3A59, superseding deep
-lime. Brand name: Petrified Plum. Hover: #755A74. On-dark: #9B6F98.
-Future optional warm secondary: Sunbruised Persimmon #B85C38, not
-built. The deep-lime reconciliation note above is historical; this
-ruling supersedes it.
