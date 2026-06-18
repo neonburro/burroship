@@ -16,7 +16,6 @@ function Footer() {
       className="relative pt-16 pb-10"
       style={{ background: "var(--color-bg)" }}
     >
-      {/* Horizon hairline — 1px sky-blue seam at the top edge */}
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-px"
