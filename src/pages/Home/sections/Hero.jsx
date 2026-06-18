@@ -1,74 +1,161 @@
 // src/pages/Home/sections/Hero.jsx
-import Container from "../../../components/Layout/Container";
-import Eyebrow from "../../../components/Atoms/Eyebrow";
-import Button from "../../../components/Atoms/Button";
+//
+// The Approach. A sealed dark viewport. The wordmark resolves on
+// mount, the sky-blue dot ignites, coordinates settle in. No scroll
+// lock — the scene self-resolves and invites you down. The dot is
+// the signature mark, the same one used in Orbit Wars and the favicon.
+
+import { useState, useEffect } from "react";
 import TopoLines from "../../../components/Atoms/TopoLines";
-import Reveal from "../../../components/Atoms/Reveal";
- 
+
 function Hero() {
+  const [lit, setLit] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLit(true), 80);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
-    <section className="relative pt-28 md:pt-32 pb-16 md:pb-20 overflow-hidden">
-      <TopoLines size={560} position="top-right" intensity="subtle" />
- 
-      <Container size="wide" className="relative z-10">
-        <div className="max-w-[44ch]">
-          <Reveal delay={0}>
-            <Eyebrow>
-              <span className="beacon-dot mr-2" aria-hidden="true" />
-              San Juan Mountains · Ridgway
-            </Eyebrow>
-          </Reveal>
- 
-          <Reveal delay={0.06}>
-            <h1 className="text-display-2xl mt-5 text-ink">
-              Build. Deploy. Automate.
-            </h1>
-          </Reveal>
+    <section
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{ background: "var(--color-bg)" }}
+    >
+      <Starfield />
+      <TopoLines size={680} position="center" intensity="subtle" />
+
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(91,180,240,0.06) 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="relative z-10 flex flex-col items-center px-6 text-center">
+        <p
+          className="text-mono text-ink-faint mb-8"
+          style={{
+            opacity: lit ? 1 : 0,
+            transform: lit ? "translateY(0)" : "translateY(8px)",
+            transition: "opacity 0.7s var(--ease-emphasis), transform 0.7s var(--ease-emphasis)",
+          }}
+        >
+          Build · Deploy · Automate
+        </p>
+
+        <h1
+          className="text-ink inline-flex items-end justify-center"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 600,
+            fontSize: "clamp(52px, 11vw, 132px)",
+            letterSpacing: "-0.05em",
+            lineHeight: 1,
+            textTransform: "lowercase",
+          }}
+        >
+          theburroship
+          <span
+            aria-hidden="true"
+            style={{
+              display: "inline-block",
+              width: "0.16em",
+              height: "0.16em",
+              borderRadius: "50%",
+              marginLeft: "0.04em",
+              marginBottom: "0.12em",
+              background: "var(--color-accent)",
+              boxShadow: lit
+                ? "0 0 24px var(--color-accent-glow), 0 0 6px var(--color-accent)"
+                : "0 0 0 var(--color-accent-glow)",
+              opacity: lit ? 1 : 0,
+              transform: lit ? "scale(1)" : "scale(0.2)",
+              transition:
+                "opacity 0.5s var(--ease-emphasis) 0.35s, transform 0.6s var(--ease-emphasis) 0.35s, box-shadow 0.8s var(--ease-standard) 0.5s",
+            }}
+          />
+        </h1>
+
+        <p
+          className="text-lead mt-8 max-w-[46ch]"
+          style={{
+            opacity: lit ? 1 : 0,
+            transform: lit ? "translateY(0)" : "translateY(10px)",
+            transition:
+              "opacity 0.8s var(--ease-emphasis) 0.55s, transform 0.8s var(--ease-emphasis) 0.55s",
+          }}
+        >
+          A working compound in the San Juans. We build the systems,
+          ship the infrastructure, and let the council run the rest.
+        </p>
+
+        <div
+          className="mt-10 flex items-center gap-6 flex-wrap justify-center"
+          style={{
+            opacity: lit ? 1 : 0,
+            transition: "opacity 0.9s var(--ease-emphasis) 0.8s",
+          }}
+        >
+          <Coord label="LAT" value="38.15° N" />
+          <span className="w-px h-4" style={{ background: "var(--color-line)" }} />
+          <Coord label="LON" value="107.75° W" />
+          <span className="w-px h-4" style={{ background: "var(--color-line)" }} />
+          <Coord label="ELEV" value="6,985 ft" />
         </div>
- 
-        <Reveal delay={0.14}>
-          <div className="mt-10 md:mt-14 grid md:grid-cols-12 gap-8 md:gap-12 items-start">
-            <div className="md:col-span-7">
-              <p className="text-lead max-w-[54ch]">
-                A working compound in the Cimarron Range. An agent council
-                building small business automation.{" "}
-                <span className="text-serif-accent text-ink">A real place</span>{" "}
-                you can visit.
-              </p>
- 
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <Button to="/world/" variant="primary" arrow>
-                  Board the airship
-                </Button>
-                <Button to="/build/" variant="ghost">
-                  See what we build
-                </Button>
-              </div>
-            </div>
- 
-            <div className="md:col-span-5">
-              <div className="grid grid-cols-2 gap-5 md:gap-6 pt-4 md:pt-0 md:border-l md:border-line md:pl-10">
-                <Spec label="Mode" value="Cruise" />
-                <Spec label="Altitude" value="18,000 ft" />
-                <Spec label="Coordinates" value="38.15° N · 107.75° W" wide />
-                <Spec label="Towns online" value="4 / 4" />
-                <Spec label="Agents on deck" value="6" />
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </Container>
+      </div>
+
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        style={{
+          opacity: lit ? 1 : 0,
+          transition: "opacity 1s var(--ease-standard) 1.1s",
+        }}
+      >
+        <span className="text-mono-xs text-ink-faint">Descend</span>
+        <span
+          aria-hidden="true"
+          style={{
+            width: "1px",
+            height: "32px",
+            background:
+              "linear-gradient(to bottom, var(--color-accent), transparent)",
+          }}
+        />
+      </div>
     </section>
   );
 }
- 
-function Spec({ label, value, wide = false }) {
+
+function Coord({ label, value }) {
   return (
-    <div className={wide ? "col-span-2" : ""}>
-      <p className="text-mono-xs text-ink-faint mb-1.5">{label}</p>
-      <p className="text-mono text-ink">{value}</p>
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-mono-xs text-ink-faint">{label}</span>
+      <span className="text-mono-sm text-ink">{value}</span>
     </div>
   );
 }
- 
+
+function Starfield() {
+  return (
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 pointer-events-none"
+      style={{ opacity: 0.5 }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: "-40px",
+          backgroundImage:
+            "radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.5), transparent), radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.4), transparent), radial-gradient(1px 1px at 80% 20%, rgba(91,180,240,0.5), transparent), radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.35), transparent), radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.4), transparent), radial-gradient(1px 1px at 10% 60%, rgba(91,180,240,0.4), transparent), radial-gradient(1px 1px at 50% 15%, rgba(255,255,255,0.4), transparent)",
+          backgroundSize: "240px 240px",
+          animation: "field-drift 90s linear infinite",
+        }}
+      />
+    </div>
+  );
+}
+
 export default Hero;

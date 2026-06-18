@@ -1,10 +1,9 @@
 // src/components/Atoms/TopoLines.jsx
 //
-// Signature ambient decoration. Concentric rings as SVG strokes.
-// Per designer feedback: lower default opacity, used only on
-// map-adjacent sections (hero, town previews, manifesto).
-// Vertical drift animation handled in index.css.
- 
+// Signature ambient decoration. Concentric rings as CSS radial
+// strokes in the sky-blue accent. Vertical drift handled in
+// index.css.
+
 const POSITIONS = {
   "top-right":     "top-[-15%] right-[-15%]",
   "top-left":      "top-[-15%] left-[-15%]",
@@ -14,18 +13,17 @@ const POSITIONS = {
   "right-center":  "top-1/2 right-[-10%] -translate-y-1/2",
   "left-center":   "top-1/2 left-[-10%] -translate-y-1/2",
 };
- 
+
 const INTENSITIES = {
   subtle: "intensity-subtle",
   medium: "intensity-medium",
   strong: "intensity-strong",
 };
- 
+
 function TopoLines({
   size = 420,
   position = "top-right",
   intensity = "subtle",
-  onDark = false,
   className = "",
 }) {
   return (
@@ -36,16 +34,11 @@ function TopoLines({
         INTENSITIES[intensity] +
         " " +
         POSITIONS[position] +
-        (onDark ? " on-dark" : "") +
         (className ? " " + className : "")
       }
-      style={{
-        width: size + "px",
-        height: size + "px",
-        zIndex: 0,
-      }}
+      style={{ width: size + "px", height: size + "px", zIndex: 0 }}
     />
   );
 }
- 
+
 export default TopoLines;

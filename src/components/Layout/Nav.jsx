@@ -1,19 +1,23 @@
 // src/components/Layout/Nav.jsx
+//
+// Common nav for every page. Minimal by design: the wordmark on the
+// left with the signature sky-blue dot, and a single "Enter" trigger
+// on the right that opens a clean login panel. The panel doubles as
+// the mobile nav surface — same overlay on every breakpoint. Real
+// links land here once the backend is built; for now the panel is a
+// polished placeholder login.
+
 import { useState, useEffect } from "react";
-import { Link, useLocation, NavLink } from "react-router-dom";
- 
+import { Link, useLocation } from "react-router-dom";
+
 import Container from "./Container";
- 
-const PRIMARY_LINKS = [
-  { to: "/build/", label: "Build" },
-  { to: "/deploy/", label: "Deploy" },
-  { to: "/automate/", label: "Automate" },
-];
- 
+import LoginPanel from "./LoginPanel";
+
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
   const location = useLocation();
- 
+
   useEffect(() => {
     function onScroll() {
       setScrolled(window.scrollY > 8);
@@ -21,115 +25,104 @@ function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
- 
-  const onWorld = location.pathname.startsWith("/world");
- 
-  // On the Cesium /world page, nav floats over the dark map
-  const darkMode = onWorld;
- 
-  const baseBg = darkMode
-    ? "bg-dark-bg/0"
-    : scrolled
-    ? "bg-bg/85 backdrop-blur-md border-b border-line"
-    : "bg-bg/0";
- 
+
+  // Close the panel on route change.
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll while the panel is open.
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [open]);
+
+  const baseBg = scrolled
+    ? "backdrop-blur-md"
+    : "";
+
   return (
     <>
       <a href="#main" className="skip-link">Skip to content</a>
- 
+
       <nav
         className={
-          "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-[var(--ease-standard)] " +
+          "fixed top-0 inset-x-0 z-50 transition-all duration-300 " +
           baseBg
         }
+        style={{
+          background: scrolled ? "rgba(8,9,11,0.72)" : "transparent",
+          borderBottom: scrolled
+            ? "1px solid var(--color-line)"
+            : "1px solid transparent",
+        }}
       >
         <Container size="wide">
           <div className="flex items-center justify-between h-16">
             <Link
               to="/"
-              className={
-                "text-mono tracking-[0.14em] " +
-                (darkMode ? "text-dark-ink" : "text-ink") +
-                " hover:opacity-70 transition-opacity"
-              }
+              aria-label="The Burroship — home"
+              className="inline-flex items-end text-ink hover:opacity-80 transition-opacity"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 600,
+                fontSize: "19px",
+                letterSpacing: "-0.04em",
+                textTransform: "lowercase",
+              }}
             >
-              The Burroship
+              theburroship
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "inline-block",
+                  width: "0.16em",
+                  height: "0.16em",
+                  borderRadius: "50%",
+                  marginLeft: "0.04em",
+                  marginBottom: "0.16em",
+                  background: "var(--color-accent)",
+                  boxShadow: "0 0 10px var(--color-accent-glow)",
+                }}
+              />
             </Link>
- 
-            <div className="hidden md:flex items-center gap-9">
-              {PRIMARY_LINKS.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  className={({ isActive }) =>
-                    "text-mono transition-colors duration-200 " +
-                    (darkMode
-                      ? isActive
-                        ? "text-dark-accent"
-                        : "text-dark-ink-muted hover:text-dark-ink"
-                      : isActive
-                      ? "text-accent"
-                      : "text-ink-muted hover:text-ink")
-                  }
-                >
-                  {link.label}
-                </NavLink>
-              ))}
-            </div>
- 
-            <div className="flex items-center gap-3">
-              <Link
-                to="/world/"
-                className={
-                  "hidden lg:inline-flex items-center gap-2 text-mono px-3 py-1.5 rounded-full transition-all duration-200 " +
-                  (darkMode
-                    ? "text-dark-ink-muted hover:text-dark-accent border border-dark-line"
-                    : "text-ink-muted hover:text-accent border border-line hover:border-accent")
-                }
-                title="The Burroship Cesium map"
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{
-                    background: darkMode ? "#A8D055" : "#7AB300",
-                    boxShadow: darkMode
-                      ? "0 0 6px rgba(168,208,85,0.6)"
-                      : "none",
-                  }}
-                />
-                World
-              </Link>
- 
-              <button
-                aria-label="Sign in"
-                className={
-                  "w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 " +
-                  (darkMode
-                    ? "bg-dark-surface hover:bg-dark-accent text-dark-ink-muted hover:text-dark-bg"
-                    : "bg-surface hover:bg-accent text-ink-muted hover:text-ink")
-                }
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 21v-1a8 8 0 0 1 16 0v1" />
-                </svg>
-              </button>
-            </div>
+
+            <button
+              onClick={() => setOpen(true)}
+              aria-label="Enter"
+              aria-expanded={open}
+              className="group inline-flex items-center gap-2.5 transition-all duration-200"
+              style={{
+                padding: "8px 16px",
+                borderRadius: "999px",
+                border: "1px solid var(--color-line)",
+                background: "transparent",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-accent)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-line)";
+              }}
+            >
+              <span className="beacon-dot sm" aria-hidden="true" />
+              <span className="text-mono text-ink-muted group-hover:text-ink transition-colors duration-200">
+                Enter
+              </span>
+            </button>
           </div>
         </Container>
       </nav>
+
+      <LoginPanel open={open} onClose={() => setOpen(false)} />
     </>
   );
 }
- 
+
 export default Nav;

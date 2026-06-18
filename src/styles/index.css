@@ -1,61 +1,64 @@
 /* src/styles/index.css */
- 
+
 /* Google Fonts must come BEFORE @theme to satisfy CSS @import ordering */
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
- 
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
- 
+
 @theme {
-  /* ----- Color: light surface ----- */
-  --color-ink: #0A0A0A;
-  --color-ink-muted: #5A6172;
-  --color-ink-faint: #9CA3AF;
-  --color-bg: #FFFFFF;
-  --color-surface: #F7F7F5;
-  --color-surface-deep: #EDEDE8;
-  --color-surface-engine: #F0EFEB;
-  --color-line: #E8E8E5;
-  --color-line-hair: rgba(10, 10, 10, 0.06);
- 
-  /* ----- Color: accent ----- */
-  --color-accent: #5B3A59;
-  --color-accent-hover: #755A74;
-  --color-accent-soft: rgba(91, 58, 89, 0.10);
-  --color-accent-glow: rgba(91, 58, 89, 0.18);
- 
-  /* ----- Color: dark surface ----- */
-  --color-dark-bg: #020503;
-  --color-dark-surface: #0A1108;
-  --color-dark-line: rgba(255, 255, 255, 0.06);
-  --color-dark-ink: #FFFFFF;
-  --color-dark-ink-muted: rgba(255, 255, 255, 0.65);
-  --color-dark-ink-faint: rgba(255, 255, 255, 0.40);
-  --color-dark-accent: #9B6F98;
-  --color-dark-accent-glow: rgba(155, 111, 152, 0.5);
- 
+  /* ----- Color: dark surface system (primary) ----- */
+  --color-bg: #08090B;
+  --color-surface: #0F1115;
+  --color-surface-deep: #0A0B0E;
+  --color-surface-raised: #14171C;
+  --color-surface-engine: #0C0E12;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.14);
+  --color-line-hair: rgba(255, 255, 255, 0.05);
+
+  /* ----- Color: ink (text on dark) ----- */
+  --color-ink: #F2F4F7;
+  --color-ink-muted: #9BA1AD;
+  --color-ink-faint: #5E646F;
+
+  /* ----- Color: accent (sky blue) ----- */
+  --color-accent: #5BB4F0;
+  --color-accent-hover: #7AC4F5;
+  --color-accent-deep: #3A8FCC;
+  --color-accent-soft: rgba(91, 180, 240, 0.10);
+  --color-accent-glow: rgba(91, 180, 240, 0.45);
+
+  /* ----- Color: gray ramp (material) ----- */
+  --color-gray-900: #0B0C0E;
+  --color-gray-800: #16181D;
+  --color-gray-700: #22252C;
+  --color-gray-600: #353941;
+  --color-gray-500: #565C66;
+  --color-gray-400: #7C828D;
+
   /* ----- Fonts ----- */
-  --font-display: "Instrument Serif", Georgia, serif;
+  --font-display: "Space Grotesk", -apple-system, system-ui, sans-serif;
   --font-sans: "Inter", -apple-system, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
- 
+
   /* ----- Motion ----- */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
- 
+
   /* ----- Containers ----- */
   --spacing-reading: 720px;
   --spacing-content: 1200px;
   --spacing-wide: 1440px;
 }
- 
+
 *, *::before, *::after { box-sizing: border-box; }
- 
+
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
- 
+
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -66,62 +69,55 @@ html, body, #root {
   font-weight: 400;
   line-height: 1.5;
 }
- 
+
 ::selection { background: var(--color-accent); color: var(--color-bg); }
- 
+
 a { color: inherit; text-decoration: none; }
- 
+
 img, svg, video { display: block; max-width: 100%; height: auto; }
- 
+
 /* ----- Typography scale ----- */
- 
+
 .text-display-2xl {
-  font-family: var(--font-sans);
-  font-size: clamp(40px, 5.2vw, 64px);
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.2vw, 68px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.0;
+}
+
+.text-display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 46px);
   font-weight: 600;
   letter-spacing: -0.025em;
-  line-height: 1.02;
+  line-height: 1.04;
 }
- 
-.text-display-xl {
-  font-family: var(--font-sans);
-  font-size: clamp(32px, 4vw, 44px);
-  font-weight: 600;
-  letter-spacing: -0.022em;
-  line-height: 1.05;
-}
- 
+
 .text-display-lg {
-  font-family: var(--font-sans);
-  font-size: clamp(26px, 3vw, 34px);
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 600;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.02em;
   line-height: 1.1;
 }
- 
+
 .text-display-md {
-  font-family: var(--font-sans);
-  font-size: clamp(20px, 2.4vw, 26px);
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.4vw, 27px);
   font-weight: 600;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.014em;
   line-height: 1.2;
 }
- 
+
 .text-display-sm {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: clamp(17px, 2vw, 21px);
   font-weight: 600;
-  letter-spacing: -0.008em;
+  letter-spacing: -0.01em;
   line-height: 1.25;
 }
- 
-.text-serif-accent {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-}
- 
+
 .text-lead {
   font-family: var(--font-sans);
   font-size: 17px;
@@ -129,21 +125,21 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   line-height: 1.55;
   color: var(--color-ink-muted);
 }
- 
+
 .text-body {
   font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 400;
   line-height: 1.6;
 }
- 
+
 .text-body-sm {
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 400;
   line-height: 1.55;
 }
- 
+
 .text-mono-lg {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -151,7 +147,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
- 
+
 .text-mono {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -159,7 +155,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
- 
+
 .text-mono-sm {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -167,7 +163,7 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
- 
+
 .text-mono-xs {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -175,9 +171,9 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
- 
+
 /* ----- Topo decoration ----- */
- 
+
 .topo-rings {
   pointer-events: none;
   background-image:
@@ -190,151 +186,126 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   color: var(--color-accent);
   animation: topo-drift 16s ease-in-out infinite;
 }
- 
-.topo-rings.intensity-subtle { opacity: 0.08; }
-.topo-rings.intensity-medium { opacity: 0.12; }
-.topo-rings.intensity-strong { opacity: 0.20; }
- 
-.topo-rings.on-dark { color: var(--color-dark-accent); }
- 
+
+.topo-rings.intensity-subtle { opacity: 0.07; }
+.topo-rings.intensity-medium { opacity: 0.11; }
+.topo-rings.intensity-strong { opacity: 0.18; }
+
 @keyframes topo-drift {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
 }
- 
-/* ----- Schematic grid (Build section) ----- */
- 
+
+/* ----- Schematic grid ----- */
+
 .schematic-grid {
   background-image:
     radial-gradient(circle, var(--color-line-hair) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-size: 26px 26px;
   background-position: 0 0;
 }
- 
+
 .schematic-grid-fade {
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
-          mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+          mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
 }
- 
+
 /* ----- Beacon dots ----- */
- 
+
 .beacon-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--color-accent);
-  box-shadow: 0 0 0 4px var(--color-accent-soft);
+  box-shadow:
+    0 0 10px var(--color-accent-glow),
+    0 0 0 4px var(--color-accent-soft);
   flex-shrink: 0;
 }
- 
-.beacon-dot.on-dark {
-  background: var(--color-dark-accent);
-  box-shadow:
-    0 0 8px var(--color-dark-accent-glow),
-    0 0 0 4px rgba(155, 111, 152, 0.16);
-}
- 
+
 .beacon-dot.sm {
   width: 6px;
   height: 6px;
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
-}
- 
-.beacon-dot.sm.on-dark {
   box-shadow:
-    0 0 6px var(--color-dark-accent-glow),
-    0 0 0 3px rgba(155, 111, 152, 0.16);
+    0 0 7px var(--color-accent-glow),
+    0 0 0 3px var(--color-accent-soft);
 }
- 
+
 .beacon-dot.pulse {
-  animation: beacon-pulse 2.4s ease-in-out infinite;
+  animation: beacon-pulse 2.6s var(--ease-standard) infinite;
 }
- 
+
 @keyframes beacon-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px var(--color-accent-soft); }
-  50%      { box-shadow: 0 0 0 8px rgba(91, 58, 89, 0.04); }
-}
- 
-.beacon-dot.pulse.on-dark {
-  animation: beacon-pulse-dark 2.4s ease-in-out infinite;
-}
- 
-@keyframes beacon-pulse-dark {
   0%, 100% {
     box-shadow:
-      0 0 8px var(--color-dark-accent-glow),
-      0 0 0 4px rgba(155, 111, 152, 0.16);
+      0 0 10px var(--color-accent-glow),
+      0 0 0 4px var(--color-accent-soft);
   }
   50% {
     box-shadow:
-      0 0 14px var(--color-dark-accent-glow),
-      0 0 0 8px rgba(155, 111, 152, 0.06);
+      0 0 16px var(--color-accent-glow),
+      0 0 0 8px rgba(91, 180, 240, 0.04);
   }
 }
- 
+
 /* ----- Signal bars ----- */
- 
+
 .signal-bars {
   display: inline-flex;
   align-items: flex-end;
   gap: 2px;
   height: 12px;
 }
- 
+
 .signal-bars span {
   display: block;
   width: 2px;
   background: var(--color-accent);
   border-radius: 1px;
 }
- 
-.signal-bars.on-dark span {
-  background: var(--color-dark-accent);
-}
- 
+
 .signal-bars span:nth-child(1) { height: 4px;  opacity: 0.4; }
 .signal-bars span:nth-child(2) { height: 6px;  opacity: 0.6; }
 .signal-bars span:nth-child(3) { height: 9px;  opacity: 0.8; }
 .signal-bars span:nth-child(4) { height: 12px; opacity: 1.0; }
- 
+
+/* ----- Starfield drift (hero ambient) ----- */
+
+@keyframes field-drift {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-40px, -40px, 0); }
+}
+
+/* ----- Caret blink (code entry) ----- */
+
+@keyframes caret-blink {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ----- Shake (denied) ----- */
+
+@keyframes deny-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(5px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(2px); }
+}
+
+.deny-shake { animation: deny-shake 0.42s var(--ease-standard); }
+
 /* ----- Focus ----- */
- 
+
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
- 
-.skip-link {
-  position: absolute;
-  top: -100px;
-  left: 16px;
-  background: var(--color-ink);
-  color: var(--color-bg);
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  z-index: 1000;
-  transition: top 0.2s var(--ease-standard);
-}
- 
-.skip-link:focus { top: 16px; }
- 
-/* ----- Cesium widget cleanup ----- */
- 
-.cesium-viewer, .cesium-widget, .cesium-widget canvas {
-  background: var(--color-dark-bg) !important;
-}
- 
-.cesium-viewer-bottom,
-.cesium-viewer-toolbar,
-.cesium-viewer-fullscreenContainer,
-.cesium-credit-textContainer,
-.cesium-credit-logoContainer {
-  display: none !important;
+
+@media (prefers-reduced-motion: reduce) {
+  .topo-rings,
+  .beacon-dot.pulse,
+  .deny-shake { animation: none; }
 }
