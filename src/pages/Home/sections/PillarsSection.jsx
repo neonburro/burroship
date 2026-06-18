@@ -1,8 +1,9 @@
 // src/pages/Home/sections/PillarsSection.jsx
 //
-// The three operations. build deploy automate as one clean triptych.
-// No numbering. Lowercase headings. Full width. Clean content with no
-// oxford commas and no dashes.
+// What we do. Three verbs, no place talk, no redundancy. Forward
+// looking. Left aligned header with cards aligned underneath on
+// desktop and a clean full width stack on mobile.
+// v1 · 2026-06-18
 
 import Container from "../../../components/Layout/Container";
 import Eyebrow from "../../../components/Atoms/Eyebrow";
@@ -11,18 +12,15 @@ import Reveal from "../../../components/Atoms/Reveal";
 const PILLARS = [
   {
     title: "build",
-    line: "We read the terrain before we build inside it. Sites, dashboards, internal tools and the occasional system nobody else makes.",
-    spec: "survey  draft  ship",
+    line: "We design and ship the software itself. Sites, dashboards, internal tools and the odd thing nobody else will make.",
   },
   {
     title: "deploy",
-    line: "Real infrastructure made visible. Continuous deploys across three environments with signals you can read from anywhere.",
-    spec: "dev  staging  production",
+    line: "We put it on real infrastructure and keep it honest. Continuous releases with signals you can read at a glance.",
   },
   {
     title: "automate",
-    line: "A council of working agents holds the context, watches the signals and answers when called. Operational intelligence not assistants.",
-    spec: "monitor  route  resolve",
+    line: "We hand the routine to agents that watch, decide and act. The work keeps moving while you sleep.",
   },
 ];
 
@@ -32,15 +30,15 @@ function PillarsSection() {
       <div className="absolute inset-0 schematic-grid schematic-grid-fade pointer-events-none" aria-hidden="true" />
 
       <Container size="full" className="relative z-10">
-        <div className="max-w-[52ch] mb-14 md:mb-20">
-          <Reveal><Eyebrow signal>the operating layer</Eyebrow></Reveal>
-          <Reveal delay={0.06}><h2 className="text-display-xl mt-5 text-ink lowercase">three operations. one vessel.</h2></Reveal>
-          <Reveal delay={0.12}><p className="text-lead mt-5 max-w-[48ch]">Everything the compound does reduces to three moves. We keep them small, deliberate and quietly running.</p></Reveal>
+        <div className="max-w-[54ch] mb-14 md:mb-20">
+          <Reveal><Eyebrow signal>what we do</Eyebrow></Reveal>
+          <Reveal delay={0.06}><h2 className="text-display-xl mt-5 text-ink lowercase">small machines that keep working.</h2></Reveal>
+          <Reveal delay={0.12}><p className="text-lead mt-5 max-w-[50ch]">Three moves carry everything. Each one is deliberate and each one compounds.</p></Reveal>
         </div>
 
         <div className="grid md:grid-cols-3 gap-px" style={{ background: "var(--color-line)" }}>
           {PILLARS.map((p, i) => (
-            <Reveal key={p.title} delay={0.1 + i * 0.08}><Pillar p={p} /></Reveal>
+            <Reveal key={p.title} delay={0.1 + i * 0.08} className="h-full"><Pillar p={p} /></Reveal>
           ))}
         </div>
       </Container>
@@ -50,13 +48,9 @@ function PillarsSection() {
 
 function Pillar({ p }) {
   return (
-    <div className="h-full p-8 md:p-12" style={{ background: "var(--color-bg)" }}>
-      <div className="flex items-center justify-end mb-8">
-        <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--color-ink-faint)" }} aria-hidden="true" />
-      </div>
+    <div className="h-full flex flex-col p-8 md:p-12" style={{ background: "var(--color-bg)" }}>
       <h3 className="text-display-lg text-ink mb-4 lowercase">{p.title}</h3>
-      <p className="text-body text-ink-muted mb-8 max-w-[34ch]">{p.line}</p>
-      <p className="text-mono-sm text-ink-faint pt-5" style={{ borderTop: "1px solid var(--color-line)" }}>{p.spec}</p>
+      <p className="text-body text-ink-muted max-w-[36ch]">{p.line}</p>
     </div>
   );
 }
