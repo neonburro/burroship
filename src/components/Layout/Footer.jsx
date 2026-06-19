@@ -1,33 +1,20 @@
 // src/components/Layout/Footer.jsx
 //
-// Common footer. Three columns of real navigation plus a live status
-// strip. Clean lowercase content with no oxford commas and no dashes.
-// Links are placeholders until the routes are built. 97% width on
-// desktop and edge to edge on mobile.
-// v1 · 2026-06-18
+// Common footer. Wordmark, a short line, contact, a single vessel nav
+// column and a live status strip. Clean lowercase content with no
+// oxford commas and no dashes. Vessel links are placeholders until the
+// routes are built. 97% width on desktop and edge to edge on mobile.
+// v2 · 2026-06-18 · removed fellowship column
 
 import { Link } from "react-router-dom";
 import Container from "./Container";
 import Wordmark from "../Atoms/Wordmark";
 
-const COLUMNS = [
-  {
-    head: "vessel",
-    links: [
-      { label: "build", to: "/build/" },
-      { label: "deploy", to: "/deploy/" },
-      { label: "automate", to: "/automate/" },
-      { label: "world", to: "/world/" },
-    ],
-  },
-  {
-    head: "fellowship",
-    links: [
-      { label: "the council", to: "/automate/" },
-      { label: "the field", to: "/world/" },
-      { label: "invitation", to: "/" },
-    ],
-  },
+const VESSEL = [
+  { label: "build", to: "/build/" },
+  { label: "deploy", to: "/deploy/" },
+  { label: "automate", to: "/automate/" },
+  { label: "world", to: "/world/" },
 ];
 
 function Footer() {
@@ -39,24 +26,22 @@ function Footer() {
 
       <Container size="full">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 mb-16">
-          <div className="md:col-span-5">
+          <div className="md:col-span-6">
             <Link to="/" className="hover:opacity-80 transition-opacity inline-flex"><Wordmark size="22px" /></Link>
             <p className="text-body-sm text-ink-muted max-w-[40ch] leading-relaxed mt-6">Quiet machines for the people who keep things running. Built in the San Juans and sent wherever the work is.</p>
             <a href="mailto:hello@neonburro.com" className="inline-block text-body text-ink hover:text-accent transition-colors duration-200 mt-6">hello@neonburro.com</a>
           </div>
 
-          {COLUMNS.map((col) => (
-            <div key={col.head} className="md:col-span-2">
-              <p className="text-mono-xs text-ink-faint mb-5">{col.head}</p>
-              <ul className="space-y-3">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <Link to={link.to} className="text-body text-ink-muted hover:text-ink transition-colors duration-200 lowercase">{link.label}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="md:col-span-3">
+            <p className="text-mono-xs text-ink-faint mb-5">vessel</p>
+            <ul className="space-y-3">
+              {VESSEL.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-body text-ink-muted hover:text-ink transition-colors duration-200 lowercase">{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <div className="md:col-span-3">
             <p className="text-mono-xs text-ink-faint mb-5">status</p>
