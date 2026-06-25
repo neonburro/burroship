@@ -3,7 +3,7 @@
 // Signals strip. A calm operational readout that the vessel is moving.
 // Reuses the beacon and signal bar language from the rest of the site.
 // Clean lowercase content with no oxford commas and no dashes.
-// v1 · 2026-06-18
+// v1 · 2026-06-24
 
 import Container from "../../../components/Layout/Container";
 import Reveal from "../../../components/Atoms/Reveal";

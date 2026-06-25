@@ -1,12 +1,12 @@
 // src/pages/Deploy/index.jsx
 //
-// The deploy page. A scroll zoom hero into the live core then grounded
-// sections: the three environments, a signals strip and a closing band
-// back to the gate. Reuses the shared design system end to end.
-// v1 · 2026-06-18
+// The deploy page. Quiet hero, how it runs, a signals strip and a
+// closing band. Sharp and clean, matching the build page rhythm.
+// Reuses the shared design system end to end.
+// v1 · 2026-06-24
 
 import DeployHero from "./sections/DeployHero";
-import Environments from "./sections/Environments";
+import HowItRuns from "./sections/HowItRuns";
 import Signals from "./sections/Signals";
 import DeployClosing from "./sections/DeployClosing";
 
@@ -14,7 +14,7 @@ function Deploy() {
   return (
     <main id="main">
       <DeployHero />
-      <Environments />
+      <HowItRuns />
       <Signals />
       <DeployClosing />
     </main>
