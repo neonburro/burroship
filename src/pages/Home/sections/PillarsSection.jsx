@@ -1,9 +1,11 @@
 // src/pages/Home/sections/PillarsSection.jsx
 //
-// What we do. Three verbs, no place talk, no redundancy. Forward
-// looking. Left aligned header with cards aligned underneath on
-// desktop and a clean full width stack on mobile.
-// v1 · 2026-06-18
+// The capability layer. This is the studio spine: build, deploy,
+// automate. The three columns align under the section heading so build
+// sits directly below the headline left edge. Forward looking copy in
+// the studio voice. No numbering. Clean lowercase content with no
+// oxford commas and no dashes.
+// v3 · 2026-06-24 · studio reframe, columns aligned to heading
 
 import Container from "../../../components/Layout/Container";
 import Eyebrow from "../../../components/Atoms/Eyebrow";
@@ -30,10 +32,10 @@ function PillarsSection() {
       <div className="absolute inset-0 schematic-grid schematic-grid-fade pointer-events-none" aria-hidden="true" />
 
       <Container size="full" className="relative z-10">
-        <div className="max-w-[54ch] mb-14 md:mb-20">
-          <Reveal><Eyebrow signal>what we do</Eyebrow></Reveal>
-          <Reveal delay={0.06}><h2 className="text-display-xl mt-5 text-ink lowercase">small machines that keep working.</h2></Reveal>
-          <Reveal delay={0.12}><p className="text-lead mt-5 max-w-[50ch]">Three moves carry everything. Each one is deliberate and each one compounds.</p></Reveal>
+        <div className="max-w-[60ch] mb-14 md:mb-20">
+          <Reveal><Eyebrow signal>the work itself</Eyebrow></Reveal>
+          <Reveal delay={0.06}><h2 className="text-display-xl mt-5 text-ink lowercase">we make systems that keep working.</h2></Reveal>
+          <Reveal delay={0.12}><p className="text-lead mt-5 max-w-[50ch]">Three moves carry everything we ship. Each one is deliberate and each one compounds.</p></Reveal>
         </div>
 
         <div className="grid md:grid-cols-3 gap-px" style={{ background: "var(--color-line)" }}>

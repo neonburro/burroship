@@ -1,10 +1,11 @@
 // src/pages/Home/sections/Hero.jsx
 //
-// The approach. A full bleed dark viewport. The topo rings are the
-// true background filling the whole section. The wordmark resolves on
-// mount and the dot ignites. Voice is broad and a little mysterious:
-// a fellowship of builders and agents, not a location.
-// v1 · 2026-06-18
+// The studio hero. A paired identity: the wordmark sits above a clean
+// statement of what we are. A systems studio first. The topo rings are
+// the full background on a slow drift. No italics anywhere. Voice is
+// restrained and a little mysterious: we build for clients and we build
+// for ourselves.
+// v2 · 2026-06-24 · studio reframe, paired headline, italics removed
 
 import { useState, useEffect } from "react";
 
@@ -23,17 +24,17 @@ function Hero() {
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(91,180,240,0.06) 0%, transparent 68%)" }} />
 
       <div className="relative z-10 flex flex-col items-center px-6 text-center">
-        <p className="text-mono text-ink-faint mb-8" style={{ opacity: lit ? 1 : 0, transform: lit ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.7s var(--ease-emphasis), transform 0.7s var(--ease-emphasis)" }}>
-          a fellowship of builders
-        </p>
-
-        <h1 className="inline-flex items-baseline justify-center text-ink" style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "clamp(52px, 11vw, 132px)", letterSpacing: "-0.05em", lineHeight: 1, textTransform: "lowercase" }}>
+        <h1 className="inline-flex items-baseline justify-center text-ink" style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "clamp(48px, 10vw, 120px)", letterSpacing: "-0.05em", lineHeight: 1, textTransform: "lowercase" }}>
           theburroship
           <span aria-hidden="true" style={{ display: "inline-block", width: "0.14em", height: "0.14em", borderRadius: "50%", marginLeft: "0.05em", background: "var(--color-accent)", boxShadow: lit ? "0 0 28px var(--color-accent-glow), 0 0 7px var(--color-accent)" : "0 0 0 var(--color-accent-glow)", opacity: lit ? 1 : 0, transform: lit ? "scale(1)" : "scale(0.2)", transition: "opacity 0.5s var(--ease-emphasis) 0.35s, transform 0.6s var(--ease-emphasis) 0.35s, box-shadow 0.8s var(--ease-standard) 0.5s" }} />
         </h1>
 
-        <p className="text-lead mt-8 max-w-[48ch]" style={{ opacity: lit ? 1 : 0, transform: lit ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.8s var(--ease-emphasis) 0.55s, transform 0.8s var(--ease-emphasis) 0.55s" }}>
-          We build quiet machines and send them out to work. Systems that think a little, run on their own and answer when called. Some of this is engineering. Some of it still feels like magic.
+        <p className="mt-6 text-ink lowercase" style={{ fontFamily: "var(--font-display)", fontWeight: 500, fontSize: "clamp(20px, 3.2vw, 34px)", letterSpacing: "-0.02em", opacity: lit ? 1 : 0, transform: lit ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.8s var(--ease-emphasis) 0.4s, transform 0.8s var(--ease-emphasis) 0.4s" }}>
+          a systems studio.
+        </p>
+
+        <p className="text-lead mt-8 max-w-[52ch]" style={{ opacity: lit ? 1 : 0, transform: lit ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.9s var(--ease-emphasis) 0.6s, transform 0.9s var(--ease-emphasis) 0.6s" }}>
+          We design, build and run the software and the small businesses that grow around it. Some we make for clients. Some we make for ourselves.
         </p>
       </div>
     </section>
@@ -45,13 +46,13 @@ function BigTopo({ lit }) {
     <div aria-hidden="true" className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ opacity: lit ? 1 : 0, transition: "opacity 1.6s var(--ease-standard) 0.2s" }}>
       <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" className="w-full h-full" style={{ minWidth: "1100px" }}>
         <defs>
-          <radialGradient id="topoFade" cx="50%" cy="50%" r="50%">
+          <radialGradient id="heroTopo" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.16" />
             <stop offset="55%" stopColor="var(--color-accent)" stopOpacity="0.07" />
             <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <g fill="none" stroke="url(#topoFade)" strokeWidth="1">
+        <g fill="none" stroke="url(#heroTopo)" strokeWidth="1">
           <circle cx="500" cy="500" r="120" />
           <circle cx="500" cy="500" r="190" />
           <circle cx="500" cy="500" r="260" />
