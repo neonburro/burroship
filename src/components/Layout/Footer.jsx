@@ -21,7 +21,7 @@ function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative pt-20 pb-10 w-full" style={{ background: "var(--color-bg)" }}>
+    <footer className="relative pt-20 pb-28 md:pb-10 w-full" style={{ background: "var(--color-bg)" }}>
       <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px" style={{ background: "var(--color-accent)", opacity: 0.55, boxShadow: "0 0 12px var(--color-accent-glow)" }} />
 
       <Container size="full">
