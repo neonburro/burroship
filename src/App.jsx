@@ -1,4 +1,9 @@
 // src/App.jsx
+//
+// App shell and routes. Common Nav and Footer on every page except the
+// full bleed world map.
+// v2 · 2026-06-26 · add rewards route
+
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
@@ -9,6 +14,7 @@ import Home from "./pages/Home";
 import Build from "./pages/Build";
 import Deploy from "./pages/Deploy";
 import Automate from "./pages/Automate";
+import Rewards from "./pages/Rewards";
 import CommandCenter from "./pages/CommandCenter";
 
 function ScrollToTop() {
@@ -22,10 +28,7 @@ function ScrollToTop() {
 function App() {
   const location = useLocation();
 
-  // The Cesium /world map runs full-bleed with no chrome.
   const onWorld = location.pathname.startsWith("/world");
-
-  // Common Nav + Footer on every page except the world map.
   const showChrome = !onWorld;
 
   return (
@@ -38,6 +41,7 @@ function App() {
         <Route path="/build/" element={<Build />} />
         <Route path="/deploy/" element={<Deploy />} />
         <Route path="/automate/" element={<Automate />} />
+        <Route path="/rewards/" element={<Rewards />} />
         <Route path="/world/" element={<CommandCenter />} />
         <Route path="*" element={<Home />} />
       </Routes>
