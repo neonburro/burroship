@@ -33,28 +33,28 @@ function Tile({ tile }) {
         className="relative aspect-square rounded-2xl overflow-hidden flex items-center justify-center"
         style={{ background: "var(--color-gray-900)" }}
       >
-        <img src="/burroship-logo.webp" alt="the burroship" className="w-[74%] h-auto" style={{ filter: "drop-shadow(0 6px 24px rgba(46,155,230,0.28))" }} />
-        <span className="absolute top-4 left-4 text-mono-sm lowercase" style={{ color: "rgba(255,255,255,0.5)" }}>{tile.n}</span>
+        <img src="/burroship-logo.webp" alt="the burroship" className="w-[70%] h-auto" style={{ filter: "drop-shadow(0 6px 24px rgba(46,155,230,0.28))" }} />
+        <span className="absolute top-6 left-6 md:top-8 md:left-8 text-mono lowercase" style={{ color: "rgba(255,255,255,0.5)" }}>{tile.n}</span>
       </div>
     );
   }
 
   const body = (
     <div
-      className="group relative aspect-square rounded-2xl flex flex-col justify-between p-5 transition-all duration-200"
+      className="group relative aspect-square rounded-2xl flex flex-col justify-between p-6 md:p-8 transition-all duration-200"
       style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)" }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-line)"; e.currentTarget.style.transform = "translateY(0)"; }}
     >
       <div className="flex items-center justify-between">
-        <span className="text-mono-sm text-ink-faint lowercase">{tile.n}</span>
+        <span className="text-mono text-ink-faint lowercase">{tile.n}</span>
         <span style={{ color: tile.locked ? "var(--color-ink-faint)" : "var(--color-accent)" }}>
           {tile.locked ? <Lock /> : <span className="beacon-dot sm" aria-hidden="true" />}
         </span>
       </div>
       <div>
-        <div className="text-display-sm text-ink lowercase group-hover:text-accent transition-colors duration-200">{tile.label}</div>
-        {tile.sub && <div className="text-body-sm text-ink-muted lowercase mt-1">{tile.sub}</div>}
+        <div className="text-display-md text-ink lowercase group-hover:text-accent transition-colors duration-200">{tile.label}</div>
+        {tile.sub && <div className="text-body text-ink-muted lowercase mt-1.5">{tile.sub}</div>}
       </div>
     </div>
   );
@@ -67,9 +67,9 @@ function Tile({ tile }) {
 
 function Blocks() {
   return (
-    <section className="px-6 pb-24 md:pb-32">
-      <div className="mx-auto" style={{ maxWidth: "1080px" }}>
-        <div className="flex items-center gap-2.5 mb-6">
+    <section className="pb-24 md:pb-32">
+      <div className="mx-auto w-[99.5%] md:w-[97%]">
+        <div className="flex items-center gap-2.5 mb-6 md:mb-8">
           <span className="beacon-dot sm" aria-hidden="true" />
           <span className="text-mono text-ink-faint lowercase">aboard</span>
         </div>

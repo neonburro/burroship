@@ -28,20 +28,20 @@ function Gate() {
   }
 
   return (
-    <section className="px-6 pt-10 pb-20 md:pt-16 md:pb-28 flex items-center justify-center">
-      <div className="w-full max-w-[430px] text-center">
-        <div className="flex items-center justify-center gap-2.5 mb-6">
+    <section className="px-3 pt-12 pb-20 md:pt-20 md:pb-28 flex items-center justify-center">
+      <div className="w-full max-w-[600px] text-center">
+        <div className="flex items-center justify-center gap-2.5 mb-6 md:mb-8">
           <span className="beacon-dot sm pulse" aria-hidden="true" />
           <span className="text-mono text-ink-faint lowercase">the bridge</span>
         </div>
 
-        <h1 className="text-display-lg text-ink lowercase mb-3">a floating incubator.</h1>
-        <p className="text-lead lowercase mb-9">
+        <h1 className="text-display-xl text-ink lowercase mb-4">a floating incubator.</h1>
+        <p className="text-lead lowercase mb-10" style={{ fontSize: "19px" }}>
           something is being built above the range. sign in to see it.
         </p>
 
         <div
-          className="rounded-3xl p-6 md:p-7 text-left"
+          className="rounded-3xl p-7 md:p-9 text-left"
           style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)" }}
         >
           <div className="flex flex-col gap-3">
