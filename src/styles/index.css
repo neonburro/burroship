@@ -6,23 +6,23 @@
 @import "tailwindcss";
 
 @theme {
-  /* ----- Color: bright white surface system (v0.2 light flip) ----- */
-  /* Burro Ship went light: bright white grounds, near black ink, one sky blue
-     accent, and the old dark ramp kept as the BLACK tile material (the logo and
-     any dark block sit on it). Sister to Neon Burro Pulse, but white not cream. */
-  --color-bg: #FFFFFF;
-  --color-surface: #F5F7FA;
-  --color-surface-deep: #FFFFFF;
-  --color-surface-raised: #ECF0F5;
-  --color-surface-engine: #F0F3F7;
-  --color-line: rgba(12, 16, 22, 0.10);
-  --color-line-strong: rgba(12, 16, 22, 0.17);
-  --color-line-hair: rgba(12, 16, 22, 0.055);
+  /* ----- Color: blue-gray surface system (v0.3, darker and bluer) ----- */
+  /* Not white. A cool slate blue ground, cards lift toward a lighter blue, near
+     black ink, and the sky blue accent pops harder on the darker tone. The old
+     dark ramp stays as the BLACK tile material (the logo sits on it). */
+  --color-bg: #CFD9E6;
+  --color-surface: #DFE7F0;
+  --color-surface-deep: #C2CCDB;
+  --color-surface-raised: #E9EEF5;
+  --color-surface-engine: #C9D3E1;
+  --color-line: rgba(24, 36, 56, 0.13);
+  --color-line-strong: rgba(24, 36, 56, 0.20);
+  --color-line-hair: rgba(24, 36, 56, 0.07);
 
-  /* ----- Color: ink (near black text on white) ----- */
-  --color-ink: #0B0D11;
-  --color-ink-muted: #545C68;
-  --color-ink-faint: #8A929E;
+  /* ----- Color: ink (near black, a touch of blue) ----- */
+  --color-ink: #0D131B;
+  --color-ink-muted: #46525F;
+  --color-ink-faint: #78838F;
 
   /* ----- Color: accent (sky blue neon, deepened to read on white) ----- */
   --color-accent: #2E9BE6;

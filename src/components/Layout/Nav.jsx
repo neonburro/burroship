@@ -38,7 +38,7 @@ function Nav() {
 
   return (
     <>
-      <nav className={"fixed top-0 inset-x-0 z-50 transition-all duration-300 " + (scrolled ? "backdrop-blur-md" : "")} style={{ background: scrolled ? "rgba(255,255,255,0.82)" : "transparent", borderBottom: scrolled ? "1px solid var(--color-line)" : "1px solid transparent" }}>
+      <nav className={"fixed top-0 inset-x-0 z-50 transition-all duration-300 " + (scrolled ? "backdrop-blur-md" : "")} style={{ background: scrolled ? "rgba(207,217,230,0.85)" : "transparent", borderBottom: scrolled ? "1px solid var(--color-line)" : "1px solid transparent" }}>
         <Container size="full">
           <div className="flex items-center justify-between h-16">
             <Link to="/" aria-label="the burroship home" className="hover:opacity-80 transition-opacity inline-flex"><Wordmark size="23px" /></Link>
