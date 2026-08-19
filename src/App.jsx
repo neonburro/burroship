@@ -9,6 +9,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 
 import Nav from "./components/Layout/Nav";
 import Footer from "./components/Layout/Footer";
+import SecretMapAccess from "./components/SecretMapAccess";
 
 import Home from "./pages/Home";
 import Build from "./pages/Build";
@@ -35,6 +36,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <SecretMapAccess />
       {showChrome && <Nav />}
 
       <Routes>
