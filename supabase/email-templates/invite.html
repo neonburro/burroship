@@ -1,0 +1,52 @@
+<!-- supabase/email-templates/invite.html -->
+<!-- Supabase Dashboard: Authentication > Email Templates > Invite user -->
+<!-- Suggested subject: you have been called aboard -->
+<!-- Variable used: {{ .ConfirmationURL }} -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light only" />
+  </head>
+  <body style="margin:0; padding:0; background:#CFD9E6;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#CFD9E6;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px; width:100%; background:#DFE7F0; border:1px solid #CBD4E1; border-radius:20px; overflow:hidden;">
+            <tr>
+              <td style="background:#0B0C0E; padding:26px 32px;">
+                <span style="font-family:'Rubik',Helvetica,Arial,sans-serif; font-weight:700; font-size:20px; color:#FFFFFF; letter-spacing:-0.02em;">theburroship</span><span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#2E9BE6; margin-left:3px; vertical-align:baseline;"></span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:36px 32px 12px 32px;">
+                <p style="margin:0 0 14px 0; font-family:'JetBrains Mono',Consolas,monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#1668A8;">the bridge</p>
+                <h1 style="margin:0 0 14px 0; font-family:'Rubik',Helvetica,Arial,sans-serif; font-size:24px; font-weight:600; color:#0D131B; letter-spacing:-0.02em;">you have been called aboard.</h1>
+                <p style="margin:0 0 26px 0; font-family:'Rubik',Helvetica,Arial,sans-serif; font-size:15px; line-height:1.6; color:#46525F;">someone on the burroship left a light on for you. accept below to set your key and step onto the bridge. keep an open mind, you may see things you did not expect.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 8px 32px;">
+                <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px; background:#2E9BE6;">
+                  <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 30px; font-family:'JetBrains Mono',Consolas,monospace; font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#FFFFFF; text-decoration:none; border-radius:12px;">accept the invitation</a>
+                </td></tr></table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 32px 30px 32px;">
+                <p style="margin:0 0 6px 0; font-family:'Rubik',Helvetica,Arial,sans-serif; font-size:12px; color:#78838F;">or paste this link into your browser</p>
+                <p style="margin:0; font-family:'JetBrains Mono',Consolas,monospace; font-size:11px; color:#1668A8; word-break:break-all;">{{ .ConfirmationURL }}</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 32px; border-top:1px solid #CBD4E1;">
+                <p style="margin:0; font-family:'JetBrains Mono',Consolas,monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#78838F;">the burroship &nbsp;&middot;&nbsp; ridgway colorado &nbsp;&middot;&nbsp; 38.15&deg; n</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

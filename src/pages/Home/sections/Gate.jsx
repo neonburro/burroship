@@ -7,6 +7,7 @@
 // throughout, no oxford commas, no dashes. v1.
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function Gate() {
   const [username, setUsername] = useState("");
@@ -103,6 +104,21 @@ function Gate() {
 
             <div className="min-h-[1.4em] mt-1 text-center">
               {note && <p className="text-body-sm lowercase" style={{ color: "var(--color-accent-deep)" }} role="status">{note}</p>}
+            </div>
+
+            <div className="flex items-center justify-center gap-4 text-mono-xs lowercase pt-1">
+              <button
+                type="button"
+                onClick={() => setNote("password recovery opens when the bridge does.")}
+                className="text-ink-faint hover:text-ink transition-colors duration-200"
+                style={{ background: "transparent", border: "none", cursor: "pointer" }}
+              >
+                forgot password
+              </button>
+              <span aria-hidden="true" className="text-ink-faint">·</span>
+              <Link to="/contact/" className="text-ink-faint hover:text-ink transition-colors duration-200">
+                request access
+              </Link>
             </div>
           </div>
         </div>

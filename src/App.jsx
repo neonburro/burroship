@@ -16,6 +16,7 @@ import Deploy from "./pages/Deploy";
 import Automate from "./pages/Automate";
 import Rewards from "./pages/Rewards";
 import CommandCenter from "./pages/CommandCenter";
+import Contact from "./pages/Contact";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -42,6 +43,7 @@ function App() {
         <Route path="/deploy/" element={<Deploy />} />
         <Route path="/automate/" element={<Automate />} />
         <Route path="/rewards/" element={<Rewards />} />
+        <Route path="/contact/" element={<Contact />} />
         <Route path="/world/" element={<CommandCenter />} />
         <Route path="*" element={<Home />} />
       </Routes>

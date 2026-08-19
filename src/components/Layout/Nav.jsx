@@ -14,6 +14,7 @@ import Container from "./Container";
 import LoginPanel from "./LoginPanel";
 import BottomNav from "./BottomNav";
 import Wordmark from "../Atoms/Wordmark";
+import ShipMark from "../Atoms/ShipMark";
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -41,7 +42,7 @@ function Nav() {
       <nav className={"fixed top-0 inset-x-0 z-50 transition-all duration-300 " + (scrolled ? "backdrop-blur-md" : "")} style={{ background: scrolled ? "rgba(207,217,230,0.85)" : "transparent", borderBottom: scrolled ? "1px solid var(--color-line)" : "1px solid transparent" }}>
         <Container size="full">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" aria-label="the burroship home" className="hover:opacity-80 transition-opacity inline-flex"><Wordmark size="23px" /></Link>
+            <Link to="/" aria-label="the burroship home" className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5"><ShipMark height={28} /><Wordmark size="23px" /></Link>
 
             <button onClick={() => setOpen(true)} aria-label="enter" aria-expanded={open} className="group hidden md:inline-flex items-center gap-2.5 transition-all duration-200" style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid var(--color-line)", background: "transparent", cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-line)"; }}>
               <span className="beacon-dot sm" aria-hidden="true" />
