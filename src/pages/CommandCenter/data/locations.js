@@ -204,6 +204,21 @@ export const LOCATIONS = [
     tags: ["food", "cinema-history", "partner"],
     featured: false,
   },
+  {
+    slug: "neon-burro-hq",
+    name: "Neon Burro",
+    category: "hq",
+    subcategory: null,
+    beaconColor: null,
+    status: "live",
+    city: "Ridgway",
+    longitude: -107.758584,
+    latitude: 38.152673,
+    elevationM: 2130,
+    blurb: "675 Clinton Street. Home port in Ridgway, where the Burroship touches down.",
+    tags: ["hq", "studio", "ridgway", "home"],
+    featured: true,
+  },
 ];
  
 /* Helpful selectors. Layers and controls can use these. */

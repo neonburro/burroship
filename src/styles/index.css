@@ -56,6 +56,20 @@
   --spacing-wide: 1440px;
 }
 
+/* ----- Dark map surface tokens -----
+   The /world/ map is a fixed dark dusk world, its own surface. These feed the map
+   overlays (MapCanvas status readout, beacons, popups) which were written against
+   the old dark theme before the site flipped to blue-gray, so var(--color-dark-*)
+   was resolving to nothing and the labels went invisible. Sky blue accent to match
+   the Ship. */
+:root {
+  --color-dark-bg: #05070A;
+  --color-dark-accent: #4FB0F0;
+  --color-dark-ink: #EAF0F6;
+  --color-dark-ink-muted: rgba(233, 240, 246, 0.68);
+  --color-dark-ink-faint: rgba(233, 240, 246, 0.42);
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html {

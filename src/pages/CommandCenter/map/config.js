@@ -33,11 +33,13 @@ export const RIDGWAY = {
 export const DOME_CENTER = RIDGWAY;
 export const DOME_RADIUS_DEG = 0.35;
  
-export const CRUISE_ALTITUDE_M = 4877;
- 
-/* CRUISE PRESET • unchanged from Phase B. */
-export const CRUISE_ZOOM = 14.7;
-export const CRUISE_PITCH = 73;
+export const CRUISE_ALTITUDE_M = 76;
+
+/* DRONE PRESET • dropped from the old cruise (zoom 14.7, pitch 73) down to a low
+ * circling-drone feel over Ridgway, roughly 250 ft above the town. Tune these two
+ * to fly higher or lower: bigger zoom = closer to the ground. */
+export const CRUISE_ZOOM = 15.5;
+export const CRUISE_PITCH = 66;
  
 export const INITIAL_VIEW = {
   longitude: CHIMNEY_ROCK.longitude + 0.011,
@@ -48,7 +50,7 @@ export const INITIAL_VIEW = {
 };
  
 export const TIMING = {
-  glideDuration: 90_000,
+  glideDuration: 30_000,
   rotationDuration: 180_000,
 };
  
@@ -110,8 +112,8 @@ export const CANCEL_GRACE_MS = 800;
 export const WHEEL_DEBOUNCE_MS = 250;
  
 export const COLORS = {
-  accent: "#7AB300",
-  accentDark: "#A8D055",
-  bg: "#020503",
+  accent: "#4FB0F0",
+  accentDark: "#2E9BE6",
+  bg: "#05070A",
   ink: "#FFFFFF",
 };

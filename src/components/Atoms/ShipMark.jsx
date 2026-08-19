@@ -1,18 +1,46 @@
 // src/components/Atoms/ShipMark.jsx
 //
-// The ship mark. The burroship logo cut free of its baked black background: the
-// black field was flood filled to transparent while the ship interior was kept,
-// saved as public/burroship-mark.webp. So the chrome airship sits directly on the
-// light blue-gray chrome with no chip behind it. Pairs with Wordmark to make the
-// nav and footer lockup.
+// The ship mark, two modes.
 //
-// The art is landscape, roughly 1.76:1, so we size by height and let the width
-// follow. The dark tile version of the logo still lives on the home grid (the 01
-// tile) where it is meant to glow on black, that one is unchanged. If the mark ever
-// needs to sit on a dark surface again, put a chip back or swap to burroship-logo.
-// v2 · background free mark on light.
+//   bare (default) • the logo cut free of its baked black background (flood filled
+//     transparent, ship interior kept, public/burroship-mark.webp) so the chrome
+//     airship sits directly on a surface. Reads on light AND on a dark surface like
+//     the black nav, because the ship art is bright.
+//
+//   chip • the original on-black logo (public/burroship-logo.webp) set in a small
+//     dark rounded square, for when the surface is light but we still want the black
+//     backed mark, like the footer. The art carries its own black margin so we zoom
+//     in a touch to fill the chip.
+//
+// bare sizes by height, chip sizes by chipSize (a square edge). The 01 home tile
+// still uses burroship-logo.webp on its own black tile, unchanged.
+// v3 · bare and chip modes.
 
-function ShipMark({ height = 26, className = "" }) {
+function ShipMark({ height = 26, chip = false, chipSize = 40, className = "" }) {
+  if (chip) {
+    const r = Math.round(chipSize * 0.3);
+    return (
+      <span
+        aria-hidden="true"
+        className={"inline-flex items-center justify-center overflow-hidden shrink-0 " + className}
+        style={{
+          width: chipSize,
+          height: chipSize,
+          borderRadius: r,
+          background: "var(--color-gray-900)",
+          border: "1px solid var(--color-line)",
+        }}
+      >
+        <img
+          src="/burroship-logo.webp"
+          alt=""
+          className="w-full h-full object-cover"
+          style={{ transform: "scale(1.45)" }}
+        />
+      </span>
+    );
+  }
+
   return (
     <img
       src="/burroship-mark.webp"

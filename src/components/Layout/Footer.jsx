@@ -28,7 +28,7 @@ function Footer() {
       <Container size="full">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 mb-16">
           <div className="md:col-span-6">
-            <Link to="/" className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5"><ShipMark height={30} /><Wordmark size="22px" /></Link>
+            <Link to="/" className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5"><ShipMark chip chipSize={42} /><Wordmark size="22px" /></Link>
             <p className="text-body-sm text-ink-muted max-w-[40ch] leading-relaxed mt-6">Quiet machines for the people who keep things running. Built in the San Juans and sent wherever the work is.</p>
             <a href="mailto:hello@neonburro.com" className="inline-block text-body text-ink hover:text-accent transition-colors duration-200 mt-6">hello@neonburro.com</a>
           </div>

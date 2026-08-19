@@ -1,16 +1,18 @@
 // src/components/Atoms/Wordmark.jsx
 //
-// The wordmark. theburroship in lowercase with the signature sky blue
-// dot acting as the period. The dot sits on the text baseline using a
-// flex row with a shared baseline so it never floats. One source of
-// truth for every placement: nav, footer, hero.
-// v1 · 2026-06-18
+// The wordmark. theburroship in lowercase with the signature sky blue dot acting as
+// the period. The dot sits on the text baseline using a flex row with a shared
+// baseline so it never floats. One source of truth for every placement: nav, footer,
+// hero. color defaults to the ink token, pass a light color (for the black nav) to
+// flip the letters white without touching the accent period.
+// v2 · color prop for dark surfaces.
 
-function Wordmark({ size = "20px", className = "", glow = true }) {
+function Wordmark({ size = "20px", className = "", glow = true, color = "var(--color-ink)" }) {
   return (
     <span
-      className={"inline-flex items-baseline text-ink " + className}
+      className={"inline-flex items-baseline " + className}
       style={{
+        color,
         fontFamily: "var(--font-display)",
         fontWeight: 600,
         fontSize: size,

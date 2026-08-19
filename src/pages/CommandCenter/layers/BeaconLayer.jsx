@@ -71,7 +71,7 @@ function BeaconLayer({ map, onBeaconClick }) {
         source: SOURCE_ID,
         paint: {
           "circle-radius": 14,
-          "circle-color": "#A8D055",
+          "circle-color": "#4FB0F0",
           "circle-opacity": 0.18,
           "circle-blur": 0.8,
         },
@@ -84,7 +84,7 @@ function BeaconLayer({ map, onBeaconClick }) {
         source: SOURCE_ID,
         paint: {
           "circle-radius": 5,
-          "circle-color": "#A8D055",
+          "circle-color": "#4FB0F0",
           "circle-stroke-width": 1.5,
           "circle-stroke-color": "rgba(255, 255, 255, 0.6)",
           "circle-stroke-opacity": 0.8,

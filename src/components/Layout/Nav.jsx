@@ -39,14 +39,14 @@ function Nav() {
 
   return (
     <>
-      <nav className={"fixed top-0 inset-x-0 z-50 transition-all duration-300 " + (scrolled ? "backdrop-blur-md" : "")} style={{ background: scrolled ? "rgba(207,217,230,0.85)" : "transparent", borderBottom: scrolled ? "1px solid var(--color-line)" : "1px solid transparent" }}>
+      <nav className="fixed top-0 inset-x-0 z-50 transition-all duration-300" style={{ background: "var(--color-gray-900)", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.06)" }}>
         <Container size="full">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" aria-label="the burroship home" className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5"><ShipMark height={28} /><Wordmark size="23px" /></Link>
+            <Link to="/" aria-label="the burroship home" className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5"><ShipMark height={28} /><Wordmark size="23px" color="#FFFFFF" /></Link>
 
-            <button onClick={() => setOpen(true)} aria-label="enter" aria-expanded={open} className="group hidden md:inline-flex items-center gap-2.5 transition-all duration-200" style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid var(--color-line)", background: "transparent", cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-line)"; }}>
+            <button onClick={() => setOpen(true)} aria-label="enter" aria-expanded={open} className="group hidden md:inline-flex items-center gap-2.5 transition-all duration-200" style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.18)", background: "transparent", cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)"; }}>
               <span className="beacon-dot sm" aria-hidden="true" />
-              <span className="text-mono text-ink-muted group-hover:text-ink transition-colors duration-200 lowercase">enter</span>
+              <span className="text-mono lowercase" style={{ color: "rgba(255,255,255,0.72)" }}>enter</span>
             </button>
           </div>
         </Container>
