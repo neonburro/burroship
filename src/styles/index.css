@@ -6,29 +6,32 @@
 @import "tailwindcss";
 
 @theme {
-  /* ----- Color: dark surface system (primary) ----- */
-  --color-bg: #08090B;
-  --color-surface: #0F1115;
-  --color-surface-deep: #0A0B0E;
-  --color-surface-raised: #14171C;
-  --color-surface-engine: #0C0E12;
-  --color-line: rgba(255, 255, 255, 0.08);
-  --color-line-strong: rgba(255, 255, 255, 0.14);
-  --color-line-hair: rgba(255, 255, 255, 0.05);
+  /* ----- Color: bright white surface system (v0.2 light flip) ----- */
+  /* Burro Ship went light: bright white grounds, near black ink, one sky blue
+     accent, and the old dark ramp kept as the BLACK tile material (the logo and
+     any dark block sit on it). Sister to Neon Burro Pulse, but white not cream. */
+  --color-bg: #FFFFFF;
+  --color-surface: #F5F7FA;
+  --color-surface-deep: #FFFFFF;
+  --color-surface-raised: #ECF0F5;
+  --color-surface-engine: #F0F3F7;
+  --color-line: rgba(12, 16, 22, 0.10);
+  --color-line-strong: rgba(12, 16, 22, 0.17);
+  --color-line-hair: rgba(12, 16, 22, 0.055);
 
-  /* ----- Color: ink (text on dark) ----- */
-  --color-ink: #F2F4F7;
-  --color-ink-muted: #9BA1AD;
-  --color-ink-faint: #5E646F;
+  /* ----- Color: ink (near black text on white) ----- */
+  --color-ink: #0B0D11;
+  --color-ink-muted: #545C68;
+  --color-ink-faint: #8A929E;
 
-  /* ----- Color: accent (sky blue) ----- */
-  --color-accent: #5BB4F0;
-  --color-accent-hover: #7AC4F5;
-  --color-accent-deep: #3A8FCC;
-  --color-accent-soft: rgba(91, 180, 240, 0.10);
-  --color-accent-glow: rgba(91, 180, 240, 0.45);
+  /* ----- Color: accent (sky blue neon, deepened to read on white) ----- */
+  --color-accent: #2E9BE6;
+  --color-accent-hover: #1A86D4;
+  --color-accent-deep: #1668A8;
+  --color-accent-soft: rgba(46, 155, 230, 0.10);
+  --color-accent-glow: rgba(46, 155, 230, 0.40);
 
-  /* ----- Color: gray ramp (material) ----- */
+  /* ----- Color: dark ramp (the BLACK tiles + chrome material) ----- */
   --color-gray-900: #0B0C0E;
   --color-gray-800: #16181D;
   --color-gray-700: #22252C;

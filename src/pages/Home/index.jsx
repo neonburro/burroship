@@ -6,6 +6,7 @@
 // and Footer come from App.
 // v3 · 2026-06-24 · studio incubator reframe
 
+import BannerHero from "./sections/BannerHero";
 import Hero from "./sections/Hero";
 import PillarsSection from "./sections/PillarsSection";
 import Incubator from "./sections/Incubator";
@@ -17,6 +18,7 @@ import Invitation from "./sections/Invitation";
 function Home() {
   return (
     <main id="main">
+      <BannerHero />
       <Hero />
       <PillarsSection />
       <Incubator />
