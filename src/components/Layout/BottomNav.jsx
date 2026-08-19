@@ -1,11 +1,13 @@
 // src/components/Layout/BottomNav.jsx
 //
-// Mobile bottom nav. A clean fixed bar shown only on small screens. The
-// core destinations sit as tap targets with a small icon and label, and
-// a final enter action opens the combined access panel. Hidden on md
-// and up where the top nav already serves. The active route gets the
-// accent. Clean lowercase labels with no oxford commas and no dashes.
-// v1 · 2026-06-26
+// Mobile bottom nav, floating. A semi rounded frosted bar that hovers off the
+// bottom edge with a margin all around, so the blue-gray ground shows through it
+// and past it on every side. Translucent surface plus a blur, not a solid slab
+// stuck to the edge. This is the house vibe, everything sits on the main color
+// with barely rounded corners and lets it read through. The core destinations are
+// tap targets, a final enter action opens the access panel. Hidden on md and up
+// where the top nav serves. Active route gets the accent. Lowercase, no oxford
+// commas, no dashes. v2 · floating frosted bar.
 
 import { Link, useLocation } from "react-router-dom";
 
@@ -18,7 +20,7 @@ const ITEMS = [
 
 function Icon({ name, active }) {
   const stroke = active ? "var(--color-accent)" : "currentColor";
-  const common = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke, strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
+  const common = { width: 21, height: 21, viewBox: "0 0 24 24", fill: "none", stroke, strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
   if (name === "home") return (<svg {...common}><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></svg>);
   if (name === "build") return (<svg {...common}><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h10" /></svg>);
   if (name === "deploy") return (<svg {...common}><path d="M12 3v12" /><path d="M7 10l5 5 5-5" /><path d="M5 21h14" /></svg>);
@@ -31,18 +33,44 @@ function BottomNav({ onEnter }) {
   const location = useLocation();
 
   return (
-    <nav aria-label="mobile navigation" className="md:hidden fixed bottom-0 inset-x-0 z-50" style={{ background: "rgba(8,9,11,0.86)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderTop: "1px solid var(--color-line)", paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <nav
+      aria-label="mobile navigation"
+      className="md:hidden fixed z-50"
+      style={{
+        left: "12px",
+        right: "12px",
+        bottom: "calc(env(safe-area-inset-bottom) + 12px)",
+        borderRadius: "22px",
+        background: "rgba(226, 233, 242, 0.55)",
+        backdropFilter: "blur(20px) saturate(150%)",
+        WebkitBackdropFilter: "blur(20px) saturate(150%)",
+        border: "1px solid var(--color-line-strong)",
+        boxShadow: "0 12px 34px rgba(24, 36, 56, 0.16)",
+        overflow: "hidden",
+      }}
+    >
       <div className="grid grid-cols-5">
         {ITEMS.map((item) => {
           const active = location.pathname === item.to;
           return (
-            <Link key={item.to} to={item.to} className="flex flex-col items-center justify-center gap-1 py-2.5 transition-colors duration-200" style={{ color: active ? "var(--color-accent)" : "var(--color-ink-faint)" }}>
+            <Link
+              key={item.to}
+              to={item.to}
+              className="flex flex-col items-center justify-center gap-1 py-3 transition-colors duration-200"
+              style={{ color: active ? "var(--color-accent)" : "var(--color-ink-muted)" }}
+            >
               <Icon name={item.icon} active={active} />
               <span className="text-mono-xs lowercase">{item.label}</span>
             </Link>
           );
         })}
-        <button type="button" onClick={onEnter} aria-label="enter" className="flex flex-col items-center justify-center gap-1 py-2.5 transition-colors duration-200" style={{ color: "var(--color-ink-faint)", background: "transparent", border: "none", cursor: "pointer" }}>
+        <button
+          type="button"
+          onClick={onEnter}
+          aria-label="enter"
+          className="flex flex-col items-center justify-center gap-1 py-3 transition-colors duration-200"
+          style={{ color: "var(--color-ink-muted)", background: "transparent", border: "none", cursor: "pointer" }}
+        >
           <Icon name="enter" active={false} />
           <span className="text-mono-xs lowercase">enter</span>
         </button>
