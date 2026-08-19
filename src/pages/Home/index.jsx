@@ -1,31 +1,21 @@
 // src/pages/Home/index.jsx
 //
-// The vessel. The studio incubator homepage in descending order:
-// studio hero, the work itself, the incubator, the network of
-// ventures, operations, rewards, then the invitation gate. Common Nav
-// and Footer come from App.
-// v3 · 2026-06-24 · studio incubator reframe
+// The ship, login first. A thin airship banner, the gate (a login on the page
+// itself under one mysterious line), then the sealed squares that hint at what is
+// aboard. The old studio-incubator sections are retired from the home and kept in
+// the folder for reference, nothing imports them now.
+// v4 · 2026-08-19 · login-first mystery
 
 import BannerHero from "./sections/BannerHero";
-import Hero from "./sections/Hero";
-import PillarsSection from "./sections/PillarsSection";
-import Incubator from "./sections/Incubator";
-import Ventures from "./sections/Ventures";
-import Operations from "./sections/Operations";
-import Rewards from "./sections/Rewards";
-import Invitation from "./sections/Invitation";
+import Gate from "./sections/Gate";
+import Blocks from "./sections/Blocks";
 
 function Home() {
   return (
     <main id="main">
       <BannerHero />
-      <Hero />
-      <PillarsSection />
-      <Incubator />
-      <Ventures />
-      <Operations />
-      <Rewards />
-      <Invitation />
+      <Gate />
+      <Blocks />
     </main>
   );
 }

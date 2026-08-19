@@ -1,7 +1,7 @@
 /* src/styles/index.css */
 
 /* Google Fonts must come BEFORE @theme to satisfy CSS @import ordering */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -40,8 +40,10 @@
   --color-gray-400: #7C828D;
 
   /* ----- Fonts ----- */
-  --font-display: "Space Grotesk", -apple-system, system-ui, sans-serif;
-  --font-sans: "Inter", -apple-system, system-ui, sans-serif;
+  /* One smooth rounded family for reading and display, Rubik, sister to Pulse.
+     JetBrains Mono stays for the small technical labels, the bridge voice. */
+  --font-display: "Rubik", -apple-system, system-ui, sans-serif;
+  --font-sans: "Rubik", -apple-system, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* ----- Motion ----- */
