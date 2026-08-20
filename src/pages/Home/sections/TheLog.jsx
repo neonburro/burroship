@@ -25,27 +25,40 @@ function Card({ post }) {
   return (
     <Link
       to={`/log/${post.slug}/`}
-      className="group flex flex-col rounded-2xl transition-all duration-200"
-      style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)", padding: "24px" }}
+      className="group flex flex-col rounded-2xl transition-all duration-200 overflow-hidden"
+      style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)" }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-line)"; e.currentTarget.style.transform = "translateY(0)"; }}
     >
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-mono-xs text-ink-faint lowercase">{post.kicker}</span>
-        <span aria-hidden="true" className="text-ink-faint">·</span>
-        <span className="text-mono-xs text-ink-faint lowercase">{post.dateLabel}</span>
-      </div>
+      {post.hero && (
+        <div className="overflow-hidden" style={{ aspectRatio: "16 / 9", borderBottom: "1px solid var(--color-line)" }}>
+          <img
+            src={post.hero}
+            alt={post.heroAlt || ""}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+          />
+        </div>
+      )}
 
-      <h3 className="text-display-sm text-ink lowercase mb-2.5 group-hover:text-accent transition-colors duration-200" style={{ textWrap: "balance" }}>
-        {post.title}
-      </h3>
-      <p className="text-body-sm text-ink-muted lowercase mb-6" style={{ lineHeight: 1.55 }}>{post.excerpt}</p>
+      <div className="flex flex-col flex-1" style={{ padding: "22px 24px 24px" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-mono-xs text-ink-faint lowercase">{post.kicker}</span>
+          <span aria-hidden="true" className="text-ink-faint">·</span>
+          <span className="text-mono-xs text-ink-faint lowercase">{post.dateLabel}</span>
+        </div>
 
-      <div className="flex items-center gap-2.5 mt-auto">
-        <Monogram initial={post.author.initial} />
-        <span className="text-body-sm text-ink lowercase">{post.author.name}</span>
-        <span aria-hidden="true" className="text-ink-faint">·</span>
-        <span className="text-mono-xs text-ink-faint lowercase">{post.author.role}</span>
+        <h3 className="text-display-sm text-ink lowercase mb-2.5 group-hover:text-accent transition-colors duration-200" style={{ textWrap: "balance" }}>
+          {post.title}
+        </h3>
+        <p className="text-body-sm text-ink-muted lowercase mb-6" style={{ lineHeight: 1.55 }}>{post.excerpt}</p>
+
+        <div className="flex items-center gap-2.5 mt-auto">
+          <Monogram initial={post.author.initial} />
+          <span className="text-body-sm text-ink lowercase">{post.author.name}</span>
+          <span aria-hidden="true" className="text-ink-faint">·</span>
+          <span className="text-mono-xs text-ink-faint lowercase">{post.author.role}</span>
+        </div>
       </div>
     </Link>
   );

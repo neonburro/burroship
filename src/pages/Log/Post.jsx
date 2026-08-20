@@ -2,15 +2,17 @@
 //
 // The log, one entry. Reads the slug from the route and looks it up in LOG. An unknown
 // slug is not an error page, it just sends the reader back to the list, the ship does
-// not throw doors in your face. Body blocks render by type, p is a reading paragraph,
-// h is a subhead, quote is a pull line set off with an accent rule. One reading column,
-// left aligned, sized for prose. A small next-below-this rail at the foot points at the
-// other entries so the log reads like a place not a dead end. Lowercase, no oxford
-// commas, no dashes.
+// not throw doors in your face. A wide hero sits under the title, then the byline, then
+// the body. Body blocks render by type, p is a reading paragraph (and may carry inline
+// links through parts, which is how entries point at each other in the prose), h is a
+// subhead, quote is a pull line, img is an inline picture with a caption. The foot
+// carries a curated more-from-the-log rail from relatedPosts so the log reads like a
+// place, not a dead end. One reading column, left aligned. Lowercase, no oxford commas,
+// no dashes.
 
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { LOG, logBySlug } from "../../data/log";
+import { logBySlug, relatedPosts } from "../../data/log";
 
 function Monogram({ initial, size = 40 }) {
   return (
@@ -24,18 +26,58 @@ function Monogram({ initial, size = 40 }) {
   );
 }
 
+// A run of text that may contain inline links. A plain string renders as text, an object
+// { text, to } renders as an accent link into another entry or section.
+function Parts({ parts }) {
+  return (
+    <>
+      {parts.map((part, i) =>
+        typeof part === "string" ? (
+          part
+        ) : (
+          <Link
+            key={i}
+            to={part.to}
+            className="transition-colors duration-200"
+            style={{ color: "var(--color-accent)", textDecoration: "underline", textDecorationThickness: "1px", textUnderlineOffset: "3px" }}
+          >
+            {part.text}
+          </Link>
+        )
+      )}
+    </>
+  );
+}
+
 function Block({ block }) {
   if (block.t === "h") {
-    return <h2 className="text-display-md text-ink lowercase mt-10 mb-3">{block.x}</h2>;
+    return <h2 className="text-display-md text-ink lowercase mt-11 mb-3">{block.x}</h2>;
   }
   if (block.t === "quote") {
     return (
       <blockquote className="my-9" style={{ borderLeft: "2px solid var(--color-accent)", paddingLeft: "20px" }}>
-        <p className="text-display-sm text-ink lowercase" style={{ fontStyle: "normal" }}>{block.x}</p>
+        <p className="text-display-sm text-ink lowercase">{block.x}</p>
       </blockquote>
     );
   }
-  return <p className="text-body lowercase mb-5" style={{ fontSize: "16px", lineHeight: 1.7, color: "var(--color-ink-muted)" }}>{block.x}</p>;
+  if (block.t === "img") {
+    return (
+      <figure className="my-9">
+        <img src={block.src} alt={block.alt || ""} loading="lazy" className="w-full rounded-2xl" style={{ border: "1px solid var(--color-line)" }} />
+        {block.caption && (
+          <figcaption className="text-mono-xs text-ink-faint lowercase mt-3 flex items-center gap-2">
+            <span className="beacon-dot sm" aria-hidden="true" />
+            {block.caption}
+          </figcaption>
+        )}
+      </figure>
+    );
+  }
+  const proseStyle = { fontSize: "16px", lineHeight: 1.7, color: "var(--color-ink-muted)" };
+  if (block.parts) {
+    return <p className="lowercase mb-5" style={proseStyle}><Parts parts={block.parts} /></p>;
+  }
+  return <p className="lowercase mb-5" style={proseStyle}>{block.x}</p>;
 }
 
 function Post() {
@@ -69,7 +111,7 @@ function Post() {
     );
   }
 
-  const others = LOG.filter((p) => p.slug !== post.slug);
+  const others = relatedPosts(post);
 
   return (
     <main id="main" className="px-3">
@@ -80,22 +122,33 @@ function Post() {
             the log
           </Link>
 
-          <header className="mb-10">
-            <div className="flex items-center gap-2.5 mb-5">
+          <header className="mb-8">
+            <div className="flex items-center gap-2.5 mb-5 flex-wrap">
               <span className="beacon-dot sm pulse" aria-hidden="true" />
               <span className="text-mono text-ink-faint lowercase">{post.kicker}</span>
               <span aria-hidden="true" className="text-ink-faint">·</span>
               <span className="text-mono text-ink-faint lowercase">{post.dateLabel}</span>
+              {post.readMins && (
+                <>
+                  <span aria-hidden="true" className="text-ink-faint">·</span>
+                  <span className="text-mono text-ink-faint lowercase">{post.readMins} min</span>
+                </>
+              )}
             </div>
-            <h1 className="text-display-xl text-ink lowercase mb-6" style={{ textWrap: "balance" }}>{post.title}</h1>
-            <div className="flex items-center gap-3" style={{ borderTop: "1px solid var(--color-line)", paddingTop: "20px" }}>
-              <Monogram initial={post.author.initial} />
-              <div className="leading-tight">
-                <div className="text-body text-ink lowercase">{post.author.name}</div>
-                <div className="text-mono-xs text-ink-faint lowercase mt-0.5">{post.author.role}</div>
-              </div>
-            </div>
+            <h1 className="text-display-xl text-ink lowercase" style={{ textWrap: "balance" }}>{post.title}</h1>
           </header>
+
+          {post.hero && (
+            <img src={post.hero} alt={post.heroAlt || ""} className="w-full rounded-2xl mb-8" style={{ border: "1px solid var(--color-line)" }} />
+          )}
+
+          <div className="flex items-center gap-3 mb-10" style={{ borderBottom: "1px solid var(--color-line)", paddingBottom: "22px" }}>
+            <Monogram initial={post.author.initial} />
+            <div className="leading-tight">
+              <div className="text-body text-ink lowercase">{post.author.name}</div>
+              <div className="text-mono-xs text-ink-faint lowercase mt-0.5">{post.author.role}</div>
+            </div>
+          </div>
 
           <div>
             {post.body.map((block, i) => (
@@ -113,16 +166,23 @@ function Post() {
                 <Link
                   key={p.slug}
                   to={`/log/${p.slug}/`}
-                  className="group flex items-center justify-between rounded-2xl transition-all duration-200"
-                  style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)", padding: "18px 20px" }}
+                  className="group flex items-center gap-4 rounded-2xl transition-all duration-200 overflow-hidden"
+                  style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)" }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-line)"; }}
                 >
-                  <div>
-                    <div className="text-mono-xs text-ink-faint lowercase mb-1.5">{p.kicker}</div>
-                    <div className="text-display-sm text-ink lowercase group-hover:text-accent transition-colors duration-200">{p.title}</div>
-                  </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 ml-4"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  {p.hero && (
+                    <span className="shrink-0 hidden sm:block" style={{ width: "108px", alignSelf: "stretch" }}>
+                      <img src={p.hero} alt="" className="w-full h-full object-cover" style={{ minHeight: "100%" }} />
+                    </span>
+                  )}
+                  <span className="flex items-center justify-between flex-1 min-w-0" style={{ padding: "18px 20px" }}>
+                    <span className="min-w-0">
+                      <span className="block text-mono-xs text-ink-faint lowercase mb-1.5">{p.kicker}</span>
+                      <span className="block text-display-sm text-ink lowercase group-hover:text-accent transition-colors duration-200 truncate">{p.title}</span>
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 ml-4"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </span>
                 </Link>
               ))}
             </div>
