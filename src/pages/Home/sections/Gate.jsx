@@ -1,22 +1,21 @@
 // src/pages/Home/sections/Gate.jsx
 //
 // The front of the ship is a door. A centered login on the page itself under one
-// quiet line. This is now REAL auth against the Burroship Supabase. You sign in with
-// a username, not an email: the gate resolves the username to its login email through
-// the email_for_username RPC (a security-definer function), then calls
-// signInWithPassword. Type an email instead and it skips the lookup. On success the
-// card flips to a short aboard state, the bridge interior is not built yet.
-//
-// The username -> email RPC exposes that mapping to anon, fine for the small invite
-// bridge, harden to a server side (service_role) resolver before opening to everyone.
-// Lowercase throughout, no oxford commas, no dashes. v2 · real auth.
+// quiet line. Auth now runs through the shared session (useSession), so signing in
+// here also flips the nav to your avatar, and signing out from the nav returns this
+// card to the login. You sign in with a username, resolved to its email behind the
+// scenes. On success the card becomes a short aboard state. Lowercase throughout, no
+// oxford commas, no dashes. v3 · shared session.
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { burroshipSupabase, supabaseReady } from "../../../lib/burroshipSupabase";
+import { useSession, accountLabel } from "../../../lib/session";
 
-function friendly(message) {
-  const m = (message || "").toLowerCase();
+function friendly(error) {
+  if (error === "unknown") return "no bridge key by that name.";
+  if (error === "tower") return "the bridge could not reach the tower. try again.";
+  if (error === "warming up") return "the bridge is warming up. try again shortly.";
+  const m = (error || "").toLowerCase();
   if (m.includes("invalid login")) return "that key does not fit.";
   if (m.includes("not confirmed")) return "this account is not confirmed yet.";
   if (m.includes("rate")) return "too many tries. wait a moment.";
@@ -24,76 +23,34 @@ function friendly(message) {
 }
 
 function Gate() {
+  const { user, profile, signInWithUsername, signOut } = useSession();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [note, setNote] = useState("");
   const [status, setStatus] = useState("idle");
-  const [aboard, setAboard] = useState(null);
 
-  const loadProfile = useCallback(async (user) => {
-    if (!user) return;
-    let displayName = user.user_metadata?.display_name || user.email;
-    let uname = null;
-    try {
-      const { data } = await burroshipSupabase
-        .from("profiles")
-        .select("display_name, username")
-        .eq("id", user.id)
-        .single();
-      if (data) {
-        displayName = data.display_name || displayName;
-        uname = data.username;
-      }
-    } catch (e) {
-      /* profile may not exist yet */
-    }
-    setAboard({ displayName, username: uname });
-  }, []);
-
-  useEffect(() => {
-    if (!supabaseReady) return;
-    let active = true;
-    burroshipSupabase.auth.getSession().then(({ data }) => {
-      if (active && data.session?.user) loadProfile(data.session.user);
-    });
-    return () => { active = false; };
-  }, [loadProfile]);
-
+  const aboard = !!user;
   const canSubmit = username.trim() && password.trim() && status !== "signing";
+  const signing = status === "signing";
+  const label = String(accountLabel(profile, user)).toLowerCase();
 
   async function submit() {
     if (!canSubmit) return;
-    if (!supabaseReady) { setNote("the bridge is warming up. try again shortly."); return; }
     setStatus("signing");
     setNote("");
-    try {
-      const raw = username.trim();
-      let email = raw;
-      if (!raw.includes("@")) {
-        const { data, error } = await burroshipSupabase.rpc("email_for_username", { uname: raw });
-        if (error) throw error;
-        if (!data) { setNote("no bridge key by that name."); setStatus("idle"); return; }
-        email = data;
-      }
-      const { data: signIn, error: signInErr } = await burroshipSupabase.auth.signInWithPassword({ email, password });
-      if (signInErr) {
-        setNote(friendly(signInErr.message));
-        setPassword("");
-        setStatus("idle");
-        return;
-      }
-      await loadProfile(signIn.user);
+    const { error } = await signInWithUsername(username, password);
+    if (error) {
+      setNote(friendly(error));
+      setPassword("");
       setStatus("idle");
-    } catch (e) {
-      setNote("the bridge could not reach the tower. try again.");
-      setStatus("idle");
+      return;
     }
+    setStatus("idle");
   }
 
   async function leave() {
-    try { await burroshipSupabase.auth.signOut(); } catch (e) { /* already gone */ }
-    setAboard(null);
+    await signOut();
     setUsername("");
     setPassword("");
     setNote("");
@@ -103,8 +60,6 @@ function Gate() {
   function onKeyDown(e) {
     if (e.key === "Enter") { e.preventDefault(); submit(); }
   }
-
-  const signing = status === "signing";
 
   return (
     <section className="px-3 pt-12 pb-20 md:pt-20 md:pb-28 flex items-center justify-center">
@@ -130,7 +85,7 @@ function Gate() {
               <span className="beacon-dot sm pulse" aria-hidden="true" />
               <span className="text-mono text-ink-faint lowercase">on the bridge</span>
             </div>
-            <div className="text-display-md text-ink lowercase mb-2">welcome aboard, {String(aboard.displayName).toLowerCase()}.</div>
+            <div className="text-display-md text-ink lowercase mb-2">welcome aboard, {label}.</div>
             <p className="text-body text-ink-muted lowercase mb-8">
               the bridge is still being built above the range. you are early. that is the point.
             </p>

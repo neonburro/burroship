@@ -10,7 +10,7 @@
 
 function BannerHero() {
   return (
-    <section aria-hidden="true" className="pt-16">
+    <section aria-hidden="true" className="pt-[86px]">
       <div
         className="relative mx-auto w-[99.5%] md:w-[97%] overflow-hidden"
         style={{

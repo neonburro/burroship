@@ -10,6 +10,8 @@
 // commas, no dashes. v2 · floating frosted bar.
 
 import { Link, useLocation } from "react-router-dom";
+import { useSession } from "../../lib/session";
+import { AvatarChip } from "./LoginPanel";
 
 const ITEMS = [
   { to: "/", label: "home", icon: "home" },
@@ -31,6 +33,7 @@ function Icon({ name, active }) {
 
 function BottomNav({ onEnter }) {
   const location = useLocation();
+  const { user, profile } = useSession();
 
   return (
     <nav
@@ -67,12 +70,12 @@ function BottomNav({ onEnter }) {
         <button
           type="button"
           onClick={onEnter}
-          aria-label="enter"
+          aria-label={user ? "your account" : "enter"}
           className="flex flex-col items-center justify-center gap-1 py-3 transition-colors duration-200"
           style={{ color: "var(--color-ink-muted)", background: "transparent", border: "none", cursor: "pointer" }}
         >
-          <Icon name="enter" active={false} />
-          <span className="text-mono-xs lowercase">enter</span>
+          {user ? <AvatarChip profile={profile} user={user} size={21} /> : <Icon name="enter" active={false} />}
+          <span className="text-mono-xs lowercase">{user ? "you" : "enter"}</span>
         </button>
       </div>
     </nav>
