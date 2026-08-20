@@ -1,0 +1,13 @@
+Two heroes are still missing. Drop them at exactly these paths and they appear at once,
+the posts already point at them.
+
+  public/log/what-the-island-taught-us/hero.webp
+      the ship over the still water with the pine on the left, the misty island one
+
+  public/log/the-arrival/hero.webp
+      the golden sunburst over the cimarrons with the aspens turning
+
+Any wide format is fine, webp preferred, about 2000 wide and 2 to 1. To convert:
+  cwebp -q 82 ~/Desktop/whatever.png -o public/log/the-arrival/hero.webp
+
+Delete this note once both are in.

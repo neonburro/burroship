@@ -78,9 +78,16 @@ function Entry({ post, first }) {
 
         <div className="flex items-center justify-between">
           <Byline author={author} />
+          <span className="flex items-center gap-3">
+          {post.expanding && (
+            <span className="text-mono-xs lowercase" style={{ color: "var(--color-ink-faint)", border: "1px solid var(--color-line-strong)", borderRadius: "999px", padding: "5px 11px" }}>
+              being expanded
+            </span>
+          )}
           <span className="text-mono-sm text-ink-faint group-hover:text-accent transition-colors duration-200 lowercase inline-flex items-center gap-2">
             read
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </span>
           </span>
         </div>
       </div>

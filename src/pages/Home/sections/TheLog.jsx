@@ -60,6 +60,9 @@ function Card({ post }) {
           <span aria-hidden="true" className="text-ink-faint">·</span>
           <span className="text-mono-xs text-ink-faint lowercase">{author.role}</span>
         </div>
+        {post.expanding && (
+          <div className="text-mono-xs text-ink-faint lowercase mt-3">being expanded</div>
+        )}
       </div>
     </Link>
   );
