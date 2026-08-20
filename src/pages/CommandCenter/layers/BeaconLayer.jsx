@@ -35,14 +35,19 @@ function buildGeoJSON(locations) {
           city: loc.city || null,
           address: loc.address || null,
           website: loc.website || null,
+          phone: loc.phone || null,
+          featured: loc.featured ? 1 : 0,
         },
       })),
   };
 }
 
-function BeaconLayer({ map, locations = [], onBeaconClick }) {
+function BeaconLayer({ map, locations = [], onBeaconClick, onBeaconHover }) {
   const onClickRef = useRef(onBeaconClick);
   useEffect(() => { onClickRef.current = onBeaconClick; }, [onBeaconClick]);
+
+  const onHoverRef = useRef(onBeaconHover);
+  useEffect(() => { onHoverRef.current = onBeaconHover; }, [onBeaconHover]);
 
   const locationsRef = useRef(locations);
   useEffect(() => { locationsRef.current = locations; }, [locations]);
@@ -60,10 +65,10 @@ function BeaconLayer({ map, locations = [], onBeaconClick }) {
         type: "circle",
         source: SOURCE_ID,
         paint: {
-          "circle-radius": 13,
+          "circle-radius": ["case", ["==", ["get", "featured"], 1], 22, 12],
           "circle-color": ACCENT,
-          "circle-opacity": 0.18,
-          "circle-blur": 0.8,
+          "circle-opacity": ["case", ["==", ["get", "featured"], 1], 0.3, 0.15],
+          "circle-blur": 0.85,
         },
       });
 
@@ -72,11 +77,11 @@ function BeaconLayer({ map, locations = [], onBeaconClick }) {
         type: "circle",
         source: SOURCE_ID,
         paint: {
-          "circle-radius": 5,
+          "circle-radius": ["case", ["==", ["get", "featured"], 1], 6.5, 4.5],
           "circle-color": ACCENT,
-          "circle-stroke-width": 1.5,
-          "circle-stroke-color": "rgba(255, 255, 255, 0.6)",
-          "circle-stroke-opacity": 0.8,
+          "circle-stroke-width": ["case", ["==", ["get", "featured"], 1], 2, 1.5],
+          "circle-stroke-color": "rgba(255, 255, 255, 0.7)",
+          "circle-stroke-opacity": 0.85,
         },
       });
 
@@ -113,8 +118,21 @@ function BeaconLayer({ map, locations = [], onBeaconClick }) {
           });
         }
       };
-      const handleMouseEnter = () => { map.getCanvas().style.cursor = "pointer"; };
-      const handleMouseLeave = () => { map.getCanvas().style.cursor = ""; };
+      const handleMouseEnter = (e) => {
+        map.getCanvas().style.cursor = "pointer";
+        const feature = e.features?.[0];
+        if (feature && onHoverRef.current) {
+          onHoverRef.current({
+            ...feature.properties,
+            longitude: feature.geometry.coordinates[0],
+            latitude: feature.geometry.coordinates[1],
+          });
+        }
+      };
+      const handleMouseLeave = () => {
+        map.getCanvas().style.cursor = "";
+        if (onHoverRef.current) onHoverRef.current(null);
+      };
 
       map.on("click", DOT_LAYER_ID, handleClick);
       map.on("click", HALO_LAYER_ID, handleClick);

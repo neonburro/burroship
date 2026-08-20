@@ -38,20 +38,26 @@ export const CRUISE_ALTITUDE_M = 1524;
 /* OVER-RIDGWAY PRESET • high enough to clear the range so the camera never drags
  * through the mountains, tilted down to look at the town from above. Bigger zoom =
  * closer to the ground, smaller pitch = more top down (more facing straight down). */
-export const CRUISE_ZOOM = 14.4;
-export const CRUISE_PITCH = 54;
+export const CRUISE_ZOOM = 15.0;
+export const CRUISE_PITCH = 52;
+
+/* The opening spirals in over downtown instead of flying in over the range. It starts
+ * half zoomed at START_ZOOM and eases to CRUISE_ZOOM over ZOOM_IN_MS while the bearing
+ * rotates, then keeps rotating forever. The center stays fixed on the town, so we
+ * never cross a mountain and the fly-in is always smooth. */
+export const START_ZOOM = 13.8;
+export const ZOOM_IN_MS = 30_000;
  
 export const INITIAL_VIEW = {
-  longitude: CHIMNEY_ROCK.longitude + 0.011,
-  latitude: CHIMNEY_ROCK.latitude - 0.001,
-  zoom: 13.9,
-  pitch: 58,
-  bearing: 285,
+  longitude: RIDGWAY.longitude,
+  latitude: RIDGWAY.latitude,
+  zoom: START_ZOOM,
+  pitch: CRUISE_PITCH,
+  bearing: 20,
 };
  
 export const TIMING = {
-  glideDuration: 30_000,
-  rotationDuration: 180_000,
+  rotationDuration: 220_000,
 };
  
 export const WAYPOINT_GLIDE_START = {

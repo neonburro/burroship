@@ -34,7 +34,7 @@ import {
   CANCEL_GRACE_MS,
   WHEEL_DEBOUNCE_MS,
 } from "./config";
-import { runOpeningSequence } from "./camera";
+import { runOpeningSequence, flyToLocation } from "./camera";
 import { burroshipSupabase, supabaseReady } from "../../../lib/burroshipSupabase";
 import BeaconLayer from "../layers/BeaconLayer";
 import BeaconPopup from "../layers/BeaconPopup";
@@ -166,6 +166,7 @@ function MapCanvas() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [styleLoaded, setStyleLoaded] = useState(false);
   const [selectedBeacon, setSelectedBeacon] = useState(null);
+  const [hoveredBeacon, setHoveredBeacon] = useState(null);
   const [autoCruiseActive, setAutoCruiseActive] = useState(true);
   const [places, setPlaces] = useState([]);
 
@@ -176,7 +177,7 @@ function MapCanvas() {
     let active = true;
     burroshipSupabase
       .from("places")
-      .select("slug,name,category,subcategory,address,city,latitude,longitude,website,phone,blurb")
+      .select("slug,name,category,subcategory,address,city,latitude,longitude,website,phone,blurb,featured")
       .eq("status", "live")
       .then(({ data, error }) => {
         if (active && !error && data) setPlaces(data);
@@ -296,13 +297,14 @@ function MapCanvas() {
   }, [mapLoaded, styleLoaded]);
  
   const handleBeaconClick = (beacon) => {
-    dlog("beacon clicked", beacon.name);
     if (sequenceRef.current) {
       sequenceRef.current.cancel();
       sequenceRef.current = null;
     }
     setAutoCruiseActive(false);
     setSelectedBeacon(beacon);
+    const m = mapRef.current?.getMap?.();
+    if (m) flyToLocation(m, beacon);
   };
  
   if (!MAPBOX_TOKEN) {
@@ -358,11 +360,12 @@ function MapCanvas() {
             map={mapInstance}
             locations={places}
             onBeaconClick={handleBeaconClick}
+            onBeaconHover={setHoveredBeacon}
           />
-          {selectedBeacon && (
+          {(hoveredBeacon || selectedBeacon) && (
             <BeaconPopup
               map={mapInstance}
-              location={selectedBeacon}
+              location={hoveredBeacon || selectedBeacon}
               onDismiss={() => setSelectedBeacon(null)}
             />
           )}

@@ -1,203 +1,94 @@
 // src/pages/CommandCenter/map/camera.js
 //
-// Phase A • hover-language camera. Two phases only:
-//   GLIDE  • slow lateral motion from Chimney Rock to Ridgway
-//   ORBIT  • perpetual slow circle around Ridgway
-//
-// Altitude is constant. No vertical motion. The airship is
-// already at cruise when the page loads.
-//
-// Diagnostic logs remain on for one more verification pass.
- 
+// Opening camera: zoom and rotate, no fly-in over the range. We open half zoomed over
+// downtown Ridgway and slowly spiral inward: the zoom eases from START_ZOOM to
+// CRUISE_ZOOM over ZOOM_IN_MS while the bearing rotates, then the rotation continues
+// forever at cruise zoom. The center is fixed on the town, so the camera never crosses
+// a mountain and the motion is always smooth. Subtle breathing on zoom and pitch keeps
+// it alive.
+
 import {
   TIMING,
-  WAYPOINT_GLIDE_START,
-  WAYPOINT_GLIDE_END,
-  BREATHING,
+  START_ZOOM,
+  ZOOM_IN_MS,
   CRUISE_ZOOM,
   CRUISE_PITCH,
+  RIDGWAY,
+  WAYPOINT_GLIDE_END,
+  BREATHING,
 } from "./config";
- 
-const LOG_PREFIX = "[burroship]";
-const startWallTime = performance.now();
- 
-function dlog(...args) {
-  const ts = Math.round(performance.now() - startWallTime);
-  console.log(`${LOG_PREFIX} +${ts}ms`, ...args);
-}
- 
-/* Cubic ease-in-out for slow start and slow end on the glide. */
+
+const START_BEARING = 20;
+
 function easeInOutCubic(t) {
-  return t < 0.5
-    ? 4 * t * t * t
-    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
- 
+
 function lerp(a, b, t) {
   return a + (b - a) * t;
 }
- 
-/* Shortest-path interpolation for bearing. Avoids 359 -> 1
- * spinning all the way around. */
-function lerpBearing(a, b, t) {
-  let diff = ((b - a + 540) % 360) - 180;
-  return (a + diff * t + 360) % 360;
-}
- 
-function lerpWaypoint(a, b, t) {
-  return {
-    longitude: lerp(a.longitude, b.longitude, t),
-    latitude: lerp(a.latitude, b.latitude, t),
-    zoom: lerp(a.zoom, b.zoom, t),
-    pitch: lerp(a.pitch, b.pitch, t),
-    bearing: lerpBearing(a.bearing, b.bearing, t),
-  };
-}
- 
+
 export function runOpeningSequence(map) {
-  dlog("runOpeningSequence CALLED", {
-    mapExists: !!map,
-    styleLoaded: map ? map.isStyleLoaded() : "n/a",
-  });
- 
-  if (!map) {
-    dlog("runOpeningSequence aborted: no map");
-    return { cancel: () => {} };
-  }
- 
-  dlog("initial camera state at sequence start", {
-    center: map.getCenter(),
-    zoom: map.getZoom(),
-    pitch: map.getPitch(),
-    bearing: map.getBearing(),
-  });
- 
+  if (!map) return { cancel: () => {} };
+
   let cancelled = false;
   let rafId = null;
-  let lastLoggedPhase = null;
   const startTime = performance.now();
- 
-  dlog("opening sequence STARTING (hover-language)", {
-    glideDurationMs: TIMING.glideDuration,
-    rotationDurationMs: TIMING.rotationDuration,
-    cruiseZoom: CRUISE_ZOOM,
-    cruisePitch: CRUISE_PITCH,
-  });
- 
+  const degreesPerMs = 360 / TIMING.rotationDuration;
+
   function tick(now) {
-    if (cancelled) {
-      dlog("tick after cancel, exiting");
-      return;
-    }
- 
+    if (cancelled) return;
     const elapsed = now - startTime;
- 
-    let cameraState;
-    let phase;
- 
-    if (elapsed < TIMING.glideDuration) {
-      /* GLIDE • slow lateral motion from Chimney Rock to Ridgway. */
-      phase = "GLIDE";
-      const t = elapsed / TIMING.glideDuration;
-      const eased = easeInOutCubic(t);
-      cameraState = lerpWaypoint(
-        WAYPOINT_GLIDE_START,
-        WAYPOINT_GLIDE_END,
-        eased
-      );
-    } else {
-      /* ORBIT • perpetual circle around Ridgway with breathing. */
-      phase = "ORBIT";
-      const orbitElapsed = elapsed - TIMING.glideDuration;
- 
-      const degreesPerMs = 360 / TIMING.rotationDuration;
-      const orbitBearing =
-        (WAYPOINT_GLIDE_END.bearing + orbitElapsed * degreesPerMs) % 360;
- 
-      const pitchPhase =
-        (orbitElapsed % BREATHING.pitchCycleMs) / BREATHING.pitchCycleMs;
-      const pitchOffset =
-        Math.sin(pitchPhase * Math.PI * 2) * BREATHING.pitchAmplitude;
- 
-      const zoomPhase =
-        (orbitElapsed % BREATHING.zoomCycleMs) / BREATHING.zoomCycleMs;
-      const zoomOffset =
-        Math.sin(zoomPhase * Math.PI * 2) * BREATHING.zoomAmplitude;
- 
-      cameraState = {
-        longitude: WAYPOINT_GLIDE_END.longitude,
-        latitude: WAYPOINT_GLIDE_END.latitude,
-        zoom: WAYPOINT_GLIDE_END.zoom + zoomOffset,
-        pitch: WAYPOINT_GLIDE_END.pitch + pitchOffset,
-        bearing: orbitBearing,
-      };
-    }
- 
-    if (phase !== lastLoggedPhase) {
-      dlog(`phase transition -> ${phase}`, {
-        elapsedMs: Math.round(elapsed),
-        targetState: cameraState,
-      });
-      lastLoggedPhase = phase;
-    }
- 
+
+    const zt = Math.min(elapsed / ZOOM_IN_MS, 1);
+    const baseZoom = lerp(START_ZOOM, CRUISE_ZOOM, easeInOutCubic(zt));
+
+    const zoomPhase = (elapsed % BREATHING.zoomCycleMs) / BREATHING.zoomCycleMs;
+    const zoomOffset = Math.sin(zoomPhase * Math.PI * 2) * BREATHING.zoomAmplitude;
+
+    const pitchPhase = (elapsed % BREATHING.pitchCycleMs) / BREATHING.pitchCycleMs;
+    const pitchOffset = Math.sin(pitchPhase * Math.PI * 2) * BREATHING.pitchAmplitude;
+
+    const bearing = (START_BEARING + elapsed * degreesPerMs) % 360;
+
     map.jumpTo({
-      center: [cameraState.longitude, cameraState.latitude],
-      zoom: cameraState.zoom,
-      pitch: cameraState.pitch,
-      bearing: cameraState.bearing,
+      center: [RIDGWAY.longitude, RIDGWAY.latitude],
+      zoom: baseZoom + zoomOffset,
+      pitch: CRUISE_PITCH + pitchOffset,
+      bearing,
     });
- 
+
     rafId = requestAnimationFrame(tick);
   }
- 
-  dlog("scheduling first RAF tick");
-  rafId = requestAnimationFrame((firstTime) => {
-    dlog("FIRST RAF FRAME firing");
-    tick(firstTime);
-  });
- 
+
+  rafId = requestAnimationFrame(tick);
+
   return {
     cancel: () => {
-      if (cancelled) {
-        dlog("cancel() called but already cancelled");
-        return;
-      }
+      if (cancelled) return;
       cancelled = true;
-      dlog("OPENING SEQUENCE CANCELLED");
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      try {
-        map.stop();
-      } catch (e) {
-        /* Already stopped. */
-      }
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      try { map.stop(); } catch (e) { /* already stopped */ }
     },
   };
 }
- 
-/* Fly to a specific location. Used when a marker is clicked.
- * Will be tuned in Phase C with off-axis centering for the
- * detail panel. */
+
+/* Fly closer over a pin when a beacon is clicked. */
 export function flyToLocation(map, location) {
   if (!map || !location) return;
-  dlog("flyToLocation", location.name);
   map.flyTo({
     center: [location.longitude, location.latitude],
-    zoom: CRUISE_ZOOM,
+    zoom: Math.max(CRUISE_ZOOM, 16),
     pitch: CRUISE_PITCH,
     bearing: -15,
-    duration: 2400,
+    duration: 2200,
     essential: true,
   });
 }
- 
-/* Return to the home cruise view over Ridgway. */
+
+/* Return to the cruise view over downtown. */
 export function returnToCruise(map) {
   if (!map) return;
-  dlog("returnToCruise");
   map.flyTo({
     center: [WAYPOINT_GLIDE_END.longitude, WAYPOINT_GLIDE_END.latitude],
     zoom: WAYPOINT_GLIDE_END.zoom,
