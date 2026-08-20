@@ -21,7 +21,12 @@
 //   title, kicker   kicker is the small callsign line above the title
 //   date, dateLabel iso date for sorting, dateLabel is what a reader sees
 //   readMins        rough minutes, shown in the meta line
-//   status          "published" shows, "draft" is authored but hidden (see publishedPosts)
+//   status          "published" shows and reads, "soon" shows as a coming soon card with
+//                   its brief but does not open, "draft" is authored and hidden entirely
+//   brief           soon only, two or three sentences on the angle, what the piece is
+//                   actually arguing, not just its topic
+//   covers          soon only, the threads the piece has to carry, shown as a checklist
+//                   so a writer or a researcher knows exactly what to gather
 //   authorId        an id from authors.js, the byline is resolved, never restated here
 //   tags            a few lowercase tags, the admin offers these and the reader can browse
 //   hero, heroAlt   a wide image in public/log/<slug>/, 16:9 at 1600x900 webp
@@ -51,6 +56,82 @@
 import { authorById } from "./authors";
 
 export const LOG = [
+  // THE VALLEY TRILOGY, coming soon. Three features that tell one story, who has held
+  // this ground. Deep time, the boom, and now. Briefs are written, the reporting is not,
+  // status "soon" shows the card and the brief without opening a reader. Research is
+  // being gathered, when a piece is written flip status to published and add the body.
+  {
+    slug: "before-the-towns",
+    title: "before the towns",
+    kicker: "the valley trilogy, one of three",
+    date: "2026-09-08",
+    dateLabel: "coming soon",
+    readMins: 9,
+    status: "soon",
+    authorId: "warbleur",
+    tags: ["history", "the ute", "the cimarrons", "ancient"],
+    hero: "/log/before-the-towns/hero.webp",
+    heroAlt: "a burro standing before an ancient carved doorway in a canyon under a drawn sky",
+    excerpt:
+      "the valley before it was anyone's town. the people who held this ground for centuries, and the ridge that was here before all of them.",
+    brief:
+      "everything built in this valley sits on ground that was already spoken for. the uncompahgre ute held it for centuries, chief ouray and chipeta negotiated for it, and the brunot agreement and the removal that followed emptied it for everyone who came after. the cimarrons are the oldest character in the story, here before the first claim and still here after the last one. reported straight and with respect, not as scenery.",
+    covers: [
+      "the uncompahgre ute, who they were and how they lived this valley",
+      "ouray and chipeta, and what the town of ouray carries in its name",
+      "the brunot agreement and the 1881 removal",
+      "the cimarrons themselves, the range as the oldest witness",
+      "what is still on the land that predates every town here",
+    ],
+  },
+  {
+    slug: "the-towns-the-ore-built",
+    title: "the towns the ore built",
+    kicker: "the valley trilogy, two of three",
+    date: "2026-09-15",
+    dateLabel: "coming soon",
+    readMins: 10,
+    status: "soon",
+    authorId: "cypher",
+    tags: ["history", "mining", "the railroad", "local economy"],
+    hero: "/log/the-towns-the-ore-built/hero.webp",
+    heroAlt: "the airship threading a high mountain pass under a drawn sky",
+    excerpt:
+      "silver and gold threw four towns up out of the san juans almost overnight. this is what the boom cost and what it left behind.",
+    brief:
+      "money arrived in this valley fast and left faster. the rush built ouray, telluride, silverton and montrose in a handful of years, the miners paid for it in a currency nobody put on a ledger, and the rio grande southern stitched the camps together with ridgway as its hub. the interesting part is not the boom, it is the wreck, and which towns learned to live on what was left.",
+    covers: [
+      "the san juan silver and gold rush, dates and real numbers",
+      "the miners, the work, the wages and the dying",
+      "ouray, telluride, silverton and montrose, a brief history of each",
+      "the rio grande southern and the galloping goose, ridgway as headquarters",
+      "the bust, and what a town does after the ore stops",
+    ],
+  },
+  {
+    slug: "the-town-that-played-itself",
+    title: "the town that played itself",
+    kicker: "the valley trilogy, three of three",
+    date: "2026-09-22",
+    dateLabel: "coming soon",
+    readMins: 9,
+    status: "soon",
+    authorId: "ion",
+    tags: ["ridgway", "history", "true grit", "the arts", "ranching"],
+    hero: "/log/the-town-that-played-itself/hero.webp",
+    heroAlt: "a ridgway fire department building at night with the airship overhead",
+    excerpt:
+      "after the ore ran out, ridgway got cast as somewhere else. on ranchers, artists, and a working town that has been performing versions of itself ever since.",
+    brief:
+      "in 1969 a real ranch town was dressed up as a fictional one and filmed, and it has never entirely taken the costume off. behind the true grit story is a harder one, the ranchers and farmers who kept doing the actual work of feeding this place, and the new age and creative arts influx that remade what ridgway thinks it is. a town caught between real work and reinvention, and the strange grace of playing yourself.",
+    covers: [
+      "true grit in 1969, what the film summer actually was here",
+      "what still stands on the real streets that the film used",
+      "the ranchers and farmers, the work that never stopped",
+      "the new age and creative arts arrival and what it changed",
+      "who ridgway is performing for now, and why",
+    ],
+  },
   {
     slug: "already-here",
     title: "already here",
@@ -149,10 +230,23 @@ export function logBySlug(slug) {
   return LOG.find((post) => post.slug === slug);
 }
 
-// Only the published entries, newest first, for every public surface. Drafts stay in the
-// array so an author can work on them, they just do not show until status is published.
+// Only the finished entries, the ones that actually open and read. Drafts and coming
+// soon pieces stay in the array, they just do not show up here.
 export function publishedPosts() {
-  return LOG.filter((post) => post.status !== "draft");
+  return LOG.filter((post) => post.status === "published");
+}
+
+// The pieces that are briefed but not written. They show as coming soon cards carrying
+// their brief, they never open a reader, and they tell a visitor (and a crawler) that
+// this section is actively being written rather than abandoned.
+export function comingSoonPosts() {
+  return LOG.filter((post) => post.status === "soon");
+}
+
+// True when a slug exists but is not readable yet, so the reader can say coming soon
+// instead of pretending the page is missing.
+export function isReadable(post) {
+  return !!post && post.status === "published";
 }
 
 // The byline record for a post, resolved from the authors registry. Falls back to a plain

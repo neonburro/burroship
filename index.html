@@ -4,16 +4,48 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Burroship</title>
+    <meta name="theme-color" content="#1C1F26" />
 
-    <!-- Cesium loaded from CDN. window.Cesium becomes globally
-         available; no npm bundle, no Vite bundling fight. Pin the
-         version explicitly so we are not chasing latest. -->
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.130/Build/Cesium/Cesium.js"></script>
-    <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.130/Build/Cesium/Widgets/widgets.css"
-      rel="stylesheet"
+    <title>The Burroship</title>
+    <meta
+      name="description"
+      content="A floating incubator above the range. The Burroship maps Ridgway, Colorado, writes about the valley that built it, and is open to those aboard."
     />
+    <link rel="canonical" href="https://burroship.com/" />
+
+    <!-- Crawlers get everything, including the large preview, and we do not cap the
+         snippet. max-image-preview:large is what makes an entry show its art in search
+         and in discover, which matters for a section that is mostly photographs. -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="The Burroship" />
+    <meta property="og:title" content="The Burroship" />
+    <meta
+      property="og:description"
+      content="A floating incubator above the range. The Burroship maps Ridgway, Colorado, writes about the valley that built it, and is open to those aboard."
+    />
+    <meta property="og:url" content="https://burroship.com/" />
+    <meta property="og:image" content="https://burroship.com/banners/courthouse-chimney-airship.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Who and where. Ridgway is the whole point, so the place is stated in the markup
+         and not only in the prose, and the log is declared as a Blog so an entry can be
+         understood as an article by a crawler rather than guessed at. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "The Burroship",
+        "url": "https://burroship.com/",
+        "description": "A floating incubator above the range, mapping and writing about Ridgway, Colorado.",
+        "areaServed": {
+          "@type": "Place",
+          "name": "Ridgway, Colorado",
+          "geo": { "@type": "GeoCoordinates", "latitude": 38.1523, "longitude": -107.7573 }
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

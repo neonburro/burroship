@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+Disallow: /bridge/
+Disallow: /helm/
+Disallow: /world/
+
 Sitemap: https://burroship.com/sitemap.xml

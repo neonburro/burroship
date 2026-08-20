@@ -1,9 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Regenerate lastmod whenever a page's content actually changes. lastmod is the only
+  honest signal we have for recrawl, google ignores changefreq and priority, so an
+  accurate date here plus a resubmit in search console is the real lever. Never bump a
+  date for a page that did not change, a sitemap that cries wolf gets trusted less.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://burroship.com/</loc>
-    <lastmod>2026-08-19</lastmod>
-    <priority>1.0</priority>
+    <lastmod>2026-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://burroship.com/log/</loc>
+    <lastmod>2026-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://burroship.com/log/already-here/</loc>
+    <lastmod>2026-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://burroship.com/log/value-with-no-middle/</loc>
+    <lastmod>2026-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://burroship.com/log/the-town-has-many-voices/</loc>
+    <lastmod>2026-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://burroship.com/contact/</loc>
+    <lastmod>2026-08-20</lastmod>
   </url>
   <url>
     <loc>https://burroship.com/build/</loc>

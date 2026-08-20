@@ -12,7 +12,8 @@
 
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { logBySlug, relatedPosts, postAuthor } from "../../data/log";
+import { logBySlug, relatedPosts, postAuthor, isReadable } from "../../data/log";
+import Head from "../../components/SEO/Head";
 
 function Monogram({ initial, size = 40 }) {
   return (
@@ -101,6 +102,38 @@ function Post() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [slug]);
 
+  // A slug that exists but is not written yet gets an honest coming soon page, not a
+  // missing one. Same shape as the not found state so there is one door back to the list.
+  if (post && !isReadable(post)) {
+    return (
+      <main id="main" className="px-3">
+        <Head
+          title={post.title}
+          description={post.brief || post.excerpt}
+          path={`/log/${post.slug}/`}
+          image={post.hero}
+        />
+        <section className="pt-32 pb-32 md:pt-40 text-center">
+          <div className="w-full max-w-[600px] mx-auto">
+            <div className="flex items-center justify-center gap-2.5 mb-6">
+              <span className="beacon-dot sm pulse" aria-hidden="true" />
+              <span className="text-mono text-ink-faint lowercase">being reported</span>
+            </div>
+            <h1 className="text-display-lg text-ink lowercase mb-4">{post.title}</h1>
+            <p className="text-lead lowercase mb-9" style={{ maxWidth: "52ch", marginInline: "auto" }}>{post.brief || post.excerpt}</p>
+            <Link
+              to="/log/"
+              className="inline-block text-mono-sm lowercase transition-colors duration-200"
+              style={{ padding: "14px 22px", borderRadius: "14px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink-muted)" }}
+            >
+              back to the log
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (!post) {
     return (
       <main id="main" className="px-3">
@@ -127,8 +160,29 @@ function Post() {
   const others = relatedPosts(post);
   const author = postAuthor(post);
 
+  const jsonLd = {
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    dateModified: post.date,
+    url: `https://burroship.com/log/${post.slug}/`,
+    image: post.hero ? `https://burroship.com${post.hero}` : undefined,
+    keywords: (post.tags || []).join(", "),
+    author: { "@type": "Organization", name: "The Burroship" },
+    creditText: `${author.name}, ${author.role}`,
+    isPartOf: { "@type": "Blog", name: "the log", url: "https://burroship.com/log/" },
+  };
+
   return (
     <main id="main" className="px-3">
+      <Head
+        title={post.title}
+        description={post.excerpt}
+        path={`/log/${post.slug}/`}
+        image={post.hero}
+        jsonLd={jsonLd}
+      />
       <article className="pt-28 pb-24 md:pt-36 md:pb-32">
         <div className="w-full max-w-[720px] mx-auto">
           <Link to="/log/" className="inline-flex items-center gap-2 text-mono-sm text-ink-faint hover:text-ink transition-colors duration-200 lowercase mb-10">
