@@ -9,7 +9,7 @@
 import { Link } from "react-router-dom";
 
 const TILES = [
-  { n: "01", label: "the ship", logo: true },
+  { n: "01", label: "the ship", sub: "a floating incubator above the range", locked: true },
   { n: "02", label: "the incubator", sub: "where the characters are built", locked: true },
   { n: "03", label: "the characters", sub: "the crew aboard", locked: true },
   { n: "04", label: "the academy", sub: "learn to fly one", locked: true },

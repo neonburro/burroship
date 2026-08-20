@@ -110,14 +110,21 @@ function Bridge() {
                 <div className="text-display-sm text-ink lowercase leading-tight mt-1">{label}</div>
               </div>
             </div>
-            <button
-              onClick={signOut}
-              type="button"
-              className="text-mono-xs lowercase transition-colors duration-200 shrink-0"
-              style={{ padding: "10px 16px", borderRadius: "999px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink-muted)", background: "transparent", cursor: "pointer" }}
-            >
-              leave
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              {profile?.is_admin && (
+                <Link to="/helm/" className="text-mono-xs lowercase transition-colors duration-200" style={{ padding: "10px 16px", borderRadius: "999px", border: "1px solid var(--color-accent)", color: "var(--color-accent-deep)", background: "transparent" }}>
+                  the helm
+                </Link>
+              )}
+              <button
+                onClick={signOut}
+                type="button"
+                className="text-mono-xs lowercase transition-colors duration-200"
+                style={{ padding: "10px 16px", borderRadius: "999px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink-muted)", background: "transparent", cursor: "pointer" }}
+              >
+                leave
+              </button>
+            </div>
           </div>
 
           <Card>
@@ -142,6 +149,16 @@ function Bridge() {
 
           <Card>
             <CardHead kicker="your business" title="put it on the map." sub="a business needs a name and an address, that is the pin. we review each one before it shows." />
+
+            <button
+              type="button"
+              onClick={() => setBNote("google connect is coming. it will use google's own secure sign in, so we never see your password, we just help improve your listing.")}
+              className="flex items-center justify-center gap-2.5 w-full mb-6 text-mono-sm lowercase transition-colors duration-200"
+              style={{ padding: "13px 18px", borderRadius: "14px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink)", background: "var(--color-bg)", cursor: "pointer" }}
+            >
+              <span aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: "var(--color-ink)", color: "var(--color-bg)", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 11 }}>G</span>
+              connect google business
+            </button>
 
             {businesses.length > 0 && (
               <div className="flex flex-col gap-2.5 mb-6">
