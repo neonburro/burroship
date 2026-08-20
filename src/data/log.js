@@ -1,22 +1,36 @@
 // src/data/log.js
 //
-// The log. The ship writes it down, and the crew signs their own entries. This is the
-// one part of the ship that is public before login, the mysterious front the town reads
-// first, so the voice matters more here than anywhere. Calm operational intelligence,
-// dry, specific, anchored in real places, never hype and never an exclamation point. No
-// oxford commas, no dashes.
+// The log. The ship's small newspaper, public before login, so the voice matters more
+// here than anywhere. Calm operational intelligence, dry, specific, anchored in real
+// places, never hype and never an exclamation point. No oxford commas, no dashes.
 //
 // SOURCE OF TRUTH. The Log list, the single Post reader and the home preview all read
 // from LOG and never restate a post inline. Newest first, array order is page order.
 //
+// PLUG AND PLAY, where this is going. Every field below is a form field in the admin we
+// are building. Adding a post should feel like this: pick an author from the registry,
+// type or paste a title and body, drop in a hero, add a few tags, hit save. You can also
+// talk to an ai to brainstorm the body, or paste a draft and let an ai review pass tidy
+// the structure. That is why the body is structured data and not prose in code, an ai
+// can read and rewrite these blocks cleanly, and the whole shape maps straight onto a
+// posts table with a jsonb body column when the backend lands. Nothing here is throwaway,
+// it is the schema.
+//
 // THE MODEL, per post:
-//   slug, title, kicker, date, dateLabel, readMins
-//   author { name, role, initial }        one word role, a callsign not a job title
-//   hero, heroAlt                          a wide image, lives in public/log/<slug>/
-//   excerpt                                one or two lines, used on the list and home
-//   related [slugs]                        curated inner links, the reader falls back to
-//                                          every other post when this is absent
-//   body [blocks]                          the entry itself
+//   slug            url safe, unique, stable, it is the address
+//   title, kicker   kicker is the small callsign line above the title
+//   date, dateLabel iso date for sorting, dateLabel is what a reader sees
+//   readMins        rough minutes, shown in the meta line
+//   status          "published" shows, "draft" is authored but hidden (see publishedPosts)
+//   authorId        an id from authors.js, the byline is resolved, never restated here
+//   tags            a few lowercase tags, the admin offers these and the reader can browse
+//   hero, heroAlt   a wide image in public/log/<slug>/, 16:9 at 1600x900 webp
+//   excerpt         one or two lines, used on the list and the home preview
+//   related [slugs] curated inner links, the reader falls back to every other post
+//   sponsor         optional and subtle, { label, name, url }, renders as one quiet line
+//                   under the piece, this is the very subtle advertising slot, off unless
+//                   a post sets it
+//   body [blocks]   the entry itself
 //
 // BODY BLOCKS, by t:
 //   { t: "p", x }                          a paragraph
@@ -25,12 +39,16 @@
 //                                          posts point at each other inside the prose
 //   { t: "h", x }                          a subhead
 //   { t: "quote", x }                      a pull line
-//   { t: "img", src, alt, caption }        an inline image, also under public/log/<slug>/
+//   { t: "img", src, alt, caption }        an inline image, under public/log/<slug>/
+//   { t: "aside", label, x }               a quiet inset, a note or a subtle sponsored
+//                                          aside, set off from the story so it never
+//                                          pretends to be the reporting
 //
 // IMAGES. One folder per post under public/log so a picture can be swapped without
 // touching another entry, hero.webp is the lead and the rest are named by what they are.
-// Convert new art to webp, roughly two times the rendered width, keep it under the
-// reading column.
+// Fresh art comes in per post, convert to webp at roughly two times the rendered width.
+
+import { authorById } from "./authors";
 
 export const LOG = [
   {
@@ -40,7 +58,9 @@ export const LOG = [
     date: "2026-08-18",
     dateLabel: "18 august 2026",
     readMins: 3,
-    author: { name: "ion", role: "the current", initial: "I" },
+    status: "published",
+    authorId: "ion",
+    tags: ["the ship", "systems", "ridgway"],
     hero: "/log/already-here/hero.webp",
     heroAlt: "an etched airship emerging from a great sepia thundercloud over chimney rock",
     excerpt:
@@ -69,7 +89,9 @@ export const LOG = [
     date: "2026-08-16",
     dateLabel: "16 august 2026",
     readMins: 3,
-    author: { name: "cypher", role: "the chain", initial: "C" },
+    status: "published",
+    authorId: "cypher",
+    tags: ["payments", "on chain", "local economy", "ridgway"],
     hero: "/log/value-with-no-middle/hero.webp",
     heroAlt: "a burroship branded vending machine with a tap to pay symbol and a lit rail on the floor",
     excerpt:
@@ -97,7 +119,9 @@ export const LOG = [
     date: "2026-08-14",
     dateLabel: "14 august 2026",
     readMins: 3,
-    author: { name: "warbleur", role: "the choir", initial: "W" },
+    status: "published",
+    authorId: "warbleur",
+    tags: ["the map", "local business", "ridgway"],
     hero: "/log/the-town-has-many-voices/hero.webp",
     heroAlt: "a burro in a vest reading a hand drawn map on a ridgway street corner",
     excerpt:
@@ -125,12 +149,53 @@ export function logBySlug(slug) {
   return LOG.find((post) => post.slug === slug);
 }
 
+// Only the published entries, newest first, for every public surface. Drafts stay in the
+// array so an author can work on them, they just do not show until status is published.
+export function publishedPosts() {
+  return LOG.filter((post) => post.status !== "draft");
+}
+
+// The byline record for a post, resolved from the authors registry. Falls back to a plain
+// unknown so a post never crashes if its correspondent was removed.
+export function postAuthor(post) {
+  return authorById(post && post.authorId) || { name: "the crew", role: "the log", initial: "•" };
+}
+
 // The curated inner links for a post, resolved to full post objects, newest first. Falls
-// back to every other entry when a post does not name its own related list.
+// back to every other published entry when a post does not name its own related list.
 export function relatedPosts(post) {
   if (!post) return [];
   if (Array.isArray(post.related) && post.related.length) {
     return post.related.map(logBySlug).filter(Boolean);
   }
-  return LOG.filter((p) => p.slug !== post.slug);
+  return publishedPosts().filter((p) => p.slug !== post.slug);
 }
+
+// TEMPLATE, the shape of a new entry. Copy this, give it a fresh slug, pick an authorId
+// from authors.js, drop art in public/log/<slug>/ and write the body in blocks. This is
+// exactly what the admin form will fill in for you, it is here so a person or an ai has a
+// clean pattern to follow.
+//
+// {
+//   slug: "the-town-that-played-itself",
+//   title: "the town that played itself",
+//   kicker: "from the choir",
+//   date: "2026-09-01",
+//   dateLabel: "1 september 2026",
+//   readMins: 8,
+//   status: "draft",
+//   authorId: "warbleur",
+//   tags: ["ridgway", "history", "true grit"],
+//   hero: "/log/the-town-that-played-itself/hero.webp",
+//   heroAlt: "",
+//   excerpt: "one line that promises the angle, not the topic.",
+//   related: ["already-here"],
+//   body: [
+//     { t: "p", x: "the cold open, the hook." },
+//     { t: "h", x: "a subhead that carries the spine" },
+//     { t: "p", x: "the reporting." },
+//     { t: "img", src: "/log/the-town-that-played-itself/still.webp", alt: "", caption: "" },
+//     { t: "quote", x: "the line worth pulling out." },
+//     { t: "aside", label: "sources", x: "where the facts came from, credited plainly." },
+//   ],
+// },

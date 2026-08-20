@@ -7,7 +7,7 @@
 // the reader at /log/:slug/. Lowercase throughout, no oxford commas, no dashes.
 
 import { Link } from "react-router-dom";
-import { LOG } from "../../data/log";
+import { publishedPosts, postAuthor } from "../../data/log";
 
 function Monogram({ initial, size = 28 }) {
   return (
@@ -22,6 +22,7 @@ function Monogram({ initial, size = 28 }) {
 }
 
 function Entry({ post, first }) {
+  const author = postAuthor(post);
   return (
     <Link
       to={`/log/${post.slug}/`}
@@ -61,10 +62,10 @@ function Entry({ post, first }) {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Monogram initial={post.author.initial} />
+            <Monogram initial={author.initial} />
             <div className="leading-tight">
-              <div className="text-body-sm text-ink lowercase">{post.author.name}</div>
-              <div className="text-mono-xs text-ink-faint lowercase mt-0.5">{post.author.role}</div>
+              <div className="text-body-sm text-ink lowercase">{author.name}</div>
+              <div className="text-mono-xs text-ink-faint lowercase mt-0.5">{author.role}</div>
             </div>
           </div>
           <span className="text-mono-sm text-ink-faint group-hover:text-accent transition-colors duration-200 lowercase inline-flex items-center gap-2">
@@ -94,7 +95,7 @@ function Log() {
           </header>
 
           <div>
-            {LOG.map((post, i) => (
+            {publishedPosts().map((post, i) => (
               <Entry key={post.slug} post={post} first={i === 0} />
             ))}
           </div>

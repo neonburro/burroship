@@ -7,7 +7,7 @@
 // 99.5% on mobile and 97% on desktop. Lowercase, no oxford commas, no dashes.
 
 import { Link } from "react-router-dom";
-import { LOG } from "../../../data/log";
+import { publishedPosts, postAuthor } from "../../../data/log";
 
 function Monogram({ initial, size = 26 }) {
   return (
@@ -22,6 +22,7 @@ function Monogram({ initial, size = 26 }) {
 }
 
 function Card({ post }) {
+  const author = postAuthor(post);
   return (
     <Link
       to={`/log/${post.slug}/`}
@@ -54,10 +55,10 @@ function Card({ post }) {
         <p className="text-body-sm text-ink-muted lowercase mb-6" style={{ lineHeight: 1.55 }}>{post.excerpt}</p>
 
         <div className="flex items-center gap-2.5 mt-auto">
-          <Monogram initial={post.author.initial} />
-          <span className="text-body-sm text-ink lowercase">{post.author.name}</span>
+          <Monogram initial={author.initial} />
+          <span className="text-body-sm text-ink lowercase">{author.name}</span>
           <span aria-hidden="true" className="text-ink-faint">·</span>
-          <span className="text-mono-xs text-ink-faint lowercase">{post.author.role}</span>
+          <span className="text-mono-xs text-ink-faint lowercase">{author.role}</span>
         </div>
       </div>
     </Link>
@@ -65,7 +66,7 @@ function Card({ post }) {
 }
 
 function TheLog() {
-  const posts = LOG.slice(0, 3);
+  const posts = publishedPosts().slice(0, 3);
 
   return (
     <section className="pb-20 md:pb-28">

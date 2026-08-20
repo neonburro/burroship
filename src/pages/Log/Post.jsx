@@ -12,7 +12,7 @@
 
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { logBySlug, relatedPosts } from "../../data/log";
+import { logBySlug, relatedPosts, postAuthor } from "../../data/log";
 
 function Monogram({ initial, size = 40 }) {
   return (
@@ -73,6 +73,19 @@ function Block({ block }) {
       </figure>
     );
   }
+  if (block.t === "aside") {
+    return (
+      <aside className="my-9 rounded-2xl" style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)", padding: "20px 22px" }}>
+        {block.label && (
+          <div className="text-mono-xs text-ink-faint lowercase mb-2 flex items-center gap-2">
+            <span className="beacon-dot sm" aria-hidden="true" />
+            {block.label}
+          </div>
+        )}
+        <p className="text-body-sm text-ink-muted lowercase" style={{ lineHeight: 1.6 }}>{block.x}</p>
+      </aside>
+    );
+  }
   const proseStyle = { fontSize: "16px", lineHeight: 1.7, color: "var(--color-ink-muted)" };
   if (block.parts) {
     return <p className="lowercase mb-5" style={proseStyle}><Parts parts={block.parts} /></p>;
@@ -112,6 +125,7 @@ function Post() {
   }
 
   const others = relatedPosts(post);
+  const author = postAuthor(post);
 
   return (
     <main id="main" className="px-3">
@@ -142,12 +156,21 @@ function Post() {
             <img src={post.hero} alt={post.heroAlt || ""} className="w-full rounded-2xl mb-8" style={{ border: "1px solid var(--color-line)" }} />
           )}
 
-          <div className="flex items-center gap-3 mb-10" style={{ borderBottom: "1px solid var(--color-line)", paddingBottom: "22px" }}>
-            <Monogram initial={post.author.initial} />
-            <div className="leading-tight">
-              <div className="text-body text-ink lowercase">{post.author.name}</div>
-              <div className="text-mono-xs text-ink-faint lowercase mt-0.5">{post.author.role}</div>
+          <div className="flex items-center justify-between gap-4 mb-10 flex-wrap" style={{ borderBottom: "1px solid var(--color-line)", paddingBottom: "22px" }}>
+            <div className="flex items-center gap-3">
+              <Monogram initial={author.initial} />
+              <div className="leading-tight">
+                <div className="text-body text-ink lowercase">{author.name}</div>
+                <div className="text-mono-xs text-ink-faint lowercase mt-0.5">{author.role}</div>
+              </div>
             </div>
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {post.tags.map((tag) => (
+                  <span key={tag} className="text-mono-xs lowercase" style={{ color: "var(--color-ink-faint)", border: "1px solid var(--color-line)", borderRadius: "999px", padding: "4px 10px" }}>{tag}</span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
@@ -155,6 +178,17 @@ function Post() {
               <Block key={i} block={block} />
             ))}
           </div>
+
+          {post.sponsor && (
+            <div className="mt-12 rounded-2xl flex items-center gap-2.5 flex-wrap" style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)", padding: "14px 18px" }}>
+              <span className="text-mono-xs text-ink-faint lowercase">{post.sponsor.label || "with"}</span>
+              {post.sponsor.url ? (
+                <a href={post.sponsor.url} target="_blank" rel="noopener noreferrer" className="text-body-sm lowercase transition-colors duration-200" style={{ color: "var(--color-accent)" }}>{post.sponsor.name}</a>
+              ) : (
+                <span className="text-body-sm text-ink lowercase">{post.sponsor.name}</span>
+              )}
+            </div>
+          )}
 
           <div className="mt-16" style={{ borderTop: "1px solid var(--color-line)", paddingTop: "28px" }}>
             <div className="flex items-center gap-2.5 mb-6">
