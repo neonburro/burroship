@@ -24,3 +24,9 @@ yarn-error.log*
 
 # generated tokens (when we promote DESIGN.md to executable later)
 src/styles/tokens.css
+
+# Finder duplicates. macOS names a copied file or folder "thing 2", which slips
+# past a rule written for "thing". A 40MB "dist 2" build folder rode into the
+# studio repo this way. Same guard here before it happens.
+*\ 2/
+*\ 2.*
