@@ -17,7 +17,7 @@ export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
  
 /* Mapbox Standard style. Dusk preset per Volt's recommendation. */
 export const STANDARD_STYLE = "mapbox://styles/mapbox/standard";
-export const STANDARD_LIGHT_PRESET = "dusk";
+export const STANDARD_LIGHT_PRESET = "dawn";
  
 /* Real-world anchor points. */
 export const CHIMNEY_ROCK = {

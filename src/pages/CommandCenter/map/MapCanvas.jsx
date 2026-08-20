@@ -32,6 +32,7 @@ import {
   WHEEL_DEBOUNCE_MS,
 } from "./config";
 import { runOpeningSequence } from "./camera";
+import { burroshipSupabase, supabaseReady } from "../../../lib/burroshipSupabase";
 import BeaconLayer from "../layers/BeaconLayer";
 import BeaconPopup from "../layers/BeaconPopup";
  
@@ -113,9 +114,23 @@ function MapCanvas() {
   const [styleLoaded, setStyleLoaded] = useState(false);
   const [selectedBeacon, setSelectedBeacon] = useState(null);
   const [autoCruiseActive, setAutoCruiseActive] = useState(true);
- 
+  const [places, setPlaces] = useState([]);
+
   const mapInstance = mapRef.current?.getMap?.() || null;
- 
+
+  useEffect(() => {
+    if (!supabaseReady) return;
+    let active = true;
+    burroshipSupabase
+      .from("places")
+      .select("slug,name,category,subcategory,address,city,latitude,longitude,website,phone,blurb")
+      .eq("status", "live")
+      .then(({ data, error }) => {
+        if (active && !error && data) setPlaces(data);
+      });
+    return () => { active = false; };
+  }, []);
+
   useEffect(() => {
     dlog("state: mapLoaded ->", mapLoaded);
   }, [mapLoaded]);
@@ -285,6 +300,7 @@ function MapCanvas() {
         <>
           <BeaconLayer
             map={mapInstance}
+            locations={places}
             onBeaconClick={handleBeaconClick}
           />
           {selectedBeacon && (
