@@ -101,12 +101,28 @@ export const DEM_SOURCE_CONFIG = {
  *   star-intensity 0.15 to 0.35 (avoid sci-fi glare)
  * Phase C landing: 0.30 and 0.30 (midpoints). */
 export const FOG_CONFIG = {
-  color: "rgb(14, 22, 24)",
-  "high-color": "rgb(36, 52, 48)",
-  "horizon-blend": 0.30,
-  "space-color": "rgb(2, 4, 6)",
-  "star-intensity": 0.30,
+  color: "rgb(40, 29, 18)",
+  "high-color": "rgb(78, 56, 33)",
+  "horizon-blend": 0.32,
+  "space-color": "rgb(14, 9, 5)",
+  "star-intensity": 0.22,
 };
+
+/* OLD WEST SHADING • a warm hillshade over the terrain and topo contour lines, so the
+ * range reads like an engraved survey map and players can read elevation off the
+ * contours (most clues name an elevation band). Added in MapCanvas: hillshade on the
+ * mapbox-dem source, contours on the mapbox.mapbox-terrain-v2 vector source. Both go
+ * in the Standard "middle" slot so labels and beacons stay on top. */
+export const TERRAIN_V2_SOURCE_ID = "mapbox-terrain-v2";
+export const HILLSHADE_PAINT = {
+  "hillshade-exaggeration": 0.4,
+  "hillshade-shadow-color": "#2b1d10",
+  "hillshade-highlight-color": "#f0dcbe",
+  "hillshade-accent-color": "#6b4a24",
+  "hillshade-illumination-anchor": "map",
+  "hillshade-illumination-direction": 315,
+};
+export const CONTOUR_COLOR = "#7a5731";
  
 export const CANCEL_GRACE_MS = 800;
 export const WHEEL_DEBOUNCE_MS = 250;

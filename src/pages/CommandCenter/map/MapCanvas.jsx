@@ -27,6 +27,9 @@ import {
   TERRAIN_EXAGGERATION,
   DEM_SOURCE_ID,
   DEM_SOURCE_CONFIG,
+  TERRAIN_V2_SOURCE_ID,
+  HILLSHADE_PAINT,
+  CONTOUR_COLOR,
   CRUISE_ALTITUDE_M,
   CANCEL_GRACE_MS,
   WHEEL_DEBOUNCE_MS,
@@ -102,6 +105,56 @@ function applyTerrain(map) {
     dlog("terrain FAILED:", e.message);
   }
 }
+
+/* Warm hillshade over the terrain for the engraved survey feel. Standard "middle"
+ * slot so labels and beacons stay on top. Reuses the same DEM source as the terrain. */
+function applyHillshade(map) {
+  try {
+    if (map.getLayer("burroship-hillshade")) return;
+    map.addLayer({
+      id: "burroship-hillshade",
+      type: "hillshade",
+      source: DEM_SOURCE_ID,
+      slot: "middle",
+      paint: HILLSHADE_PAINT,
+    });
+    dlog("hillshade added");
+  } catch (e) {
+    dlog("hillshade FAILED:", e.message);
+  }
+}
+
+/* Topo contour lines from the terrain-v2 vector source, thin sepia, drawn on the 3D
+ * terrain. Opacity rises as you zoom in so downtown stays clean and the range reads
+ * as contours. This is the "circles" for reading elevation. */
+function applyContours(map) {
+  try {
+    if (!map.getSource(TERRAIN_V2_SOURCE_ID)) {
+      map.addSource(TERRAIN_V2_SOURCE_ID, {
+        type: "vector",
+        url: "mapbox://mapbox.mapbox-terrain-v2",
+      });
+    }
+    if (!map.getLayer("burroship-contours")) {
+      map.addLayer({
+        id: "burroship-contours",
+        type: "line",
+        source: TERRAIN_V2_SOURCE_ID,
+        "source-layer": "contour",
+        slot: "middle",
+        layout: { "line-join": "round" },
+        paint: {
+          "line-color": CONTOUR_COLOR,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.3, 16, 0.85],
+          "line-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0.12, 14, 0.32],
+        },
+      });
+    }
+    dlog("contours added");
+  } catch (e) {
+    dlog("contours FAILED:", e.message);
+  }
+}
  
 function MapCanvas() {
   dlog("MapCanvas component RENDER", { INITIAL_VIEW });
@@ -170,6 +223,9 @@ function MapCanvas() {
     } catch (e) {
       dlog("fog failed", e.message);
     }
+
+    applyHillshade(map);
+    applyContours(map);
  
     /* Cancel handler with grace window and wheel debounce. */
     const makeCancelHandler = (eventName) => () => {
