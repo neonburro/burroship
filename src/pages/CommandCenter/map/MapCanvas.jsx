@@ -56,7 +56,7 @@ function applyStandardConfig(map) {
   const configCalls = [
     ["lightPreset", STANDARD_LIGHT_PRESET],
     ["showPlaceLabels", true],
-    ["showRoadLabels", false],
+    ["showRoadLabels", true],
     ["showPointOfInterestLabels", false],
     ["showTransitLabels", false],
     ["show3dObjects", true],

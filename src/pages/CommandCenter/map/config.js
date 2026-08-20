@@ -33,20 +33,20 @@ export const RIDGWAY = {
 export const DOME_CENTER = RIDGWAY;
 export const DOME_RADIUS_DEG = 0.35;
  
-export const CRUISE_ALTITUDE_M = 76;
+export const CRUISE_ALTITUDE_M = 1524;
 
-/* DRONE PRESET • dropped from the old cruise (zoom 14.7, pitch 73) down to a low
- * circling-drone feel over Ridgway, roughly 250 ft above the town. Tune these two
- * to fly higher or lower: bigger zoom = closer to the ground. */
-export const CRUISE_ZOOM = 15.5;
-export const CRUISE_PITCH = 66;
+/* OVER-RIDGWAY PRESET • high enough to clear the range so the camera never drags
+ * through the mountains, tilted down to look at the town from above. Bigger zoom =
+ * closer to the ground, smaller pitch = more top down (more facing straight down). */
+export const CRUISE_ZOOM = 13.4;
+export const CRUISE_PITCH = 50;
  
 export const INITIAL_VIEW = {
   longitude: CHIMNEY_ROCK.longitude + 0.011,
   latitude: CHIMNEY_ROCK.latitude - 0.001,
-  zoom: CRUISE_ZOOM,
-  pitch: CRUISE_PITCH,
-  bearing: 282,
+  zoom: 13.9,
+  pitch: 58,
+  bearing: 285,
 };
  
 export const TIMING = {
@@ -57,9 +57,9 @@ export const TIMING = {
 export const WAYPOINT_GLIDE_START = {
   longitude: INITIAL_VIEW.longitude,
   latitude: INITIAL_VIEW.latitude,
-  zoom: CRUISE_ZOOM,
-  pitch: CRUISE_PITCH,
-  bearing: 282,
+  zoom: INITIAL_VIEW.zoom,
+  pitch: INITIAL_VIEW.pitch,
+  bearing: INITIAL_VIEW.bearing,
 };
  
 export const WAYPOINT_GLIDE_END = {
