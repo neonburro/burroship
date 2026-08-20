@@ -83,8 +83,8 @@ export const LOG = [
     hero: "/log/ancient-ridgway/hero.webp",
     heroAlt: "chimney rock and courthouse standing over the valley in sepia with the ship above them",
     excerpt:
-      "the two rocks over this town were old before anything here had a name. what stood here first, and who it belonged to.",
-    related: ["the-arrival", "what-the-island-taught-us"],
+      "courthouse and chimney stood over this valley long before ridgway colorado had a name. what was here first, and who it belonged to.",
+    related: ["early-ridgway-tourism", "what-the-island-taught-us"],
     body: [
       { t: "p", x: "stand anywhere on the north side of town and you can see the two of them, courthouse and chimney, sitting up over the valley like they are waiting for something. they were there before the town, before the ranches, before the ore, before the name. they will be there after." },
       { t: "p", x: "we are new here. one autumn and a winter is nothing, and the first thing you owe a place that old is to find out what happened on it before you showed up and started having opinions." },
@@ -104,12 +104,12 @@ export const LOG = [
     status: "published",
     expanding: true,
     authorId: "cypher",
-    tags: ["the island", "trust", "machines", "how things work"],
+    tags: ["the island", "trust", "machines", "ridgway"],
     hero: "/log/what-the-island-taught-us/hero.webp",
     heroAlt: "the ship at rest over still water in the mist with a pine on the shore",
     excerpt:
-      "we went to the island meaning to stay. we left with a different idea about what technology is actually for.",
-    related: ["the-arrival", "ancient-ridgway"],
+      "we went to the island meaning to settle there. we came back to ridgway with a different idea about what technology is actually for.",
+    related: ["early-ridgway-tourism", "ancient-ridgway"],
     body: [
       { t: "p", x: "the honest version is that we meant to settle there. we had picked it out from a long way off and everything we found when we arrived made the case stronger, right up until it made a different case instead." },
       { t: "p", x: "what got us was not the machines, although the machines are what people ask about. it was what the machines implied. a thing left standing on a quiet road, unattended, working, still there in the morning with everything in it. you cannot build that out of engineering. the engineering is downstream of something else." },
@@ -121,8 +121,8 @@ export const LOG = [
     ],
   },
   {
-    slug: "the-arrival",
-    title: "the arrival",
+    slug: "early-ridgway-tourism",
+    title: "early ridgway tourism",
     kicker: "from the current",
     date: "2026-08-20",
     dateLabel: "20 august 2026",
@@ -130,12 +130,12 @@ export const LOG = [
     status: "published",
     expanding: true,
     authorId: "ion",
-    tags: ["the ship", "ridgway", "arrival"],
-    hero: "/log/the-arrival/hero.webp",
+    tags: ["ridgway", "tourism", "the ship", "san juans"],
+    hero: "/log/early-ridgway-tourism/hero.webp",
     heroAlt: "the ship over the cimarrons in a wide golden sunburst with the aspens turning",
     excerpt:
-      "we crossed a lot of sky looking for somewhere to stop. this is the valley that finally made the argument.",
-    related: ["what-the-island-taught-us", "ancient-ridgway"],
+      "the first burros to tour this valley were not planning to stay. a note on what ridgway colorado does to visitors who only meant to pass through.",
+    related: ["ancient-ridgway", "what-the-island-taught-us"],
     body: [
       { t: "p", x: "we were not looking for colorado. that should be said first, because the story gets told the other way around and the other way around is tidier and wrong." },
       { t: "p", x: "we had been out a long time by then. we had crossed water twice, wintered somewhere we will write about later, and come away from the island with a set of ideas we did not have when we left. the plan, to the extent there was one, was to go back." },
@@ -206,7 +206,7 @@ export function relatedPosts(post) {
 //   hero: "/log/your-new-slug/hero.webp",
 //   heroAlt: "",
 //   excerpt: "one line that promises the angle, not the topic.",
-//   related: ["the-arrival"],
+//   related: ["early-ridgway-tourism"],
 //   body: [
 //     { t: "p", x: "the cold open, the hook." },
 //     { t: "h", x: "a subhead that carries the spine" },
