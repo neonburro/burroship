@@ -5,7 +5,11 @@
 // places, never hype and never an exclamation point. No oxford commas, no dashes.
 //
 // SOURCE OF TRUTH. The Log list, the single Post reader and the home preview all read
-// from LOG and never restate a post inline. Newest first, array order is page order.
+// from LOG and never restate a post inline. Array order is page order, left to right on
+// the home page and top to bottom on the log. The arrival arc is deliberately in STORY
+// order and not newest first, ancient ridgway then the island then the arrival, because
+// the three are one narrative and reading them backwards spoils it. A later standalone
+// entry that is not part of an arc goes on top.
 //
 // PLUG AND PLAY, where this is going. Every field below is a form field in the admin we
 // are building. Adding a post should feel like this: pick an author from the registry,
@@ -64,29 +68,30 @@ export const LOG = [
   // and an opening, and says plainly that the rest is being written, which is the honest
   // signal to a reader and to a crawler both. Expand them one at a time, oldest question
   // first, and drop the expanding flag when a piece is actually finished.
+  
   {
-    slug: "the-arrival",
-    title: "the arrival",
-    kicker: "from the current",
-    date: "2026-08-20",
-    dateLabel: "20 august 2026",
+    slug: "ancient-ridgway",
+    title: "ancient ridgway",
+    kicker: "from the choir",
+    date: "2026-08-18",
+    dateLabel: "18 august 2026",
     readMins: 2,
     status: "published",
     expanding: true,
-    authorId: "ion",
-    tags: ["the ship", "ridgway", "arrival"],
-    hero: "/log/the-arrival/hero.webp",
-    heroAlt: "the ship over the cimarrons in a wide golden sunburst with the aspens turning",
+    authorId: "warbleur",
+    tags: ["ridgway", "history", "ancient", "the cimarrons"],
+    hero: "/log/ancient-ridgway/hero.webp",
+    heroAlt: "chimney rock and courthouse standing over the valley in sepia with the ship above them",
     excerpt:
-      "we crossed a lot of sky looking for somewhere to stop. this is the valley that finally made the argument.",
-    related: ["what-the-island-taught-us", "ancient-ridgway"],
+      "the two rocks over this town were old before anything here had a name. what stood here first, and who it belonged to.",
+    related: ["the-arrival", "what-the-island-taught-us"],
     body: [
-      { t: "p", x: "we were not looking for colorado. that should be said first, because the story gets told the other way around and the other way around is tidier and wrong." },
-      { t: "p", x: "we had been out a long time by then. we had crossed water twice, wintered somewhere we will write about later, and come away from the island with a set of ideas we did not have when we left. the plan, to the extent there was one, was to go back." },
-      { t: "p", x: "then we came over the divide on an evening in autumn and the whole valley was doing that thing it does, the light coming in low and gold and the aspens turning all at once like something switching on, and courthouse and chimney standing up out of it. we slowed down to look. we have not really started moving again." },
-      { t: "quote", x: "a place makes its argument quietly, and then you notice you have stopped." },
-      { t: "p", x: "what held us was not the view. plenty of places are beautiful and we passed most of them. it was that this one was small enough to know, working, unfinished, and full of people who already did for each other the thing we had spent a year admiring somewhere else." },
-      { t: "aside", label: "still being written", x: "this entry is an opening, not the finished piece. the full account, the crossing, the winter before it and the first year on the ground here, is being written and will land in this same place. nothing is being moved and the address will not change." },
+      { t: "p", x: "stand anywhere on the north side of town and you can see the two of them, courthouse and chimney, sitting up over the valley like they are waiting for something. they were there before the town, before the ranches, before the ore, before the name. they will be there after." },
+      { t: "p", x: "we are new here. one autumn and a winter is nothing, and the first thing you owe a place that old is to find out what happened on it before you showed up and started having opinions." },
+      { t: "p", x: "so this is the piece about what was here first. the uncompahgre ute held this valley for a very long time, and held it well, and what happened to that is not a footnote to the town's history, it is the hinge the whole rest of it turns on. it deserves telling straight, with real sources and without making anyone scenery in their own story." },
+      { t: "quote", x: "everything built in this valley sits on ground that was already spoken for." },
+      { t: "p", x: "we are still gathering it. some of it is in the county records and some of it is in the museum on the corner and some of it is only held by people who will tell you if you ask properly and listen for longer than is comfortable." },
+      { t: "aside", label: "still being written", x: "this entry is an opening. the full piece is being reported with real sources and is not going to be rushed, because getting this one wrong would be worse than being slow. it will land here at this address." },
     ],
   },
   {
@@ -116,28 +121,28 @@ export const LOG = [
     ],
   },
   {
-    slug: "ancient-ridgway",
-    title: "ancient ridgway",
-    kicker: "from the choir",
-    date: "2026-08-18",
-    dateLabel: "18 august 2026",
+    slug: "the-arrival",
+    title: "the arrival",
+    kicker: "from the current",
+    date: "2026-08-20",
+    dateLabel: "20 august 2026",
     readMins: 2,
     status: "published",
     expanding: true,
-    authorId: "warbleur",
-    tags: ["ridgway", "history", "ancient", "the cimarrons"],
-    hero: "/log/ancient-ridgway/hero.webp",
-    heroAlt: "chimney rock and courthouse standing over the valley in sepia with the ship above them",
+    authorId: "ion",
+    tags: ["the ship", "ridgway", "arrival"],
+    hero: "/log/the-arrival/hero.webp",
+    heroAlt: "the ship over the cimarrons in a wide golden sunburst with the aspens turning",
     excerpt:
-      "the two rocks over this town were old before anything here had a name. what stood here first, and who it belonged to.",
-    related: ["the-arrival", "what-the-island-taught-us"],
+      "we crossed a lot of sky looking for somewhere to stop. this is the valley that finally made the argument.",
+    related: ["what-the-island-taught-us", "ancient-ridgway"],
     body: [
-      { t: "p", x: "stand anywhere on the north side of town and you can see the two of them, courthouse and chimney, sitting up over the valley like they are waiting for something. they were there before the town, before the ranches, before the ore, before the name. they will be there after." },
-      { t: "p", x: "we are new here. one autumn and a winter is nothing, and the first thing you owe a place that old is to find out what happened on it before you showed up and started having opinions." },
-      { t: "p", x: "so this is the piece about what was here first. the uncompahgre ute held this valley for a very long time, and held it well, and what happened to that is not a footnote to the town's history, it is the hinge the whole rest of it turns on. it deserves telling straight, with real sources and without making anyone scenery in their own story." },
-      { t: "quote", x: "everything built in this valley sits on ground that was already spoken for." },
-      { t: "p", x: "we are still gathering it. some of it is in the county records and some of it is in the museum on the corner and some of it is only held by people who will tell you if you ask properly and listen for longer than is comfortable." },
-      { t: "aside", label: "still being written", x: "this entry is an opening. the full piece is being reported with real sources and is not going to be rushed, because getting this one wrong would be worse than being slow. it will land here at this address." },
+      { t: "p", x: "we were not looking for colorado. that should be said first, because the story gets told the other way around and the other way around is tidier and wrong." },
+      { t: "p", x: "we had been out a long time by then. we had crossed water twice, wintered somewhere we will write about later, and come away from the island with a set of ideas we did not have when we left. the plan, to the extent there was one, was to go back." },
+      { t: "p", x: "then we came over the divide on an evening in autumn and the whole valley was doing that thing it does, the light coming in low and gold and the aspens turning all at once like something switching on, and courthouse and chimney standing up out of it. we slowed down to look. we have not really started moving again." },
+      { t: "quote", x: "a place makes its argument quietly, and then you notice you have stopped." },
+      { t: "p", x: "what held us was not the view. plenty of places are beautiful and we passed most of them. it was that this one was small enough to know, working, unfinished, and full of people who already did for each other the thing we had spent a year admiring somewhere else." },
+      { t: "aside", label: "still being written", x: "this entry is an opening, not the finished piece. the full account, the crossing, the winter before it and the first year on the ground here, is being written and will land in this same place. nothing is being moved and the address will not change." },
     ],
   },
 ];
