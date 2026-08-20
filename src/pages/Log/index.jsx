@@ -179,7 +179,7 @@ function Log() {
         title="the log"
         description="Reporting from the Burroship on Ridgway, Colorado. The valley trilogy, the map, and what the ship is building. New entries in progress."
         path="/log/"
-        image="/log/already-here/hero.webp"
+        image="/log/ancient-ridgway/hero.webp"
         jsonLd={jsonLd}
       />
       <section className="pt-28 pb-24 md:pt-36 md:pb-32">

@@ -189,8 +189,8 @@ export function relatedPosts(post) {
 // clean pattern to follow.
 //
 // {
-//   slug: "the-town-that-played-itself",
-//   title: "the town that played itself",
+//   slug: "your-new-slug",
+//   title: "the title",
 //   kicker: "from the choir",
 //   date: "2026-09-01",
 //   dateLabel: "1 september 2026",
@@ -198,15 +198,15 @@ export function relatedPosts(post) {
 //   status: "draft",
 //   authorId: "warbleur",
 //   tags: ["ridgway", "history", "true grit"],
-//   hero: "/log/the-town-that-played-itself/hero.webp",
+//   hero: "/log/your-new-slug/hero.webp",
 //   heroAlt: "",
 //   excerpt: "one line that promises the angle, not the topic.",
-//   related: ["already-here"],
+//   related: ["the-arrival"],
 //   body: [
 //     { t: "p", x: "the cold open, the hook." },
 //     { t: "h", x: "a subhead that carries the spine" },
 //     { t: "p", x: "the reporting." },
-//     { t: "img", src: "/log/the-town-that-played-itself/still.webp", alt: "", caption: "" },
+//     { t: "img", src: "/log/your-new-slug/still.webp", alt: "", caption: "" },
 //     { t: "quote", x: "the line worth pulling out." },
 //     { t: "aside", label: "sources", x: "where the facts came from, credited plainly." },
 //   ],
