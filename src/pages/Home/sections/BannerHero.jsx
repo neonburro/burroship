@@ -21,7 +21,7 @@ function BannerHero() {
         }}
       >
         <img
-          src="/banners/burroship-banner-04.webp"
+          src="/banners/airship-crown.webp"
           alt=""
           className="block w-full h-auto"
         />

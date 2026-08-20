@@ -8,6 +8,7 @@
 
 import BannerHero from "./sections/BannerHero";
 import Gate from "./sections/Gate";
+import TwoThings from "./sections/TwoThings";
 import Blocks from "./sections/Blocks";
 
 function Home() {
@@ -15,6 +16,7 @@ function Home() {
     <main id="main">
       <BannerHero />
       <Gate />
+      <TwoThings />
       <Blocks />
     </main>
   );
