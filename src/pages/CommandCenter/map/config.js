@@ -26,8 +26,8 @@ export const CHIMNEY_ROCK = {
 };
  
 export const RIDGWAY = {
-  longitude: -107.7551,
-  latitude: 38.1547,
+  longitude: -107.7573,
+  latitude: 38.1523,
 };
  
 export const DOME_CENTER = RIDGWAY;
@@ -38,8 +38,8 @@ export const CRUISE_ALTITUDE_M = 1524;
 /* OVER-RIDGWAY PRESET • high enough to clear the range so the camera never drags
  * through the mountains, tilted down to look at the town from above. Bigger zoom =
  * closer to the ground, smaller pitch = more top down (more facing straight down). */
-export const CRUISE_ZOOM = 13.4;
-export const CRUISE_PITCH = 50;
+export const CRUISE_ZOOM = 14.4;
+export const CRUISE_PITCH = 54;
  
 export const INITIAL_VIEW = {
   longitude: CHIMNEY_ROCK.longitude + 0.011,
