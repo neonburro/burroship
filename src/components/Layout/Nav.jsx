@@ -1,12 +1,16 @@
 // src/components/Layout/Nav.jsx
 //
-// Common nav, now a floating rounded bar. It sits inset like the hero, 99.5% on
-// mobile and 97% on desktop, our darkest dark with a hairline of the blue-gray
-// ground all the way around and a small gap off the top. It is auth aware through
-// the shared session: signed out it shows a single enter trigger (desktop, mobile
-// uses the bottom nav), signed in it shows your avatar on every breakpoint and a tap
-// opens your account in the same slide out panel. Wordmark stays white on the dark bar.
-// v3 · floating rounded plus auth aware.
+// Common nav, a floating rounded bar. It sits inset like the hero, 99.5% on mobile and
+// 97% on desktop, our darkest dark with a hairline of the blue-gray ground all the way
+// around and a small gap off the top. It is auth aware through the shared session.
+//
+// Signed out it is quiet: wordmark on the left, a single enter trigger on the right
+// (desktop, mobile uses the bottom nav). Signed in the bar opens up into an app nav:
+// the live sections appear inline on desktop and the avatar opens the account panel.
+// APP_LINKS holds only routes that actually exist, so the nav grows as sections come
+// online, it never points at a section that is not built. The homepage blocks are the
+// full directory, this is the quick rail. Wordmark stays white on the dark bar.
+// v4 · app nav on login.
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -16,6 +20,12 @@ import BottomNav from "./BottomNav";
 import Wordmark from "../Atoms/Wordmark";
 import ShipMark from "../Atoms/ShipMark";
 import { useSession } from "../../lib/session";
+
+// Live app sections only. Add the log, the crew and the academy here as each is built,
+// never before, a nav link that goes nowhere reads as broken.
+const APP_LINKS = [
+  { to: "/world/", label: "the range" },
+];
 
 function Nav() {
   const [open, setOpen] = useState(false);
@@ -45,30 +55,57 @@ function Nav() {
               <Wordmark size="22px" color="#FFFFFF" />
             </Link>
 
-            {user ? (
-              <button
-                onClick={() => setOpen(true)}
-                aria-label="your account"
-                aria-expanded={open}
-                className="inline-flex items-center transition-transform duration-200 hover:scale-105"
-                style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", borderRadius: "50%" }}
-              >
-                <AvatarChip profile={profile} user={user} size={34} />
-              </button>
-            ) : (
-              <button
-                onClick={() => setOpen(true)}
-                aria-label="enter"
-                aria-expanded={open}
-                className="group hidden md:inline-flex items-center gap-2.5 transition-all duration-200"
-                style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.18)", background: "transparent", cursor: "pointer" }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)"; }}
-              >
-                <span className="beacon-dot sm" aria-hidden="true" />
-                <span className="text-mono lowercase" style={{ color: "rgba(255,255,255,0.72)" }}>enter</span>
-              </button>
-            )}
+            <div className="flex items-center gap-1 md:gap-2">
+              {user && (
+                <nav aria-label="sections" className="hidden md:flex items-center gap-1 mr-2">
+                  {APP_LINKS.map((link) => {
+                    const active = location.pathname.startsWith(link.to);
+                    return (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className="text-mono lowercase transition-all duration-200"
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: "999px",
+                          color: active ? "var(--color-accent)" : "rgba(255,255,255,0.72)",
+                          background: active ? "rgba(79,176,240,0.12)" : "transparent",
+                        }}
+                        onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = "#FFFFFF"; }}
+                        onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = "rgba(255,255,255,0.72)"; }}
+                      >
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              )}
+
+              {user ? (
+                <button
+                  onClick={() => setOpen(true)}
+                  aria-label="your account"
+                  aria-expanded={open}
+                  className="inline-flex items-center transition-transform duration-200 hover:scale-105"
+                  style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", borderRadius: "50%" }}
+                >
+                  <AvatarChip profile={profile} user={user} size={34} />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setOpen(true)}
+                  aria-label="enter"
+                  aria-expanded={open}
+                  className="group hidden md:inline-flex items-center gap-2.5 transition-all duration-200"
+                  style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.18)", background: "transparent", cursor: "pointer" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)"; }}
+                >
+                  <span className="beacon-dot sm" aria-hidden="true" />
+                  <span className="text-mono lowercase" style={{ color: "rgba(255,255,255,0.72)" }}>enter</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </nav>

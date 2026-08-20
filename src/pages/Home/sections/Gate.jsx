@@ -72,7 +72,7 @@ function Gate() {
         <h1 className="text-display-xl text-ink lowercase mb-4">a floating incubator.</h1>
         <p className="text-lead lowercase mb-10" style={{ fontSize: "19px" }}>
           {aboard
-            ? "you have a key. the rest is coming."
+            ? "you are aboard. the range is open, the rest is coming."
             : "something is being built above the range. sign in to see it."}
         </p>
 
@@ -87,25 +87,41 @@ function Gate() {
             </div>
             <div className="text-display-md text-ink lowercase mb-2">welcome aboard, {label}.</div>
             <p className="text-body text-ink-muted lowercase mb-8">
-              shape your profile and connect a business from the bridge.
+              the range is live below. shape your profile and connect a business from the bridge.
             </p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <Link
-                to="/bridge/"
+                to="/world/"
                 className="text-mono-sm lowercase transition-all duration-200"
                 style={{ padding: "13px 22px", borderRadius: "14px", background: "var(--color-accent)", color: "#FFFFFF", border: "1px solid var(--color-accent)" }}
               >
+                open the range
+              </Link>
+              <Link
+                to="/bridge/"
+                className="text-mono-sm lowercase transition-colors duration-200"
+                style={{ padding: "13px 22px", borderRadius: "14px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink)", background: "transparent" }}
+              >
                 your bridge
               </Link>
-              <button
-                onClick={leave}
-                type="button"
-                className="text-mono-sm lowercase transition-colors duration-200"
-                style={{ padding: "13px 22px", borderRadius: "14px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink-muted)", background: "transparent", cursor: "pointer" }}
-              >
-                leave the bridge
-              </button>
+              {profile?.is_admin && (
+                <Link
+                  to="/helm/"
+                  className="text-mono-sm lowercase transition-colors duration-200"
+                  style={{ padding: "13px 22px", borderRadius: "14px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink)", background: "transparent" }}
+                >
+                  the helm
+                </Link>
+              )}
             </div>
+            <button
+              onClick={leave}
+              type="button"
+              className="text-mono-xs lowercase transition-colors duration-200 mt-6 text-ink-faint hover:text-ink"
+              style={{ background: "transparent", border: "none", cursor: "pointer" }}
+            >
+              leave the bridge
+            </button>
           </div>
         ) : (
           <div
