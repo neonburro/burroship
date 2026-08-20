@@ -17,6 +17,8 @@
 import { useEffect, useRef, useState } from "react";
 import Map from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { Link } from "react-router-dom";
+import ShipMark from "../../../components/Atoms/ShipMark";
  
 import {
   MAPBOX_TOKEN,
@@ -335,6 +337,15 @@ function MapCanvas() {
  
   return (
     <div className="absolute inset-0">
+      <Link
+        to="/"
+        aria-label="the burroship home"
+        className="absolute top-5 left-5 z-10 hover:opacity-80 transition-opacity"
+        style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.4)", borderRadius: "14px" }}
+      >
+        <ShipMark chip chipSize={46} />
+      </Link>
+
       <Map
         ref={mapRef}
         mapboxAccessToken={MAPBOX_TOKEN}

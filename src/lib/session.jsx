@@ -33,7 +33,7 @@ export function SessionProvider({ children }) {
     try {
       const { data } = await burroshipSupabase
         .from("profiles")
-        .select("username, display_name, avatar_url")
+        .select("username, display_name, avatar_url, is_admin")
         .eq("id", u.id)
         .single();
       setProfile(data || { display_name: u.user_metadata?.display_name || u.email });

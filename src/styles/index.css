@@ -323,6 +323,19 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   border-radius: 4px;
 }
 
+/* ----- Map popup -----
+   Strip Mapbox's default white container and its tip so only our own card shows,
+   floating over the map with no box behind it. The card carries its own background. */
+.burroship-popup .mapboxgl-popup-content {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+.burroship-popup .mapboxgl-popup-tip {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .topo-rings,
   .beacon-dot.pulse,

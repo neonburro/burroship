@@ -19,6 +19,7 @@ import Rewards from "./pages/Rewards";
 import CommandCenter from "./pages/CommandCenter";
 import Contact from "./pages/Contact";
 import Bridge from "./pages/Bridge";
+import Helm from "./pages/Helm";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -48,6 +49,7 @@ function App() {
         <Route path="/rewards/" element={<Rewards />} />
         <Route path="/contact/" element={<Contact />} />
         <Route path="/bridge/" element={<Bridge />} />
+        <Route path="/helm/" element={<Helm />} />
         <Route path="/world/" element={<CommandCenter />} />
         <Route path="*" element={<Home />} />
       </Routes>
