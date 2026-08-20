@@ -87,16 +87,25 @@ function Gate() {
             </div>
             <div className="text-display-md text-ink lowercase mb-2">welcome aboard, {label}.</div>
             <p className="text-body text-ink-muted lowercase mb-8">
-              the bridge is still being built above the range. you are early. that is the point.
+              shape your profile and connect a business from the bridge.
             </p>
-            <button
-              onClick={leave}
-              type="button"
-              className="text-mono-sm lowercase transition-colors duration-200"
-              style={{ padding: "13px 22px", borderRadius: "14px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink-muted)", background: "transparent", cursor: "pointer" }}
-            >
-              leave the bridge
-            </button>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Link
+                to="/bridge/"
+                className="text-mono-sm lowercase transition-all duration-200"
+                style={{ padding: "13px 22px", borderRadius: "14px", background: "var(--color-accent)", color: "#FFFFFF", border: "1px solid var(--color-accent)" }}
+              >
+                your bridge
+              </Link>
+              <button
+                onClick={leave}
+                type="button"
+                className="text-mono-sm lowercase transition-colors duration-200"
+                style={{ padding: "13px 22px", borderRadius: "14px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink-muted)", background: "transparent", cursor: "pointer" }}
+              >
+                leave the bridge
+              </button>
+            </div>
           </div>
         ) : (
           <div

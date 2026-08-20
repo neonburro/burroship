@@ -121,7 +121,10 @@ function LoginPanel({ open, onClose }) {
                 <div className="text-mono-xs text-ink-faint lowercase mt-1">aboard the bridge</div>
               </div>
             </div>
-            <p className="text-body-sm text-ink-muted lowercase mb-6">the bridge is still being built above the range. you are early. that is the point.</p>
+            <p className="text-body-sm text-ink-muted lowercase mb-6">shape your profile and connect a business from the bridge.</p>
+            <Link to="/bridge/" onClick={onClose} className="block text-center text-mono-sm lowercase transition-all duration-200 mb-3" style={{ padding: "14px 18px", borderRadius: "999px", background: "var(--color-accent)", color: "#FFFFFF", border: "1px solid var(--color-accent)" }}>
+              your bridge
+            </Link>
             <button onClick={leave} type="button" className="text-mono-sm lowercase transition-colors duration-200 w-full" style={{ padding: "14px 18px", borderRadius: "999px", border: "1px solid var(--color-line-strong)", color: "var(--color-ink-muted)", background: "transparent", cursor: "pointer" }}>
               leave the bridge
             </button>

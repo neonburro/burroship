@@ -81,9 +81,13 @@ export function SessionProvider({ children }) {
     setProfile(null);
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    await loadProfile(user);
+  }, [loadProfile, user]);
+
   const value = useMemo(
-    () => ({ user, profile, loading, ready: supabaseReady, signInWithUsername, signOut }),
-    [user, profile, loading, signInWithUsername, signOut]
+    () => ({ user, profile, loading, ready: supabaseReady, signInWithUsername, signOut, refreshProfile }),
+    [user, profile, loading, signInWithUsername, signOut, refreshProfile]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
