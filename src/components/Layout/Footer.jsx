@@ -1,11 +1,11 @@
 // src/components/Layout/Footer.jsx
 //
-// Common footer, now a floating rounded bar that bookends the nav. Same measure as
-// the hero and the nav, 99.5% on mobile and 97% on desktop, our darkest dark with
-// the blue-gray ground showing all around it and barely rounded corners. Text goes
-// light on the dark surface, using the dark map tokens so it always reads. The ship
-// mark is the bare chrome logo since the surface itself is already black.
-// v3 · floating rounded dark bar.
+// Common footer, a floating rounded bar that bookends the nav. Same measure as the
+// hero and the nav, 99.5% on mobile and 97% on desktop, filled with the smoky charcoal
+// chrome surface (var(--color-chrome), shared with the nav) and the blue-gray ground
+// showing all around it. Text goes light on the dark surface, using the dark map tokens
+// so it always reads. The ship mark is the bare chrome logo since the surface is dark.
+// v4 · smoky charcoal chrome bar.
 
 import { Link } from "react-router-dom";
 import Wordmark from "../Atoms/Wordmark";
@@ -25,7 +25,7 @@ function Footer() {
     <footer className="w-full pt-8 pb-4 md:pb-6">
       <div
         className="mx-auto w-[99.5%] md:w-[97%] relative overflow-hidden"
-        style={{ background: "var(--color-gray-900)", borderRadius: "22px", border: "1px solid var(--color-line-strong)" }}
+        style={{ background: "var(--color-chrome)", borderRadius: "22px", border: "1px solid var(--color-line-strong)" }}
       >
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px" style={{ background: "var(--color-accent)", opacity: 0.5, boxShadow: "0 0 12px var(--color-accent-glow)" }} />
 

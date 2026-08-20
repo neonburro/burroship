@@ -48,7 +48,7 @@ function Nav() {
       <nav className="fixed top-0 inset-x-0 z-50" style={{ paddingTop: "10px" }}>
         <div
           className="mx-auto w-[99.5%] md:w-[97%]"
-          style={{ background: "var(--color-gray-900)", borderRadius: "22px", border: "1px solid var(--color-line-strong)", boxShadow: "0 10px 30px rgba(24, 36, 56, 0.16)" }}
+          style={{ background: "var(--color-chrome)", borderRadius: "22px", border: "1px solid var(--color-line-strong)", boxShadow: "0 10px 30px rgba(24, 36, 56, 0.16)" }}
         >
           <div className="flex items-center justify-between h-15 md:h-16 px-4 md:px-6" style={{ height: "60px" }}>
             <Link to="/" aria-label="the burroship home" className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5">

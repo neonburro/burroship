@@ -31,6 +31,15 @@
   --color-accent-soft: rgba(46, 155, 230, 0.10);
   --color-accent-glow: rgba(46, 155, 230, 0.40);
 
+  /* ----- Chrome surface (the nav + footer bars) -----
+     A smoky dark charcoal, a step up from the near black gray-900 tile material and a
+     hair bluer so it sits with the ground. The two floating bookend bars, Nav.jsx and
+     Footer.jsx, both fill with this and must stay the same value, change it here and
+     both move together. The map corner chip and the black collage tiles stay gray-900,
+     this token is only the two bars. Nudge it toward #0B0C0E for blacker, toward #24272E
+     for smokier. */
+  --color-chrome: #1C1F26;
+
   /* ----- Color: dark ramp (the BLACK tiles + chrome material) ----- */
   --color-gray-900: #0B0C0E;
   --color-gray-800: #16181D;
