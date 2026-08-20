@@ -1,10 +1,11 @@
 // src/pages/Home/sections/Blocks.jsx
 //
 // What is aboard, as squares. This is the app directory now. Signed out, every tile is
-// a locked teaser, hinting and not explaining. Signed in, the tiles that have a real
-// destination unlock and become entrances, the rest read as coming soon (you are
+// a locked teaser, hinting and not explaining, except the ones marked public which are
+// always open (the log is the ship's public face). Signed in, the tiles that have a
+// real destination unlock and become entrances, the rest read as coming soon (you are
 // aboard, they are just being built). Two up on a phone, three on desktop. Lowercase,
-// no oxford commas, no dashes. v2 · unlocks on login.
+// no oxford commas, no dashes. v3 · public tiles plus unlock on login.
 
 import { Link } from "react-router-dom";
 import { useSession } from "../../../lib/session";
@@ -15,7 +16,7 @@ const TILES = [
   { n: "03", label: "the crew", sub: "the characters aboard" },
   { n: "04", label: "the academy", sub: "learn to fly one" },
   { n: "05", label: "the range", sub: "ridgway and the cimarrons", to: "/world/" },
-  { n: "06", label: "the log", sub: "the ship writes it down" },
+  { n: "06", label: "the log", sub: "the ship writes it down", to: "/log/", public: true },
 ];
 
 function Lock() {
@@ -28,8 +29,11 @@ function Lock() {
 }
 
 function Tile({ tile, user }) {
-  const mode = !user ? "locked" : tile.to ? "live" : "soon";
-  const live = mode === "live";
+  // A public tile (the log) is always live. Otherwise a tile with a destination goes
+  // live only once you are aboard, and the rest read as coming soon when signed in or
+  // locked when signed out.
+  const live = !!(tile.to && (tile.public || user));
+  const mode = live ? "live" : user ? "soon" : "locked";
 
   const body = (
     <div

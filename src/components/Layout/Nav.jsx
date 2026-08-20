@@ -21,10 +21,11 @@ import Wordmark from "../Atoms/Wordmark";
 import ShipMark from "../Atoms/ShipMark";
 import { useSession } from "../../lib/session";
 
-// Live app sections only. Add the log, the crew and the academy here as each is built,
-// never before, a nav link that goes nowhere reads as broken.
+// Live app sections only. Add the crew and the academy here as each is built, never
+// before, a nav link that goes nowhere reads as broken.
 const APP_LINKS = [
   { to: "/world/", label: "the range" },
+  { to: "/log/", label: "the log" },
 ];
 
 function Nav() {

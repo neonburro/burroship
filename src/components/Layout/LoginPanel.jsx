@@ -13,6 +13,7 @@ import { useSession, accountLabel, accountInitial } from "../../lib/session";
 
 const LINKS = [
   { to: "/", label: "home" },
+  { to: "/log/", label: "the log" },
   { to: "/build/", label: "build" },
   { to: "/deploy/", label: "deploy" },
   { to: "/automate/", label: "automate" },

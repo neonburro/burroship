@@ -20,6 +20,8 @@ import CommandCenter from "./pages/CommandCenter";
 import Contact from "./pages/Contact";
 import Bridge from "./pages/Bridge";
 import Helm from "./pages/Helm";
+import Log from "./pages/Log";
+import LogPost from "./pages/Log/Post";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -48,6 +50,8 @@ function App() {
         <Route path="/automate/" element={<Automate />} />
         <Route path="/rewards/" element={<Rewards />} />
         <Route path="/contact/" element={<Contact />} />
+        <Route path="/log/" element={<Log />} />
+        <Route path="/log/:slug/" element={<LogPost />} />
         <Route path="/bridge/" element={<Bridge />} />
         <Route path="/helm/" element={<Helm />} />
         <Route path="/world/" element={<CommandCenter />} />
