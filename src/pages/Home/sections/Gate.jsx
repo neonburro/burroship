@@ -1,7 +1,20 @@
 // src/pages/Home/sections/Gate.jsx
 //
-// The front of the ship is a door. A centered login on the page itself under one
-// quiet line. Auth now runs through the shared session (useSession), so signing in
+// The front of the ship is a door, and the door and the sky above it are ONE OBJECT.
+//
+// The banner used to be its own section with the gate floating below it, which left a
+// band of dead ground between the picture and the writing and made the page read as two
+// unrelated things stacked. Now both live inside a single rounded sheet at the house
+// measure, 99.5 percent on mobile and 97 on desktop. The art holds the top, a scrim
+// carries its bottom edge down into the surface colour so there is no seam to see, and
+// the writing and the login sit in the same shape underneath. One border, one radius,
+// one shadow, one object.
+//
+// BannerHero.jsx is retired from the home page by this and nothing imports it. If the
+// banner ever needs to stand alone again it is still there.
+//
+// The scrim height and the surface colour have to agree or a hard line appears where the
+// gradient ends. Both are set here, together, on purpose. Auth now runs through the shared session (useSession), so signing in
 // here also flips the nav to your avatar, and signing out from the nav returns this
 // card to the login. You sign in with a username, resolved to its email behind the
 // scenes. On success the card becomes a short aboard state. Lowercase throughout, no
@@ -62,8 +75,47 @@ function Gate() {
   }
 
   return (
-    <section className="px-3 pt-12 pb-20 md:pt-20 md:pb-28 flex items-center justify-center">
-      <div className="w-full max-w-[600px] text-center">
+    <section className="pt-[86px] pb-16 md:pb-24">
+      <div
+        className="mx-auto w-[99.5%] md:w-[97%] overflow-hidden"
+        style={{
+          background: "var(--color-surface)",
+          borderRadius: "26px",
+          border: "1px solid var(--color-line)",
+          boxShadow: "0 14px 40px rgba(24, 36, 56, 0.13)",
+        }}
+      >
+        <div className="relative">
+          <img
+            src="/banners/airship-crown.webp"
+            alt=""
+            aria-hidden="true"
+            className="block w-full h-auto"
+          />
+          {/* The seam killer. The art ends in a soft fall to the surface colour so the
+              picture and the page below it read as one continuous sheet. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0"
+            style={{
+              height: "34%",
+              // Multi stop and eased. A two stop fade leaves a visible waistline where the
+              // gradient turns over, these stops follow an ease so the eye cannot find the
+              // seam. The rgb here IS --color-surface #DFE7F0, they must stay equal.
+              background:
+                "linear-gradient(to bottom," +
+                " rgba(223,231,240,0) 0%," +
+                " rgba(223,231,240,0.08) 22%," +
+                " rgba(223,231,240,0.26) 42%," +
+                " rgba(223,231,240,0.55) 60%," +
+                " rgba(223,231,240,0.82) 76%," +
+                " rgba(223,231,240,0.96) 89%," +
+                " #DFE7F0 100%)",
+            }}
+          />
+        </div>
+
+      <div className="w-full max-w-[600px] mx-auto text-center px-5 pb-14 md:pb-16" style={{ marginTop: "-2px" }}>
         <div className="flex items-center justify-center gap-2.5 mb-6 md:mb-8">
           <span className="beacon-dot sm pulse" aria-hidden="true" />
           <span className="text-mono text-ink-faint lowercase">the bridge</span>
@@ -79,7 +131,7 @@ function Gate() {
         {aboard ? (
           <div
             className="rounded-3xl p-7 md:p-9 text-center"
-            style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)" }}
+            style={{ background: "var(--color-surface-raised)", border: "1px solid var(--color-line)" }}
           >
             <div className="flex items-center justify-center gap-2.5 mb-4">
               <span className="beacon-dot sm pulse" aria-hidden="true" />
@@ -126,7 +178,7 @@ function Gate() {
         ) : (
           <div
             className="rounded-3xl p-7 md:p-9 text-left"
-            style={{ background: "var(--color-surface)", border: "1px solid var(--color-line)" }}
+            style={{ background: "var(--color-surface-raised)", border: "1px solid var(--color-line)" }}
           >
             <div className="flex flex-col gap-3">
               <Field>
@@ -211,6 +263,7 @@ function Gate() {
           <span className="beacon-dot sm" aria-hidden="true" />
           <span className="text-mono-xs text-ink-faint lowercase">ridgway, colorado · 38.15° n</span>
         </div>
+      </div>
       </div>
     </section>
   );

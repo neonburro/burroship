@@ -5,7 +5,8 @@
 // baseline so it never floats. One source of truth for every placement: nav, footer,
 // hero. color defaults to the ink token, pass a light color (for the black nav) to
 // flip the letters white without touching the accent period.
-// v2 · color prop for dark surfaces.
+// v3 · retracked for the serif. -0.04em was set for a geometric sans, a serif at that
+// tightness closes its counters and the word turns to mud, so this sits at -0.02em.
 
 function Wordmark({ size = "20px", className = "", glow = true, color = "var(--color-ink)" }) {
   return (
@@ -16,7 +17,7 @@ function Wordmark({ size = "20px", className = "", glow = true, color = "var(--c
         fontFamily: "var(--font-display)",
         fontWeight: 600,
         fontSize: size,
-        letterSpacing: "-0.04em",
+        letterSpacing: "-0.02em",
         textTransform: "lowercase",
         lineHeight: 1,
       }}

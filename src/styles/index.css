@@ -1,7 +1,7 @@
 /* src/styles/index.css */
 
 /* Google Fonts must come BEFORE @theme to satisfy CSS @import ordering */
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 @import "tailwindcss";
 
@@ -48,12 +48,23 @@
   --color-gray-500: #565C66;
   --color-gray-400: #7C828D;
 
-  /* ----- Fonts ----- */
-  /* One smooth rounded family for reading and display, Rubik, sister to Pulse.
-     JetBrains Mono stays for the small technical labels, the bridge voice. */
-  --font-display: "Rubik", -apple-system, system-ui, sans-serif;
-  --font-sans: "Rubik", -apple-system, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* ----- Fonts -----
+     Two families and a real idea behind the pair. Newsreader is the town, a modern cut
+     of the faces small newspapers were set in, and it is what makes a page of ours look
+     printed rather than rendered. IBM Plex Mono is the ship, the technical voice, and it
+     carries every uppercase label, button and readout. Serif for anything a person
+     reads, mono for anything the machine says. That division is the system, keep it.
+
+     Newsreader is variable on optical size, so the same family is a 68px headline and a
+     16px paragraph without either looking stretched. Set font-optical-sizing to auto and
+     let it do that work, do not hand tune sizes per breakpoint.
+
+     A serif needs far less negative tracking than the geometric sans this replaced.
+     Display sits near -0.015em, body sits at 0. Tightening a serif the way you tighten
+     Rubik closes the counters and it turns to mud. */
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 
   /* ----- Motion ----- */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
@@ -82,6 +93,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -110,55 +122,56 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
   font-family: var(--font-display);
   font-size: clamp(40px, 5.2vw, 68px);
   font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.0;
+  letter-spacing: -0.018em;
+  line-height: 1.04;
 }
 
 .text-display-xl {
   font-family: var(--font-display);
   font-size: clamp(32px, 4vw, 46px);
   font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.04;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
 }
 
 .text-display-lg {
   font-family: var(--font-display);
   font-size: clamp(26px, 3vw, 36px);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  letter-spacing: -0.012em;
+  line-height: 1.14;
 }
 
 .text-display-md {
   font-family: var(--font-display);
   font-size: clamp(20px, 2.4vw, 27px);
   font-weight: 600;
-  letter-spacing: -0.014em;
-  line-height: 1.2;
+  letter-spacing: -0.008em;
+  line-height: 1.25;
 }
 
 .text-display-sm {
   font-family: var(--font-display);
   font-size: clamp(17px, 2vw, 21px);
   font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
 }
 
 .text-lead {
   font-family: var(--font-sans);
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 400;
-  line-height: 1.55;
+  line-height: 1.6;
+  letter-spacing: 0;
   color: var(--color-ink-muted);
 }
 
 .text-body {
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .text-body-sm {
