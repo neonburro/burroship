@@ -59,7 +59,9 @@
 // touching another entry, hero.webp is the lead and the rest are named by what they are.
 // Fresh art comes in per post, convert to webp at roughly two times the rendered width.
 
-import { authorById } from "./authors";
+// The .js extension is required. Vite resolves it either way, but scripts/sitemap.mjs
+// imports this module under plain node, and node ESM does not guess extensions.
+import { authorById } from "./authors.js";
 
 export const LOG = [
   // THE ARRIVAL ARC. Three entries that tell one story, why a ship full of burros went

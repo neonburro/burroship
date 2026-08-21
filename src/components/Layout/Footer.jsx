@@ -12,10 +12,10 @@ import Wordmark from "../Atoms/Wordmark";
 import ShipMark from "../Atoms/ShipMark";
 
 const VESSEL = [
+  { label: "the log", to: "/log/" },
   { label: "build", to: "/build/" },
   { label: "deploy", to: "/deploy/" },
   { label: "automate", to: "/automate/" },
-  { label: "world", to: "/world/" },
 ];
 
 function Footer() {
@@ -66,7 +66,10 @@ function Footer() {
 
           <div className="pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
             <p className="text-mono-xs" style={{ color: "var(--color-dark-ink-faint)" }}>copyright {year} the burroship</p>
+            <div className="flex items-center gap-4">
+            <a href="/sitemap.xml" className="text-mono-xs transition-colors duration-200 hover:text-accent" style={{ color: "var(--color-dark-ink-faint)" }}>sitemap</a>
             <p className="text-mono-xs" style={{ color: "var(--color-dark-ink-faint)" }}>a small bright thing</p>
+          </div>
           </div>
         </div>
       </div>
