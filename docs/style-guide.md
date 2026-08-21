@@ -7,8 +7,8 @@ disagree, the css wins and this file is wrong.
 
 Two families, and the pairing is an idea rather than a taste.
 
-**Zen Maru Gothic** is the town. A rounded gothic from a Japanese foundry, maru meaning
-round. Its terminals are softened rather than cut, so nothing on a page of ours has a
+**M PLUS Rounded 1c** is the town. A rounded neo grotesque, neutral even bones with
+every terminal rounded off rather than cut square. Its terminals are softened rather than cut, so nothing on a page of ours has a
 sharp edge, and its latin is quiet and slightly irregular in a way that reads as made
 rather than generated. That is the wabi sabi of it. The softness is not sweetness, it is
 a refusal to be crisp. It carries every headline, paragraph, name and the wordmark.
@@ -24,7 +24,7 @@ breaks it, and it will look wrong before you work out why.
 
 ### two traps in this family
 
-**There is no 600.** Zen Maru Gothic ships 300, 400, 500, 700 and 900. The scale before
+**There is no 600.** M PLUS Rounded 1c ships 100, 300, 400, 500, 700, 800 and 900. The scale before
 this used 600 everywhere, which a browser fakes by smearing 500, and faked weight on a
 rounded face looks muddy at large sizes. Display is 500. Check the family before you
 reach for a weight.

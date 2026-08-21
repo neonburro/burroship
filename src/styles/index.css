@@ -1,7 +1,7 @@
 /* src/styles/index.css */
 
 /* Google Fonts must come BEFORE @theme to satisfy CSS @import ordering */
-@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;500;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
 
 @import "tailwindcss";
 
@@ -51,11 +51,16 @@
   /* ----- Fonts -----
      Two families, and the pairing is an idea rather than a taste.
 
-     Zen Maru Gothic is a rounded gothic from a Japanese foundry, maru meaning round. Its
-     terminals are softened rather than cut, so nothing on the page has a sharp edge, and
-     its latin is quiet and a little irregular in a way that reads as made rather than
-     generated. That is the wabi sabi of it, the softness is not sweetness, it is a
-     refusal to be crisp. It carries every headline, paragraph, name and the wordmark.
+     M PLUS Rounded 1c is a rounded neo grotesque. Neutral even bones, the kind helvetica
+     has, with every terminal rounded off rather than cut square. Two things we want at
+     once, the calm of a grotesque and a page with no sharp edge on it. It carries every
+     headline, paragraph, name and the wordmark.
+
+     IT IS ALSO THE BASE FOR OUR OWN FACE. M PLUS is under the SIL Open Font License,
+     which permits a modified derivative so long as it is renamed and the licence travels
+     with it. The plan is to derive a burro cut from this rather than commission one from
+     zero. Do not swap this family out casually, it is the reference the custom face is
+     being drawn against. See docs/custom-typeface.md.
 
      DM Mono is the ship. Low contrast, humanist for a mono, and tracked out in uppercase
      it reads like a garment label rather than a terminal. It carries every label, button
@@ -63,15 +68,15 @@
 
      Soft for what a person says, precise for what the machine says.
 
-     WEIGHTS. Zen Maru Gothic ships 300, 400, 500, 700, 900 and has NO 600. The old scale
+     WEIGHTS. M PLUS Rounded 1c ships 100, 300, 400, 500, 700, 800, 900 and has NO 600. The old scale
      used 600 everywhere, which the browser would have faked by smearing 500, so display
      is 500 now. Do not put 600 back, check the family first.
 
      TRACKING. A rounded face needs almost none. The serif before this sat near -0.015em
      and Rubik before that at -0.03em, both wrong here. Display sits at -0.005em and body
      at 0. Tightening rounded terminals makes them collide and the word closes up. */
-  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
-  --font-sans: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
+  --font-display: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
+  --font-sans: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
   --font-mono: "DM Mono", ui-monospace, Menlo, monospace;
 
   /* ----- Motion ----- */

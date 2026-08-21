@@ -20,6 +20,7 @@ import CommandCenter from "./pages/CommandCenter";
 import Contact from "./pages/Contact";
 import Bridge from "./pages/Bridge";
 import Helm from "./pages/Helm";
+import NotFound from "./pages/NotFound";
 import Log from "./pages/Log";
 import LogPost from "./pages/Log/Post";
 
@@ -55,7 +56,7 @@ function App() {
         <Route path="/bridge/" element={<Bridge />} />
         <Route path="/helm/" element={<Helm />} />
         <Route path="/world/" element={<CommandCenter />} />
-        <Route path="*" element={<Home />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       {showChrome && <Footer />}
