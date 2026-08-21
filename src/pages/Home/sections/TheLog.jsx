@@ -32,12 +32,13 @@ function Card({ post }) {
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-line)"; e.currentTarget.style.transform = "translateY(0)"; }}
     >
       {post.hero && (
-        <div className="overflow-hidden" style={{ aspectRatio: "16 / 9", borderBottom: "1px solid var(--color-line)" }}>
+        <div className="overflow-hidden relative" style={{ aspectRatio: "16 / 9", borderBottom: "1px solid var(--color-line)" }}>
           <img
             src={post.hero}
             alt={post.heroAlt || ""}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
           />
         </div>
       )}

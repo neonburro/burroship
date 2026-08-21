@@ -5,8 +5,9 @@
 // baseline so it never floats. One source of truth for every placement: nav, footer,
 // hero. color defaults to the ink token, pass a light color (for the black nav) to
 // flip the letters white without touching the accent period.
-// v3 · retracked for the serif. -0.04em was set for a geometric sans, a serif at that
-// tightness closes its counters and the word turns to mud, so this sits at -0.02em.
+// v4 · retracked for the rounded gothic. Zen Maru Gothic has no 600, so this is 500,
+// and a rounded face needs almost no tightening, its terminals collide if you tighten
+// them the way a geometric sans wants. -0.005em, not the -0.04em this started at.
 
 function Wordmark({ size = "20px", className = "", glow = true, color = "var(--color-ink)" }) {
   return (
@@ -15,9 +16,9 @@ function Wordmark({ size = "20px", className = "", glow = true, color = "var(--c
       style={{
         color,
         fontFamily: "var(--font-display)",
-        fontWeight: 600,
+        fontWeight: 500,
         fontSize: size,
-        letterSpacing: "-0.02em",
+        letterSpacing: "-0.005em",
         textTransform: "lowercase",
         lineHeight: 1,
       }}

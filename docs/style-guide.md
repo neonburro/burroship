@@ -7,17 +7,32 @@ disagree, the css wins and this file is wrong.
 
 Two families, and the pairing is an idea rather than a taste.
 
-**Newsreader** is the town. A modern cut of the faces small newspapers were set in, and
-it is what makes a page of ours look printed instead of rendered. It carries every
-headline, every paragraph, every name, the wordmark, anything a person reads.
+**Zen Maru Gothic** is the town. A rounded gothic from a Japanese foundry, maru meaning
+round. Its terminals are softened rather than cut, so nothing on a page of ours has a
+sharp edge, and its latin is quiet and slightly irregular in a way that reads as made
+rather than generated. That is the wabi sabi of it. The softness is not sweetness, it is
+a refusal to be crisp. It carries every headline, paragraph, name and the wordmark.
 
-**IBM Plex Mono** is the ship. The technical voice. It carries every uppercase label,
-every button, every readout, the coordinates in the footer, the kickers over a heading.
+**DM Mono** is the ship. Low contrast, humanist for a mono, and tracked out in uppercase
+it reads like a garment label rather than a terminal. It carries every label, button and
+readout.
 
-> serif for what a person says, mono for what the machine says.
+> soft for what a person says, precise for what the machine says.
 
-That division is the system. A label in the serif or a paragraph in the mono breaks it,
-and it will look wrong before you work out why.
+That division is the system. A label in the rounded face or a paragraph in the mono
+breaks it, and it will look wrong before you work out why.
+
+### two traps in this family
+
+**There is no 600.** Zen Maru Gothic ships 300, 400, 500, 700 and 900. The scale before
+this used 600 everywhere, which a browser fakes by smearing 500, and faked weight on a
+rounded face looks muddy at large sizes. Display is 500. Check the family before you
+reach for a weight.
+
+**It needs almost no tracking.** Display sits at -0.005em and body at 0. The serif before
+this sat near -0.015em and the geometric sans before that at -0.03em, and carrying either
+number over makes rounded terminals collide and the word close up. The wordmark is
+-0.005em for the same reason.
 
 ### the two rules that never move
 
@@ -41,14 +56,6 @@ The contrast between those two is most of the personality of the site. Keep it.
 | `text-body` | 16 | reading prose |
 | `text-body-sm` | 13 | secondary |
 | `text-mono-lg / mono / mono-sm / mono-xs` | 12 / 11 / 10 / 9 | labels, all uppercase |
-
-Newsreader is variable on optical size and `font-optical-sizing: auto` is set on `html`,
-so the same family is honest at 68px and at 16px. Do not hand tune per breakpoint.
-
-**Tracking.** A serif needs far less negative tracking than a geometric sans. Display
-sits near -0.015em, body sits at 0. The previous system was Rubik at -0.03em, and
-carrying that number over closes Newsreader's counters and the word turns to mud. The
-wordmark is -0.02em for the same reason.
 
 ## colour
 

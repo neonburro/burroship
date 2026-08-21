@@ -45,13 +45,17 @@ function Entry({ post, first }) {
       className="group grid md:grid-cols-[300px_1fr] gap-5 md:gap-8"
       style={{ padding: "34px 0", borderTop: first ? "none" : "1px solid var(--color-line)" }}
     >
+      {/* The image is absolutely filled rather than h-full. The global reset sets
+          img height auto and that beats a utility class here, which left the art sitting
+          at its natural ratio inside a 16 by 10 box with dead space under it. */}
       {post.hero && (
-        <div className="rounded-2xl overflow-hidden self-start" style={{ aspectRatio: "16 / 10", border: "1px solid var(--color-line)" }}>
+        <div className="rounded-2xl overflow-hidden self-start relative" style={{ aspectRatio: "16 / 10", border: "1px solid var(--color-line)" }}>
           <img
             src={post.hero}
             alt={post.heroAlt || ""}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
           />
         </div>
       )}
