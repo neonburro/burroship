@@ -83,4 +83,4 @@ exclamation point. Real places anchor everything, Ridgway, Ouray, the Cimarrons,
 Courthouse and Chimney.
 
 **No oxford commas. No em dashes and no en dashes.** Hyphens inside compound words are
-fine. Write "hueman and ai", never "human and AI".
+fine. Write "hue•man and ai", never "human and AI".

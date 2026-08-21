@@ -105,7 +105,7 @@ export const LOG = [
     readMins: 2,
     status: "published",
     expanding: true,
-    authorId: "cypher",
+    authorId: "echo",
     tags: ["the island", "trust", "machines", "ridgway"],
     hero: "/log/what-the-island-taught-us/hero.webp",
     heroAlt: "the ship at rest over still water in the mist with a pine on the shore",
