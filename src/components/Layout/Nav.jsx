@@ -85,19 +85,39 @@ function Nav() {
             transition: "background-color 260ms cubic-bezier(0.16,1,0.3,1), border-color 260ms cubic-bezier(0.16,1,0.3,1), box-shadow 260ms cubic-bezier(0.16,1,0.3,1), border-radius 260ms cubic-bezier(0.16,1,0.3,1)",
           }}
         >
-          {/* ── THREE COLUMNS, SO THE MARK IS ACTUALLY CENTRED ──────────────
-              Tyler asked for a centered logo. Centring inside a flex row that
-              also carries controls only works while both sides weigh the same,
-              and they never do, so the mark drifts the moment the right side
-              gains an avatar. A three column grid with the mark in the middle
-              column centres it against the rail rather than against whatever
-              happens to be beside it, which is the only version that holds
-              signed out, signed in and on every page. */}
+          {/* ── THE MARK MOVED LEFT, AND THE ART DECIDED IT ─────────────────
+              Tyler, 2026-09-28. "The image logo to the left of the burroship,
+              typed out, is hard to see. I'm not sure if we move it over to the
+              left because it's darker over there, like the sky."
+
+              He read the picture correctly. airship-crown.webp is a wood
+              engraving whose brightest region by a wide margin is the crown of
+              cloud, and that crown sits dead centre. A white lockup centred on
+              the rail lands exactly on the one part of the art that cannot hold
+              white type. The far left and far right corners are near black.
+
+              There is a second reason and it is the better one. The airship is
+              already the centred object in that picture. A wordmark centred on
+              top of it is two things competing for the same axis, and the
+              wordmark loses because the airship is the reason anybody looks.
+              Moving the lockup left hands the centre back to the art.
+
+              So the grid stays three columns, because it still keeps the
+              account control pinned right whatever the left side weighs, and
+              the mark simply takes the left column. */}
           <div
             className="grid items-center px-4 md:px-6"
             style={{ height: "60px", gridTemplateColumns: "1fr auto 1fr" }}
           >
-            <div className="flex items-center gap-1 md:gap-2 justify-self-start">
+            <div className="flex items-center gap-3 md:gap-5 justify-self-start">
+              <Link
+                to="/"
+                aria-label="the burroship home"
+                className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5"
+              >
+                <ShipMark height={26} />
+                <Wordmark size="22px" color="#FFFFFF" />
+              </Link>
               {user && (
                 <nav aria-label="sections" className="hidden md:flex items-center gap-1 mr-2">
                   {APP_LINKS.map((link) => {
@@ -124,14 +144,7 @@ function Nav() {
               )}
             </div>
 
-            <Link
-              to="/"
-              aria-label="the burroship home"
-              className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5 justify-self-center"
-            >
-              <ShipMark height={26} />
-              <Wordmark size="22px" color="#FFFFFF" />
-            </Link>
+            <div aria-hidden="true" />
 
             <div className="flex items-center gap-1 md:gap-2 justify-self-end">
               {user ? (

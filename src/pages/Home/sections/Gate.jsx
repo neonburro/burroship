@@ -93,20 +93,69 @@ function Gate() {
        The clamp is neonburro's HERO_CORNER, the same value the studio hero and
        the academy bands carry. */
     <section className="pb-16 md:pb-24">
-      <div
-        className="w-full overflow-hidden"
-        style={{
-          background: "var(--color-surface)",
-          borderBottomLeftRadius: "clamp(20px, 3.2vw, 48px)",
-          borderBottomRightRadius: "clamp(20px, 3.2vw, 48px)",
-        }}
-      >
-        <div className="relative">
+      {/* ── THE CORNERS BELONG TO THE PICTURE, 2026-09-28 ──────────────────
+          Tyler. "I want the bottom corners rounded on the hero image."
+
+          They were on the wrong element. The radius sat on a wrapper holding
+          the picture AND the bridge panel underneath it, so the soft edge
+          appeared at the bottom of the whole pale sheet, six hundred pixels
+          below the art, and the picture itself still ended in two hard square
+          corners against the page.
+
+          The wrapper is gone. The picture is its own full bleed sheet, square
+          where it meets the rail and carrying the house corner on its bottom
+          two, and the bridge stands on the page below it rather than inside a
+          second panel. One object, then some room, then the door. */}
+        {/* ── TALLER, AND THE CROP IS THE REASON IT CAN BE ────────────────
+            Tyler. "Hopefully make it a little taller if we can."
+
+            The art is about three to one, so at full width it was only ever as
+            tall as the picture allowed, which on a narrow window was a strip.
+            Letting it fill a set height with cover breaks that link. The frame
+            decides the height and the image gives up width at the edges instead.
+
+            The crop is safe because of what is at the edges. Far left is forest
+            and far right is distant range, both repeating texture. The airship,
+            its crown of cloud and Chimney Rock all sit in the middle third and
+            survive every width. object-position sits slightly above centre so
+            the airship stays in frame when the window is short and wide.
+
+            ── WHY vw AND NOT vh, AND NOT A TAILWIND CLASS ──────────────────
+
+            First attempt was a vh clamp, which put a 780 tall hero on a 542
+            wide window. Taller than it was wide, and cover crops width to make
+            height, so the airship filled the frame with both ends cut off.
+
+            Second attempt was two Tailwind arbitrary heights with an md
+            breakpoint. Those classes never reached the stylesheet. The element
+            carried them and the computed height came back as the image's own
+            natural height, which is the tell. Arbitrary values holding a clamp
+            with commas are not reliably generated here, and a height that
+            silently falls back to natural is the worst of the three outcomes
+            because it looks deliberate.
+
+            So one inline clamp against vw. Width is what cover trades away, so
+            tying the height to width keeps the crop proportional at every size
+            rather than letting a tall thin window eat the picture. 1280 gives
+            537 where the natural height was 427, which is the taller Tyler
+            asked for, and 375 gives the 280 floor rather than a strip. */}
+        <div
+          className="relative w-full overflow-hidden"
+          style={{
+            borderBottomLeftRadius: "clamp(20px, 3.2vw, 48px)",
+            borderBottomRightRadius: "clamp(20px, 3.2vw, 48px)",
+          }}
+        >
           <img
             src="/banners/airship-crown.webp"
             alt=""
             aria-hidden="true"
-            className="block w-full h-auto"
+            className="block w-full"
+            style={{
+              height: "clamp(280px, 42vw, 720px)",
+              objectFit: "cover",
+              objectPosition: "50% 42%",
+            }}
           />
           {/* The fade is gone, 2026-09-28. Tyler asked for no fade or anything.
 
@@ -120,13 +169,29 @@ function Gate() {
               If a fade ever comes back it means the shape regressed to a card. */}
         </div>
 
-      <div className="w-full max-w-[600px] mx-auto text-center px-5 pb-14 md:pb-16" style={{ marginTop: "-2px" }}>
+      <div className="w-full max-w-[600px] mx-auto text-center px-5 pt-12 md:pt-16 pb-14 md:pb-16">
+        {/* ── THE HIERARCHY SWAPPED, 2026-09-28 ──────────────────────────
+            Tyler. "I like a floating incubator, but I don't want to make it
+            like the title. Should be professional."
+
+            He is right and the reason is worth writing down. A floating
+            incubator is an image, not a claim. It tells somebody what the place
+            feels like and nothing about what it does, which is a fine thing for
+            an eyebrow to do and the wrong job for the one line at the top of a
+            page. So it moves up into the kicker, where an image belongs, and
+            the title says the thing.
+
+            The engine every property runs on is the canon sentence from the
+            studio's own CLAUDE.md, theburroship is the incubator and the engine
+            every property runs on, neonburro is all the work. Using the line
+            that already defines this place beats inventing a new one, and it is
+            professional without going stiff. */}
         <div className="flex items-center justify-center gap-2.5 mb-6 md:mb-8">
           <span className="beacon-dot sm pulse" aria-hidden="true" />
-          <span className="text-mono text-ink-faint lowercase">the bridge</span>
+          <span className="text-mono text-ink-faint lowercase">a floating incubator</span>
         </div>
 
-        <h1 className="text-display-xl text-ink lowercase mb-4">a floating incubator.</h1>
+        <h1 className="text-display-xl text-ink lowercase mb-4">the engine every property runs on.</h1>
         <p className="text-lead lowercase mb-10" style={{ fontSize: "19px" }}>
           {aboard
             ? "you are aboard. the range is open, the rest is coming."
@@ -268,7 +333,6 @@ function Gate() {
           <span className="beacon-dot sm" aria-hidden="true" />
           <span className="text-mono-xs text-ink-faint lowercase">ridgway, colorado · 38.15° n</span>
         </div>
-      </div>
       </div>
     </section>
   );
