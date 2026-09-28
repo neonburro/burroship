@@ -56,8 +56,26 @@ function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // ── ONLY THE HOME PAGE HAS ANYTHING DARK TO SIT ON ──────────────────────
+  //
+  // Caught on /contact/ minutes after the merge shipped. The rail going
+  // transparent is right over the cover picture and wrong everywhere else,
+  // because every other page on this site opens on #CFD9E6 and the lockup is
+  // white. White on pale blue is not a contrast problem, it is an invisible
+  // wordmark, and it was invisible on six routes at once.
+  //
+  // So bare is a home page state and not a global one. Everywhere else the rail
+  // keeps the chrome pill it has always had, which is also the thing that made
+  // the site feel finished before any of this started.
+  //
+  // If a second page ever opens on a dark full bleed picture, add it here
+  // rather than making the rail guess. Guessing what is behind a fixed element
+  // means reading pixels, and that is a lot of machinery for a list of two.
   const location = useLocation();
   const { user, profile } = useSession();
+
+  const overArt = location.pathname === "/" && !sunk;
 
   useEffect(() => { setOpen(false); }, [location.pathname]);
 
@@ -73,15 +91,15 @@ function Nav() {
     <>
       <nav
         className="fixed top-0 inset-x-0 z-50"
-        style={{ paddingTop: sunk ? "10px" : "0px", transition: "padding-top 260ms cubic-bezier(0.16,1,0.3,1)" }}
+        style={{ paddingTop: overArt ? "0px" : "10px", transition: "padding-top 260ms cubic-bezier(0.16,1,0.3,1)" }}
       >
         <div
-          className={sunk ? "mx-auto w-[99.5%] md:w-[97%]" : "w-full"}
+          className={overArt ? "w-full" : "mx-auto w-[99.5%] md:w-[97%]"}
           style={{
-            background: sunk ? "var(--color-chrome)" : "transparent",
-            borderRadius: sunk ? "22px" : "0px",
-            border: sunk ? "1px solid var(--color-line-strong)" : "1px solid transparent",
-            boxShadow: sunk ? "0 10px 30px rgba(24, 36, 56, 0.16)" : "none",
+            background: overArt ? "transparent" : "var(--color-chrome)",
+            borderRadius: overArt ? "0px" : "22px",
+            border: overArt ? "1px solid transparent" : "1px solid var(--color-line-strong)",
+            boxShadow: overArt ? "none" : "0 10px 30px rgba(24, 36, 56, 0.16)",
             transition: "background-color 260ms cubic-bezier(0.16,1,0.3,1), border-color 260ms cubic-bezier(0.16,1,0.3,1), box-shadow 260ms cubic-bezier(0.16,1,0.3,1), border-radius 260ms cubic-bezier(0.16,1,0.3,1)",
           }}
         >
