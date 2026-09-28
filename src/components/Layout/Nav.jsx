@@ -30,6 +30,32 @@ const APP_LINKS = [
 
 function Nav() {
   const [open, setOpen] = useState(false);
+
+  // ── THE RAIL IS PART OF THE HERO UNTIL YOU SCROLL, 2026-09-28 ────────────
+  //
+  // Tyler. "I'd love for the hero and navigation to merge more, like neonburro
+  // does. I think theburroship should have a centered logo."
+  //
+  // It was a floating chrome pill, ten pixels down, ninety nine and a half
+  // percent wide, with a border and a drop shadow. Under it sat the hero as a
+  // SECOND floating card with its own border and shadow and an eighty six pixel
+  // gap between them. Two stacked cards with a gap is the opposite of merged,
+  // and no amount of matching the colours closes a gap.
+  //
+  // So at the top of the page the rail has no ground, no border and no shadow,
+  // and the hero runs full bleed to the very top edge underneath it. One object
+  // with the house corner on its bottom edge only.
+  //
+  // It takes the pill back past twenty four pixels of scroll, because below the
+  // hero it floats over #DFE7F0 and white type on that is nothing. Twenty four
+  // rather than zero so a one pixel touch scroll does not flicker it.
+  const [sunk, setSunk] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setSunk(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const location = useLocation();
   const { user, profile } = useSession();
 
@@ -45,18 +71,33 @@ function Nav() {
 
   return (
     <>
-      <nav className="fixed top-0 inset-x-0 z-50" style={{ paddingTop: "10px" }}>
+      <nav
+        className="fixed top-0 inset-x-0 z-50"
+        style={{ paddingTop: sunk ? "10px" : "0px", transition: "padding-top 260ms cubic-bezier(0.16,1,0.3,1)" }}
+      >
         <div
-          className="mx-auto w-[99.5%] md:w-[97%]"
-          style={{ background: "var(--color-chrome)", borderRadius: "22px", border: "1px solid var(--color-line-strong)", boxShadow: "0 10px 30px rgba(24, 36, 56, 0.16)" }}
+          className={sunk ? "mx-auto w-[99.5%] md:w-[97%]" : "w-full"}
+          style={{
+            background: sunk ? "var(--color-chrome)" : "transparent",
+            borderRadius: sunk ? "22px" : "0px",
+            border: sunk ? "1px solid var(--color-line-strong)" : "1px solid transparent",
+            boxShadow: sunk ? "0 10px 30px rgba(24, 36, 56, 0.16)" : "none",
+            transition: "background-color 260ms cubic-bezier(0.16,1,0.3,1), border-color 260ms cubic-bezier(0.16,1,0.3,1), box-shadow 260ms cubic-bezier(0.16,1,0.3,1), border-radius 260ms cubic-bezier(0.16,1,0.3,1)",
+          }}
         >
-          <div className="flex items-center justify-between h-15 md:h-16 px-4 md:px-6" style={{ height: "60px" }}>
-            <Link to="/" aria-label="the burroship home" className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5">
-              <ShipMark height={26} />
-              <Wordmark size="22px" color="#FFFFFF" />
-            </Link>
-
-            <div className="flex items-center gap-1 md:gap-2">
+          {/* ── THREE COLUMNS, SO THE MARK IS ACTUALLY CENTRED ──────────────
+              Tyler asked for a centered logo. Centring inside a flex row that
+              also carries controls only works while both sides weigh the same,
+              and they never do, so the mark drifts the moment the right side
+              gains an avatar. A three column grid with the mark in the middle
+              column centres it against the rail rather than against whatever
+              happens to be beside it, which is the only version that holds
+              signed out, signed in and on every page. */}
+          <div
+            className="grid items-center px-4 md:px-6"
+            style={{ height: "60px", gridTemplateColumns: "1fr auto 1fr" }}
+          >
+            <div className="flex items-center gap-1 md:gap-2 justify-self-start">
               {user && (
                 <nav aria-label="sections" className="hidden md:flex items-center gap-1 mr-2">
                   {APP_LINKS.map((link) => {
@@ -81,7 +122,18 @@ function Nav() {
                   })}
                 </nav>
               )}
+            </div>
 
+            <Link
+              to="/"
+              aria-label="the burroship home"
+              className="hover:opacity-80 transition-opacity inline-flex items-center gap-2.5 justify-self-center"
+            >
+              <ShipMark height={26} />
+              <Wordmark size="22px" color="#FFFFFF" />
+            </Link>
+
+            <div className="flex items-center gap-1 md:gap-2 justify-self-end">
               {user ? (
                 <button
                   onClick={() => setOpen(true)}

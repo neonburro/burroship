@@ -75,14 +75,30 @@ function Gate() {
   }
 
   return (
-    <section className="pt-[86px] pb-16 md:pb-24">
+    /* ── FULL BLEED, AND THE RAIL SITS INSIDE IT, 2026-09-28 ────────────────
+       Tyler. "Make the hero and the navigation similar to neonburro. Full, with
+       rounded corners at the bottom, no fade."
+
+       This was a floating card. Ninety nine and a half percent wide, twenty six
+       pixel radius on all four corners, a border, a drop shadow, and eighty six
+       pixels of padding above it to clear a nav that was itself a floating card.
+       Two cards and a gap.
+
+       It is one sheet now. Edge to edge, square at the top where it meets the
+       rail so the two read as one dark object, and the house corner on the
+       bottom two only so the page below reads as a second object rather than as
+       the rest of this one. Rounding all four would make it a card floating on a
+       page again, which is the thing being undone.
+
+       The clamp is neonburro's HERO_CORNER, the same value the studio hero and
+       the academy bands carry. */
+    <section className="pb-16 md:pb-24">
       <div
-        className="mx-auto w-[99.5%] md:w-[97%] overflow-hidden"
+        className="w-full overflow-hidden"
         style={{
           background: "var(--color-surface)",
-          borderRadius: "26px",
-          border: "1px solid var(--color-line)",
-          boxShadow: "0 14px 40px rgba(24, 36, 56, 0.13)",
+          borderBottomLeftRadius: "clamp(20px, 3.2vw, 48px)",
+          borderBottomRightRadius: "clamp(20px, 3.2vw, 48px)",
         }}
       >
         <div className="relative">
@@ -92,27 +108,16 @@ function Gate() {
             aria-hidden="true"
             className="block w-full h-auto"
           />
-          {/* The seam killer. The art ends in a soft fall to the surface colour so the
-              picture and the page below it read as one continuous sheet. */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0"
-            style={{
-              height: "34%",
-              // Multi stop and eased. A two stop fade leaves a visible waistline where the
-              // gradient turns over, these stops follow an ease so the eye cannot find the
-              // seam. The rgb here IS --color-surface #DFE7F0, they must stay equal.
-              background:
-                "linear-gradient(to bottom," +
-                " rgba(223,231,240,0) 0%," +
-                " rgba(223,231,240,0.08) 22%," +
-                " rgba(223,231,240,0.26) 42%," +
-                " rgba(223,231,240,0.55) 60%," +
-                " rgba(223,231,240,0.82) 76%," +
-                " rgba(223,231,240,0.96) 89%," +
-                " #DFE7F0 100%)",
-            }}
-          />
+          {/* The fade is gone, 2026-09-28. Tyler asked for no fade or anything.
+
+              There used to be a thirty four percent tall seven stop gradient
+              here, easing the art down into #DFE7F0 so the picture and the page
+              read as one sheet. It was careful work and it was solving a problem
+              that no longer exists. A fade hides a seam between two objects. The
+              hero is now one full bleed sheet with a rounded bottom edge, so the
+              art simply ends where the sheet ends and there is no seam to hide.
+
+              If a fade ever comes back it means the shape regressed to a card. */}
         </div>
 
       <div className="w-full max-w-[600px] mx-auto text-center px-5 pb-14 md:pb-16" style={{ marginTop: "-2px" }}>
