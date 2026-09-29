@@ -68,7 +68,13 @@ function Head({ title, description, path, image, jsonLd, noIndex = false }) {
   const fullTitle = title ? `${title} · the burroship` : DEFAULT_TITLE;
   const desc = description || DEFAULT_DESCRIPTION;
   const url = path ? `${SITE}${path}` : SITE;
-  const img = image ? `${SITE}${image}` : `${SITE}/banners/courthouse-chimney-airship.webp`;
+  // The share card is a jpg and it has to stay one. The banner this used to
+  // point at is a webp, which iMessage, WhatsApp and most link scrapers will
+  // not render, so the card came back blank everywhere it mattered. Same rule
+  // as the studio, public/README.md, share cards are jpg on purpose.
+  // public/og/burroship.jpg is drawn by the studio's scripts/og-cards.mjs from
+  // that same banner art, with the mark, the headline and the url on it.
+  const img = image ? `${SITE}${image}` : `${SITE}/og/burroship.jpg`;
 
   useEffect(() => {
     document.title = fullTitle;
