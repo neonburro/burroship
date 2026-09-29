@@ -11,18 +11,42 @@ import { Link } from "react-router-dom";
 
 import { useSession } from "../../lib/session";
 
+import Head from "../../components/SEO/Head";
+
 const CommandCenter = lazy(() => import("./CommandCenter"));
 
 function CommandCenterRoute() {
   const { user, loading } = useSession();
 
-  if (loading) return <LoadingFallback />;
-  if (!user) return <Locked />;
+  // ── THE NOINDEX HAS TO RENDER BEFORE THE GUARD, 2026-09-28 ────────────────
+  //
+  // A crawler arrives signed out, so it takes the locked branch every time and
+  // never reaches the return below. The Head was under the guard, which meant
+  // the one page that most needed noIndex was the one page that never got it.
+  // Verified by loading the route signed out and reading the robots meta, which
+  // said index, follow.
+  //
+  // So the element is built once and every branch renders it. Only one branch
+  // renders at a time, so the two never fight over document.head.
+  const head = (
+    <Head
+      title="the world"
+      description="The command centre. Signed in only."
+      path="/world/"
+      noIndex
+    />
+  );
+
+  if (loading) return <>{head}<LoadingFallback /></>;
+  if (!user) return <>{head}<Locked /></>;
 
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <CommandCenter />
-    </Suspense>
+    <>
+      {head}
+      <Suspense fallback={<LoadingFallback />}>
+        <CommandCenter />
+      </Suspense>
+    </>
   );
 }
 

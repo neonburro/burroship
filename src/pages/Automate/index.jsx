@@ -5,9 +5,16 @@ import TopoLines from "../../components/Atoms/TopoLines";
 import Reveal from "../../components/Atoms/Reveal";
 import Button from "../../components/Atoms/Button";
  
+import Head from "../../components/SEO/Head";
+
 function Automate() {
   return (
     <main id="main" className="relative pt-32 md:pt-40 pb-32 overflow-hidden min-h-screen">
+      <Head
+        title="Automate"
+        description="The agents are not chatbots. Work a business repeats every week, handed to systems that do it the same way every time."
+        path="/automate/"
+      />
       <TopoLines size={680} position="bottom-right" intensity="medium" />
  
       <Container size="wide" className="relative z-10">

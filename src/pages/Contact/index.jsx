@@ -18,6 +18,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { burroshipSupabase, supabaseReady } from "../../lib/burroshipSupabase";
 
+import Head from "../../components/SEO/Head";
+
 const SOCIALS = [
   { key: "instagram", label: "instagram" },
   { key: "x", label: "x" },
@@ -90,6 +92,11 @@ function Contact() {
 
   return (
     <main id="main" className="px-3">
+      <Head
+        title="Contact"
+        description="Ask to come aboard. The bridge has your name on it and a person reads every message that arrives."
+        path="/contact/"
+      />
       <section className="pt-28 pb-24 md:pt-36 md:pb-32 flex items-center justify-center">
         <div className="w-full max-w-[600px]">
           <div className="text-center">

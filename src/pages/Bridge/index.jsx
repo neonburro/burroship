@@ -14,6 +14,8 @@ import { useSession, accountLabel } from "../../lib/session";
 import { burroshipSupabase } from "../../lib/burroshipSupabase";
 import { AvatarChip } from "../../components/Layout/LoginPanel";
 
+import Head from "../../components/SEO/Head";
+
 const EMPTY_BIZ = { name: "", address: "", website: "", phone: "", category: "", blurb: "" };
 
 function Bridge() {
@@ -89,14 +91,34 @@ function Bridge() {
     loadBusinesses();
   }
 
-  if (loading) return <Locked message="reaching the bridge." />;
-  if (!user) return <Locked message="the bridge is locked. sign in from the top to come aboard." showRequest />;
+  // ── THE NOINDEX HAS TO RENDER BEFORE THE GUARD, 2026-09-28 ────────────────
+  //
+  // A crawler arrives signed out, so it takes the locked branch every time and
+  // never reaches the return below. The Head was under the guard, which meant
+  // the one page that most needed noIndex was the one page that never got it.
+  // Verified by loading the route signed out and reading the robots meta, which
+  // said index, follow.
+  //
+  // So the element is built once and every branch renders it. Only one branch
+  // renders at a time, so the two never fight over document.head.
+  const head = (
+    <Head
+      title="the bridge"
+      description="The client area. Signed in only."
+      path="/bridge/"
+      noIndex
+    />
+  );
+
+  if (loading) return <>{head}<Locked message="reaching the bridge." /></>;
+  if (!user) return <>{head}<Locked message="the bridge is locked. sign in from the top to come aboard." showRequest /></>;
 
   const label = String(accountLabel(profile, user)).toLowerCase();
   const setBizField = (k) => (e) => setBiz((prev) => ({ ...prev, [k]: e.target.value }));
 
   return (
     <main id="main" className="px-3">
+      {head}
       <section className="pt-28 pb-24 md:pt-36 md:pb-32">
         <div className="w-full max-w-[720px] mx-auto">
           <div className="flex items-center justify-between mb-10 md:mb-12">

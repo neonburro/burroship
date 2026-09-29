@@ -11,9 +11,16 @@ import RewardTypes from "./sections/RewardTypes";
 import Outlets from "./sections/Outlets";
 import RewardsClosing from "./sections/RewardsClosing";
 
+import Head from "../../components/SEO/Head";
+
 function Rewards() {
   return (
     <main id="main">
+      <Head
+        title="Rewards"
+        description="One balance and more than one kind of value. A single membership that earns across every outlet on the network."
+        path="/rewards/"
+      />
       <RewardsHero />
       <HowItWorks />
       <RewardTypes />

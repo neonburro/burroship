@@ -11,9 +11,16 @@ import WhatWeMake from "./sections/WhatWeMake";
 import HowItGoes from "./sections/HowItGoes";
 import BuildClosing from "./sections/BuildClosing";
 
+import Head from "../../components/SEO/Head";
+
 function Build() {
   return (
     <main id="main">
+      <Head
+        title="Build"
+        description="Bring the strange one. The same sequence every time, calm on purpose, from the first conversation to a thing running in front of people."
+        path="/build/"
+      />
       <BuildHero />
       <WhatWeMake />
       <HowItGoes />
