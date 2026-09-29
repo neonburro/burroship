@@ -72,9 +72,9 @@ function Head({ title, description, path, image, jsonLd, noIndex = false }) {
   // point at is a webp, which iMessage, WhatsApp and most link scrapers will
   // not render, so the card came back blank everywhere it mattered. Same rule
   // as the studio, public/README.md, share cards are jpg on purpose.
-  // public/og/burroship.jpg is drawn by the studio's scripts/og-cards.mjs from
+  // public/og/burroship-courthouse-chimney-airship-dusk-card.jpg is drawn by the studio's scripts/og-cards.mjs from
   // that same banner art, with the mark, the headline and the url on it.
-  const img = image ? `${SITE}${image}` : `${SITE}/og/burroship.jpg`;
+  const img = image ? `${SITE}${image}` : `${SITE}/og/burroship-courthouse-chimney-airship-dusk-card.jpg`;
 
   useEffect(() => {
     document.title = fullTitle;
